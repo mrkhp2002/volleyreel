@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, String
-
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -11,3 +11,6 @@ class User(Base):
     full_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+
+    # One user can have many tournaments
+    tournaments = relationship("Tournament", back_populates="user")
