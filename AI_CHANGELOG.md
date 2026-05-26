@@ -122,3 +122,16 @@
 - `frontend/src/styles/dashboard.css`
 - `frontend/src/styles/global.css`
 
+## [2026-05-26T14:30:00+05:30] - Auto-Login & Dashboard Redirection on Account Creation
+
+### Added
+- Integrated `useAuth` into `RegisterForm.jsx` to access frontend login context.
+- Configured automatic credentials authentication via `/auth/login` right after successful user registration.
+
+### Changed
+- Redirected the account registration post-success path from the Sign In page (`/login`) directly to the analytics dashboard (`/dashboard`).
+
+### Files Changed
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+
+

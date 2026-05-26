@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../../services/apiClient";
+import useAuth from "../../../hooks/useAuth";
 
 const initialForm = {
   fullName: "",
@@ -12,6 +13,7 @@ const initialForm = {
 };
 
 export default function RegisterForm() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
@@ -54,7 +56,23 @@ export default function RegisterForm() {
         email: form.email,
         password: form.password,
       });
-      navigate("/login");
+
+      // Automatically sign in the user and redirect to dashboard
+      const loginRes = await API.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      if (loginRes.data && loginRes.data.access_token) {
+        login({
+          email: loginRes.data.email || form.email,
+          fullName: loginRes.data.full_name || form.fullName,
+          token: loginRes.data.access_token,
+        });
+        navigate("/dashboard");
+      } else {
+        navigate("/login");
+      }
     } catch (err) {
       setError(
         err.response?.data?.detail ||
