@@ -171,3 +171,18 @@
 ### Files Changed
 - `frontend/src/main.jsx`
 - `frontend/src/styles/dashboard.css`
+
+## [2026-05-26T20:45:00+05:30] - Collapsible Sidebar + Scrollable Logout
+
+### Added
+- Collapsible sidebar toggle (minimize to icon-only rail) with persisted state in `localStorage`.
+- Scrollable sidebar body so navigation, user info, and logout move together when scrolling.
+
+### Changed
+- Wired collapse state through `AppLayout` and animated grid width via CSS variables.
+- Refactored `Sidebar` layout: fixed header, scrollable nav + footer block (logout no longer pinned outside scroll flow).
+
+### Files Changed
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/styles/global.css`

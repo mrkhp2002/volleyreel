@@ -40,32 +40,41 @@ function LogoutIcon() {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed = false, onToggle }) {
   const { user, logout } = useAuth();
   const displayName = user?.fullName || "Coach Admin";
   const displayEmail = user?.email || "admin@volleyreel.com";
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-top">
+    <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
+      <div className="sidebar-header">
         <div className="sidebar-brand">
-          <div className="sidebar-brand-mark">🏐</div>
+          <div className="sidebar-brand-mark" title="VolleyReel">🏐</div>
           <div className="sidebar-brand-text">
             <span className="sidebar-brand-title">VolleyReel</span>
             <span className="sidebar-brand-subtitle">Analytics Platform</span>
           </div>
-          <button type="button" className="sidebar-collapse-btn" aria-label="Collapse sidebar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
         </div>
+        <button
+          type="button"
+          className="sidebar-collapse-btn"
+          onClick={onToggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+      </div>
 
-        <nav className="sidebar-nav">
+      <div className="sidebar-scroll">
+        <nav className="sidebar-nav" aria-label="Main navigation">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
+              title={collapsed ? item.label : undefined}
               className={({ isActive }) =>
                 isActive ? "sidebar-nav-item active" : "sidebar-nav-item"
               }
@@ -76,22 +85,27 @@ export default function Sidebar() {
             </NavLink>
           ))}
         </nav>
-      </div>
 
-      <div className="sidebar-bottom">
-        <div className="sidebar-user">
-          <div className="sidebar-user-avatar">
-            {displayName.charAt(0).toUpperCase()}
+        <div className="sidebar-footer-block">
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar" title={displayName}>
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+            <div className="sidebar-user-details">
+              <p className="sidebar-user-name">{displayName}</p>
+              <p className="sidebar-user-email">{displayEmail}</p>
+            </div>
           </div>
-          <div>
-            <p className="sidebar-user-name">{displayName}</p>
-            <p className="sidebar-user-email">{displayEmail}</p>
-          </div>
+          <button
+            type="button"
+            className="sidebar-logout-btn"
+            onClick={logout}
+            title="Logout"
+          >
+            <LogoutIcon />
+            <span className="sidebar-logout-label">Logout</span>
+          </button>
         </div>
-        <button type="button" className="sidebar-logout-btn" onClick={logout}>
-          <LogoutIcon />
-          Logout
-        </button>
       </div>
     </aside>
   );
