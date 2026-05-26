@@ -134,4 +134,13 @@
 ### Files Changed
 - `frontend/src/components/layout/auth/RegisterForm.jsx`
 
+## [2026-05-26T14:45:00+05:30] - Make User Role Selectable (Coach or Player)
 
+### Changed
+- Replaced the text input for the `role` field in `RegisterForm.jsx` with a custom dropdown select element featuring `Coach` and `Player` options.
+- Updated frontend validation to require selecting a role during registration.
+- Added custom styles for select elements, dropdown arrow icons, and select options inside `auth.css` matching the premium dark glass theme.
+
+### Files Changed
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `frontend/src/styles/auth.css`

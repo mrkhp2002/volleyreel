@@ -24,7 +24,7 @@ export default function RegisterForm() {
   };
 
   const validateForm = () => {
-    if (!form.fullName || !form.email || !form.password || !form.confirmPassword) {
+    if (!form.fullName || !form.email || !form.role || !form.password || !form.confirmPassword) {
       return "Please complete all required fields.";
     }
     if (form.password.length < 8) {
@@ -153,14 +153,27 @@ export default function RegisterForm() {
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
           </svg>
-          <input
+          <select
             id="role"
-            type="text"
-            placeholder="Coach, Analyst, Organizer"
             value={form.role}
             disabled={loading}
             onChange={(e) => setField("role", e.target.value)}
-          />
+          >
+            <option value="" disabled>Select your role...</option>
+            <option value="coach">Coach</option>
+            <option value="player">Player</option>
+          </select>
+          <svg
+            className="select-arrow-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
 
         <label htmlFor="password">Password</label>
