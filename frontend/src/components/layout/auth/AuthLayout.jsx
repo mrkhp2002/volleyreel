@@ -1,35 +1,50 @@
-export default function AuthLayout({ children }) {
+const defaultFeatures = [
+  "Automated Video Analysis",
+  "Tournament Management",
+  "Performance Analytics",
+];
+
+export default function AuthLayout({
+  children,
+  pageEyebrow = "",
+  heading = "Analyze. Track. Win.",
+  description = "Transform your volleyball matches into powerful insights with AI-powered video analysis and comprehensive team management.",
+  features = defaultFeatures,
+}) {
   return (
     <div className="auth-container">
-      
-      {/* LEFT SIDE */}
+      {pageEyebrow && <div className="auth-page-eyebrow">{pageEyebrow}</div>}
+
       <div className="auth-left">
         <div className="brand">
           <div className="logo">🏆</div>
-          <h2>VolleyReel</h2>
-          <p>Analytics Platform</p>
+          <div className="brand-copy">
+            <h2>VolleyReel</h2>
+            <p>Analytics Platform</p>
+          </div>
         </div>
 
-        <h1>Analyze. Track. Win.</h1>
+        <div className="auth-left-content">
+          <h1>{heading}</h1>
 
-        <p className="description">
-          Transform your volleyball matches into powerful insights with AI-powered video analysis and comprehensive team management.
-        </p>
+          <p className="description">{description}</p>
 
-        <ul className="features">
-          <li>✔ Automated Video Analysis</li>
-          <li>✔ Tournament Management</li>
-          <li>✔ Performance Analytics</li>
-        </ul>
+          <div className="feature-panel">
+            <h3>What you'll get:</h3>
+            <ul className="features">
+              {features.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
         <footer>© 2026 VolleyReel. All rights reserved.</footer>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="auth-right">
         {children}
       </div>
-
     </div>
   );
 }
