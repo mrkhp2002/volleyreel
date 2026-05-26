@@ -4,6 +4,7 @@ import AppLayout from "../components/layout/AppLayout";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import TournamentsPage from "../pages/tournaments/TournamentsPage";
 import TeamsPage from "../pages/teams/TeamsPage";
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Protected Application Routes (wrapped in AppLayout and ProtectedRoute) */}
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

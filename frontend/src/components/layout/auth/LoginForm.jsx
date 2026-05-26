@@ -116,7 +116,9 @@ export default function LoginForm() {
           <label>
             <input type="checkbox" disabled={loading} /> Remember me
           </label>
-          <span className="auth-link">Forgot Password?</span>
+          <Link to="/forgot-password" className="auth-link">
+            Forgot Password?
+          </Link>
         </div>
 
         <button className="auth-submit-btn" type="submit" disabled={loading}>

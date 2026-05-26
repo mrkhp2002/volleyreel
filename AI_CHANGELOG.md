@@ -61,3 +61,40 @@
 - `frontend/src/components/layout/auth/LoginForm.jsx`
 - `frontend/src/components/layout/auth/RegisterForm.jsx`
 
+## [2026-05-26T14:25:00+05:30] - Forgot Password Page (Figma)
+
+### Added
+- Built a centered forgot-password screen with gradient background, brand header, email form, and back-to-sign-in navigation.
+- Added reusable `AuthBrand` and `AuthCenteredLayout` components for standalone auth screens without duplicating the split-panel layout.
+
+### Changed
+- Wired login "Forgot Password?" link to `/forgot-password`.
+- Registered public `/forgot-password` route.
+- Extended shared `auth.css` with centered-page and light-card styles matching the Figma design.
+
+### Files Changed
+- `frontend/src/components/layout/auth/AuthBrand.jsx`
+- `frontend/src/components/layout/auth/AuthCenteredLayout.jsx`
+- `frontend/src/components/layout/auth/ForgotPasswordForm.jsx`
+- `frontend/src/pages/auth/ForgotPasswordPage.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/auth.css`
+
+## [2026-05-26T14:09:00+05:30] - Fine-tune Forgot Password Page & Theme Continuation
+
+### Added
+- Integrated glowing backdrops and animations (radial glows) inside the centered page container.
+- Added absolute-positioned SVG mail icon to the reset email input.
+
+### Changed
+- Replaced the light-mode centering layout with the premium, dark-mode glassmorphic theme.
+- Refactored `ForgotPasswordForm.jsx` to inherit the dark `auth-card` and standard error banner components.
+- Upgraded the brand header (`AuthBrand`) in the centered page to use matching gradient text styling and rotating volleyball emblem.
+- Cleaned up redundant `.auth-card--light` and light-theme banishing styles in `auth.css`.
+
+### Files Changed
+- `frontend/src/styles/auth.css`
+- `frontend/src/components/layout/auth/ForgotPasswordForm.jsx`
+
+
