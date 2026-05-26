@@ -1,3 +1,4 @@
+# Import order matters — parent tables before child tables
 from app.models.user import User
 from app.models.tournament import Tournament
 from app.models.team import Team
