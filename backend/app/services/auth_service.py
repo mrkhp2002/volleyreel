@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-from app.schemas.user import UserCreate
-from app.utils.security import get_password_hash
+from app.schemas.user import UserCreate, UserLogin
+from app.utils.security import get_password_hash, verify_password
 
 
 def create_user(db: Session, payload: UserCreate) -> User | None:
@@ -19,3 +19,13 @@ def create_user(db: Session, payload: UserCreate) -> User | None:
     db.commit()
     db.refresh(user)
     return user
+
+
+def authenticate_user(db: Session, payload: UserLogin) -> User | None:
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        return None
+    if not verify_password(payload.password, user.hashed_password):
+        return None
+    return user
+
