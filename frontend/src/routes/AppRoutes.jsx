@@ -1,24 +1,39 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "../components/layout/AppLayout";
 
-import DashboardPage from "../pages/dashboard/DashboardPage";
 import LoginPage from "../pages/auth/LoginPage";
+import DashboardPage from "../pages/dashboard/DashboardPage";
+import TournamentsPage from "../pages/tournaments/TournamentsPage";
+import TeamsPage from "../pages/teams/TeamsPage";
+import PlayersPage from "../pages/players/PlayersPage";
+import MatchesPage from "../pages/matches/MatchesPage";
+import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
+import ReportsPage from "../pages/reports/ReportsPage";
+import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
 
-<Route path="/login" element={<LoginPage />} />
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginPage />} />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected Application Routes (wrapped in AppLayout and ProtectedRoute) */}
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tournaments" element={<TournamentsPage />} />
+          <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/players" element={<PlayersPage />} />
+          <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/leaderboards" element={<LeaderboardsPage />} />
+        </Route>
+
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

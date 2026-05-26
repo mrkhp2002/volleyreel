@@ -1,31 +1,60 @@
 import { NavLink } from 'react-router-dom';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/tournaments', label: 'Tournaments' },
-  { to: '/teams', label: 'Teams' },
-  { to: '/players', label: 'Players' },
-  { to: '/matches', label: 'Matches' },
-  { to: '/tournament-analytics', label: 'Tournament Analytics' },
-  { to: '/reports', label: 'Reports' },
-  { to: '/leaderboards', label: 'Leaderboards' }
+const navigationGroups = [
+  {
+    title: "MAIN",
+    items: [
+      { to: '/dashboard', label: 'Dashboard', icon: '📊' }
+    ]
+  },
+  {
+    title: "MANAGEMENT",
+    items: [
+      { to: '/tournaments', label: 'Tournaments', icon: '🏆' },
+      { to: '/teams', label: 'Teams', icon: '👥' },
+      { to: '/players', label: 'Players', icon: '🏃' },
+      { to: '/matches', label: 'Matches', icon: '🏐' }
+    ]
+  },
+  {
+    title: "ANALYTICS",
+    items: [
+      { to: '/tournament-analytics', label: 'Analytics', icon: '📈' },
+      { to: '/reports', label: 'Reports', icon: '📋' },
+      { to: '/leaderboards', label: 'Leaderboards', icon: '🎖️' }
+    ]
+  }
 ];
 
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      <h2>VolleyReel</h2>
-      <nav>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-          >
-            {item.label}
-          </NavLink>
+      <div className="sidebar-brand">
+        <span className="brand-logo">🏐</span>
+        <span className="brand-text">VolleyReel</span>
+      </div>
+      
+      <nav className="sidebar-nav">
+        {navigationGroups.map((group) => (
+          <div key={group.title} className="nav-group">
+            <span className="nav-group-title">{group.title}</span>
+            {group.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+              >
+                <span className="nav-item-icon">{item.icon}</span>
+                <span className="nav-item-label">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
+      
+      <div className="sidebar-footer">
+        <span className="version">v0.1.0 (Beta)</span>
+      </div>
     </aside>
   );
 }
