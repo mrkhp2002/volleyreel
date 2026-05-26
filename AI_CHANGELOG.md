@@ -186,3 +186,30 @@
 - `frontend/src/components/layout/AppLayout.jsx`
 - `frontend/src/components/layout/Sidebar.jsx`
 - `frontend/src/styles/global.css`
+
+## [2026-05-26T21:15:00+05:30] - Team Management UI (Figma Screens)
+
+### Added
+- Built full Team Management module: list page with filters, stats, table, pagination, and delete modal.
+- Added Create Team multi-section form (details, coach/location, setup, branding upload, notes).
+- Added Team Details page with summary cards, quick actions, registered players table, linked matches table, and delete confirmation modal.
+- Added Edit Team page reusing the create form in edit mode.
+- Added shared management styles and reusable `DeleteConfirmModal` + table action icons.
+- Expanded sidebar with collapsible Teams submenu (Team List, Create Team).
+
+### Changed
+- Registered team routes: `/teams`, `/teams/create`, `/teams/:teamId`, `/teams/:teamId/edit`.
+- Create team form posts to `POST /api/teams/` when creating (edit mode updates UI locally for now).
+
+### Files Changed
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+- `frontend/src/pages/teams/EditTeamPage.jsx`
+- `frontend/src/pages/teams/teamsData.js`
+- `frontend/src/styles/management.css`
+- `frontend/src/components/common/DeleteConfirmModal.jsx`
+- `frontend/src/components/common/TableActionIcons.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/global.css`

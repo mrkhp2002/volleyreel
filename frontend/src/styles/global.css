@@ -258,6 +258,66 @@ body {
   box-shadow: none;
 }
 
+/* Expandable nav group (Teams) */
+.sidebar-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-nav-group-toggle {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.sidebar-nav-group.active-group > .sidebar-nav-group-toggle {
+  background: rgba(59, 130, 246, 0.15);
+  color: #ffffff;
+}
+
+.nav-chevron--expand {
+  transition: transform 0.2s ease;
+}
+
+.sidebar-nav-group.open .nav-chevron--expand {
+  transform: rotate(90deg);
+}
+
+.sidebar-nav-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav-sub-item {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav-sub-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.sidebar-nav-sub-item.active {
+  background: var(--secondary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
 .sidebar-footer-block {
   margin-top: auto;
   padding-top: 16px;
