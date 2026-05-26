@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../../hooks/useAuth";
 import API from "../../../services/apiClient";
 
@@ -53,7 +53,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="login-card">
+    <div className="auth-card">
       <h2>Sign In</h2>
       <p>Access your volleyball analytics dashboard</p>
 
@@ -84,20 +84,20 @@ export default function LoginForm() {
           }
         />
 
-        <div className="login-options">
+        <div className="auth-options-row">
           <label>
             <input type="checkbox" disabled={loading} /> Remember me
           </label>
-          <span className="link">Forgot Password?</span>
+          <span className="auth-link">Forgot Password?</span>
         </div>
 
-        <button className="btn-primary" type="submit" disabled={loading}>
+        <button className="btn-primary auth-submit-btn" type="submit" disabled={loading}>
           {loading ? "Signing In..." : "Sign In"}
         </button>
       </form>
 
-      <p className="signup-text">
-        Don’t have an account? <span className="link">Sign Up</span>
+      <p className="auth-switch-text">
+        Don’t have an account? <Link to="/register">Sign Up</Link>
       </p>
     </div>
   );

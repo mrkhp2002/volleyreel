@@ -20,3 +20,24 @@
 
 ### Removed
 - Deleted obsolete context file `frontend/src/contexts/AppContext.jsx`.
+
+## [2026-05-26T13:22:00+05:30] - Implement Figma-based Create Account Auth Screen
+
+### Added
+- Built a new register flow UI modeled after the provided Figma design, including full form structure, validation, and API integration with `/auth/register`.
+- Added a dedicated register page that reuses the existing auth layout with configurable content blocks and feature list.
+
+### Changed
+- Refactored the shared auth layout to support reusable props (`pageEyebrow`, `heading`, `description`, `features`) without creating duplicate layouts.
+- Updated login form navigation to route users directly to the new register page while keeping current login/auth behavior intact.
+- Registered a new public `/register` route in the app routing setup.
+- Reworked shared auth styles to provide a production-like, responsive split layout matching the Figma direction across login and register pages.
+
+### Files Changed
+- `frontend/src/components/layout/auth/AuthLayout.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `frontend/src/pages/auth/LoginPage.jsx`
+- `frontend/src/pages/auth/RegisterPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/auth.css`
