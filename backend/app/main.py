@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-import app.models  # Loads all models to register them on Base.metadata
+import app.models
+
 from app.routes.api import api_router
 
 
@@ -14,9 +15,13 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="VolleyReel API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="VolleyReel API",
+    version="0.1.0",
+    lifespan=lifespan
+)
 
-# Setup CORS middleware to allow frontend connection
+# Setup CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -24,7 +29,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3001",
-        "http://localhost:5173",  # Vite default
+        "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5174",
@@ -34,11 +39,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Centralized API Routes mounted at /api
+# Centralized API routes
 app.include_router(api_router, prefix="/api")
 
 
 @app.get("/health")
-def health_check() -> dict[str, str]:
+def health_check():
     return {"status": "ok"}
-
