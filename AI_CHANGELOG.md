@@ -144,3 +144,30 @@
 ### Files Changed
 - `frontend/src/components/layout/auth/RegisterForm.jsx`
 - `frontend/src/styles/auth.css`
+
+## [2026-05-26T20:08:00+05:30] - Premium Dark Theme & Glassmorphism Dashboard UI Tuning
+
+### Added
+- Injected decorative ambient glows (`.dashboard-glow`) inside the main layout of `DashboardPage.jsx`.
+
+### Changed
+- Converted the main application shell variables in `global.css` to dark mode values matching the login screens (deep dark background `#080b16`, border styling, and user pill glass elements).
+- Redesigned the sidebar navigation: customized branding header, side borders, and glowing active links.
+- Styled topbar search input and custom scrollbars for dark mode coherence.
+- Refactored `dashboard.css` from the ground up: transformed stat cards, quick-action buttons, recent match tables, active tournament lists, and metric trackers into premium glassmorphism layouts.
+- Styled quick-action buttons to be responsive, featuring custom gradients, button hover/press transformations, and interactive color theme glows.
+
+### Files Changed
+- `frontend/src/styles/global.css`
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/styles/dashboard.css`
+
+## [2026-05-26T20:28:00+05:30] - Fix Dashboard Theme Rendering
+
+### Changed
+- Imported `frontend/src/styles/global.css` in `frontend/src/main.jsx` so the dashboard uses the correct theme variables and background.
+- Ensured quick-action SVG icons render with proper `currentColor` styling by setting `color: #ffffff` on `.dash-quick-action`.
+
+### Files Changed
+- `frontend/src/main.jsx`
+- `frontend/src/styles/dashboard.css`

@@ -34,6 +34,11 @@ const statIcons = [
 export default function DashboardPage() {
   return (
     <div className="dashboard-page">
+      {/* Ambient background glows */}
+      <div className="dashboard-glow dashboard-glow--1" />
+      <div className="dashboard-glow dashboard-glow--2" />
+      <div className="dashboard-glow dashboard-glow--3" />
+
       <header className="dashboard-header">
         <h1>Dashboard</h1>
         <p>Welcome back! Here&apos;s your volleyball analytics overview</p>
