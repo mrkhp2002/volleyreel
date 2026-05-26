@@ -41,3 +41,23 @@
 - `frontend/src/pages/auth/RegisterPage.jsx`
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/styles/auth.css`
+
+## [2026-05-26T14:02:00+05:30] - Fine-tune Login and Registration UI
+
+### Added
+- Added custom input wrapper styles (`.input-group-wrapper`) and inline SVG icons to authentication form inputs.
+- Integrated animated-like background glows (radial animations) for authentic visual depth.
+- Created custom SVG checkmarks inside glass badges for the features checklist in `AuthLayout`.
+
+### Changed
+- Converted the authentication screen layout from light-mode to a high-end, dark-mode glassmorphic interface matching the dashboard base theme.
+- Refactored `AuthLayout.jsx` to dynamically parse and highlight the final word of headings.
+- Refactored `LoginForm.jsx` and `RegisterForm.jsx` to utilize input wrappers and inline SVGs.
+- Enhanced submit buttons, hover effects, scale transformations, and active state transitions in `auth.css`.
+
+### Files Changed
+- `frontend/src/styles/auth.css`
+- `frontend/src/components/layout/auth/AuthLayout.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+

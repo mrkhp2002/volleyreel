@@ -61,28 +61,56 @@ export default function LoginForm() {
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="email">Email Address</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={form.email}
-          disabled={loading}
-          onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
-        />
+        <div className="input-group-wrapper">
+          <svg
+            className="input-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={form.email}
+            disabled={loading}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
+          />
+        </div>
 
         <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          value={form.password}
-          disabled={loading}
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
-        />
+        <div className="input-group-wrapper">
+          <svg
+            className="input-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={form.password}
+            disabled={loading}
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
+          />
+        </div>
 
         <div className="auth-options-row">
           <label>
@@ -91,7 +119,7 @@ export default function LoginForm() {
           <span className="auth-link">Forgot Password?</span>
         </div>
 
-        <button className="btn-primary auth-submit-btn" type="submit" disabled={loading}>
+        <button className="auth-submit-btn" type="submit" disabled={loading}>
           {loading ? "Signing In..." : "Sign In"}
         </button>
       </form>
