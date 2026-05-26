@@ -1,11 +1,40 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes.auth import router as auth_router
+from app.database import Base, engine
+import app.models  # Loads all models to register them on Base.metadata
+from app.routes.api import api_router
 
-app = FastAPI(title="VolleyReel API", version="0.1.0")
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-create tables for local development
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="VolleyReel API", version="0.1.0", lifespan=lifespan)
+
+# Setup CORS middleware to allow frontend connection
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite default
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Centralized API Routes mounted at /api
+app.include_router(api_router, prefix="/api")
 
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
