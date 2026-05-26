@@ -9,7 +9,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (storedUser) {
+
+      if (storedUser && storedUser !== "undefined") {
         setUser(JSON.parse(storedUser));
       }
     } catch (err) {
@@ -21,17 +22,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    setUser(userData);
+    console.log("LOGIN DATA:", userData);
+
     localStorage.setItem("user", JSON.stringify(userData));
+
+    setUser(userData);
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("user");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
