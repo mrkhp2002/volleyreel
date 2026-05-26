@@ -1,0 +1,406 @@
+/* Dashboard page (Figma light layout) */
+
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-header h1 {
+  font-family: var(--font-title);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.dashboard-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.dashboard-section-title {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 14px;
+}
+
+/* Stat cards */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dash-stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.dash-stat-label {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.dash-stat-value {
+  color: #0f172a;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.dash-stat-trend {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.dash-stat-trend--up {
+  color: #16a34a;
+}
+
+.dash-stat-trend--down {
+  color: #16a34a;
+}
+
+.dash-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-stat-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+}
+
+.dash-stat-icon--blue {
+  background: #3b82f6;
+}
+
+.dash-stat-icon--teal {
+  background: #14b8a6;
+}
+
+.dash-stat-icon--purple {
+  background: #8b5cf6;
+}
+
+.dash-stat-icon--orange {
+  background: #f59e0b;
+}
+
+/* Quick actions */
+.dashboard-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dash-quick-action {
+  border: none;
+  border-radius: 12px;
+  padding: 18px 16px;
+  text-align: left;
+  color: #ffffff;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.dash-quick-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.16);
+}
+
+.dash-quick-action-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dash-quick-action-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+
+.dash-quick-action-subtitle {
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+.dash-quick-action--blue {
+  background: #3b82f6;
+}
+
+.dash-quick-action--teal {
+  background: #14b8a6;
+}
+
+.dash-quick-action--purple {
+  background: #8b5cf6;
+}
+
+.dash-quick-action--orange {
+  background: #f59e0b;
+}
+
+.dash-quick-action--royal {
+  background: #2563eb;
+}
+
+.dash-quick-action--dark-teal {
+  background: #0f766e;
+}
+
+/* Panels */
+.dashboard-row {
+  display: grid;
+  gap: 16px;
+}
+
+.dashboard-row--split {
+  grid-template-columns: 2fr 1fr;
+}
+
+.dashboard-row--metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dash-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.dash-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dash-panel-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.dash-panel-header p {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.dash-panel-link,
+.dash-panel-footer-link {
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dash-panel-link:hover,
+.dash-panel-footer-link:hover {
+  text-decoration: underline;
+}
+
+.dash-panel-footer-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* Table */
+.dash-table-wrap {
+  overflow-x: auto;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.dash-table th {
+  text-align: left;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dash-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.dash-table-id {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dash-table-id:hover {
+  text-decoration: underline;
+}
+
+.dash-table-score {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Badges */
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.dash-badge--completed {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.dash-badge--upcoming {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dash-badge--ongoing {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* Tournaments list */
+.dash-tournament-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-tournament-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.dash-tournament-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dash-tournament-top h3 {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.dash-tournament-date,
+.dash-tournament-teams {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.dash-tournament-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dash-tournament-teams svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Metric panels */
+.dash-metric-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.dash-metric-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-metric-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.dash-metric-list strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.dash-metric-value--success {
+  color: #16a34a;
+}
+
+.dash-metric-value--info {
+  color: #2563eb;
+}
+
+.dash-metric-value--danger {
+  color: #dc2626;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-stats-grid,
+  .dashboard-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-row--split,
+  .dashboard-row--metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-stats-grid,
+  .dashboard-quick-actions {
+    grid-template-columns: 1fr;
+  }
+}

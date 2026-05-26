@@ -97,4 +97,28 @@
 - `frontend/src/styles/auth.css`
 - `frontend/src/components/layout/auth/ForgotPasswordForm.jsx`
 
+## [2026-05-26T15:10:00+05:30] - Dashboard UI (Figma Screens)
+
+### Added
+- Built full dashboard page with stat cards, quick actions, recent matches table, active tournaments list, and bottom metric panels.
+- Added modular dashboard components (`StatCard`, `QuickActionButton`, `RecentMatchesPanel`, `ActiveTournamentsPanel`, `MetricPanel`, shared SVG icons).
+- Added `dashboardData.js` for mock dashboard content and `dashboard.css` for responsive grid styling.
+
+### Changed
+- Updated `Sidebar` and `Topbar` to match Figma app shell (navy sidebar, blue topbar, search, notifications, user pill, logout).
+- Refreshed `global.css` to light dashboard theme aligned with design screenshots.
+
+### Files Changed
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/pages/dashboard/dashboardData.js`
+- `frontend/src/components/dashboard/StatCard.jsx`
+- `frontend/src/components/dashboard/QuickActionButton.jsx`
+- `frontend/src/components/dashboard/RecentMatchesPanel.jsx`
+- `frontend/src/components/dashboard/ActiveTournamentsPanel.jsx`
+- `frontend/src/components/dashboard/MetricPanel.jsx`
+- `frontend/src/components/dashboard/icons.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/styles/dashboard.css`
+- `frontend/src/styles/global.css`
 
