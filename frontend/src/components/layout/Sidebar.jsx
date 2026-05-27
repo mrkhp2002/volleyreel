@@ -112,9 +112,13 @@ function NavItem({ item, collapsed }) {
   );
 }
 
-function NavGroup({ group, isOpen, onToggle, isSectionActive, collapsed }) {
+function NavGroup({ group, isOpen, onToggle, onMouseEnter, onMouseLeave, isSectionActive, collapsed }) {
   return (
-    <div className={`sidebar-nav-group${isOpen ? " open" : ""}${isSectionActive ? " active-group" : ""}`}>
+    <div 
+      className={`sidebar-nav-group${isOpen ? " open" : ""}${isSectionActive ? " active-group" : ""}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <button
         type="button"
         className="sidebar-nav-item sidebar-nav-group-toggle"
@@ -216,6 +220,8 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             group={teamsNavGroup} 
             isOpen={teamsOpen} 
             onToggle={() => setTeamsOpen(prev => !prev)} 
+            onMouseEnter={() => setTeamsOpen(true)}
+            onMouseLeave={() => !isTeamsSection && setTeamsOpen(false)}
             isSectionActive={isTeamsSection} 
             collapsed={collapsed} 
           />
@@ -224,6 +230,8 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             group={playersNavGroup} 
             isOpen={playersOpen} 
             onToggle={() => setPlayersOpen(prev => !prev)} 
+            onMouseEnter={() => setPlayersOpen(true)}
+            onMouseLeave={() => !isPlayersSection && setPlayersOpen(false)}
             isSectionActive={isPlayersSection} 
             collapsed={collapsed} 
           />
@@ -232,6 +240,8 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             group={matchesNavGroup} 
             isOpen={matchesOpen} 
             onToggle={() => setMatchesOpen(prev => !prev)} 
+            onMouseEnter={() => setMatchesOpen(true)}
+            onMouseLeave={() => !isMatchesSection && setMatchesOpen(false)}
             isSectionActive={isMatchesSection} 
             collapsed={collapsed} 
           />
@@ -244,6 +254,8 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             group={reportsNavGroup} 
             isOpen={reportsOpen} 
             onToggle={() => setReportsOpen(prev => !prev)} 
+            onMouseEnter={() => setReportsOpen(true)}
+            onMouseLeave={() => !isReportsSection && setReportsOpen(false)}
             isSectionActive={isReportsSection} 
             collapsed={collapsed} 
           />

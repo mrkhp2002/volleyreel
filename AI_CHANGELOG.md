@@ -252,10 +252,14 @@
 - `frontend/src/pages/teams/CreateTeamPage.jsx`
 - `frontend/src/pages/teams/TeamDetailsPage.jsx`
 
-## [2026-05-27T11:30:00+05:30] - Auto-Collapse Sidebar Sub-menus on Navigation
+## [2026-05-27T11:30:00+05:30] - Auto-Collapse and Hover Expansion for Sidebar Sub-menus
+
+### Added
+- Implemented hover-triggered auto-expansion (`onMouseEnter`) for sidebar navigation submenus (Teams, Players, Matches, Reports), allowing sections to slide down without requiring clicks.
+- Added mouse exit handlers (`onMouseLeave`) to auto-collapse hovered submenus when moving the cursor away (active section submenus are preserved).
 
 ### Changed
-- Refactored `Sidebar.jsx` navigation listeners to synchronize submenu collapse states bi-directionally. Expanded sub-menus (Teams, Players, Matches, Reports) now automatically collapse ("roll back") when the user navigates to another page section.
+- Refactored `Sidebar.jsx` navigation listeners to synchronize submenu collapse states bi-directionally. Expanded sub-menus now automatically collapse ("roll back") when navigating away.
 
 ### Files Changed
 - `frontend/src/components/layout/Sidebar.jsx`
