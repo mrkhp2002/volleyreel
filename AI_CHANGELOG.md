@@ -263,3 +263,13 @@
 
 ### Files Changed
 - `frontend/src/components/layout/Sidebar.jsx`
+
+## [2026-05-27T11:40:00+05:30] - Smooth & Responsive Leaderboard Page
+
+### Added
+- Created `LeaderboardsPage.jsx` containing interactive tournament and division filters, rank cards for both teams and players, top three top performer highlight badges (gold/silver/bronze), and responsive highlight stats at the bottom.
+- Created `leaderboards.css` with dark mode glassmorphism styles, hover transformations, layout grid columns, and media query wrappers.
+
+### Files Changed
+- `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
+- `frontend/src/styles/leaderboards.css`
