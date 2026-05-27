@@ -118,21 +118,10 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.reports-filter-bar select {
+.reports-filter-select {
   min-width: 200px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.reports-filter-bar select:focus {
-  border-color: #3b82f6;
+  width: auto;
+  flex-shrink: 0;
 }
 
 /* Tournament Reports List View */
@@ -506,7 +495,6 @@
 }
 
 .reports-modal-field input,
-.reports-modal-field select,
 .reports-modal-field textarea {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -520,10 +508,13 @@
 }
 
 .reports-modal-field input:focus,
-.reports-modal-field select:focus,
 .reports-modal-field textarea:focus {
   border-color: #3b82f6;
   background: rgba(255, 255, 255, 0.06);
+}
+
+.reports-modal-select {
+  width: 100%;
 }
 
 .reports-modal-footer {
@@ -690,7 +681,7 @@
     flex-direction: column;
     align-items: stretch;
   }
-  .reports-filter-bar select {
+  .reports-filter-select {
     width: 100%;
   }
   .reports-grid {

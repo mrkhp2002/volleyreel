@@ -67,22 +67,9 @@
   position: relative;
 }
 
-.analytics-filter-row select {
+.analytics-filter-select {
   min-width: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.analytics-filter-row select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  width: auto;
 }
 
 /* Stats Cards Grid */
@@ -351,6 +338,18 @@
   font-size: 0.95rem;
 }
 
+.analytics-team-name-link {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.analytics-team-name-link:hover {
+  color: #60a5fa;
+}
+
 .analytics-team-record {
   font-size: 0.8rem;
   color: var(--text-muted, #94a3b8);
@@ -474,7 +473,7 @@
   .analytics-filter-row {
     justify-content: stretch;
   }
-  .analytics-filter-row select {
+  .analytics-filter-select {
     width: 100%;
   }
 }

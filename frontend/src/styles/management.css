@@ -307,8 +307,7 @@
   backdrop-filter: blur(15px);
 }
 
-.mgmt-filter-bar input,
-.mgmt-filter-bar select {
+.mgmt-filter-bar input {
   flex: 1;
   min-width: 180px;
   padding: 11px 14px;
@@ -325,11 +324,15 @@
   color: var(--text-muted, #94a3b8);
 }
 
-.mgmt-filter-bar input:focus,
-.mgmt-filter-bar select:focus {
+.mgmt-filter-bar input:focus {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--secondary, #3b82f6);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.mgmt-filter-select {
+  flex: 1;
+  min-width: 180px;
 }
 
 /* Stats Row */
@@ -574,7 +577,6 @@
 }
 
 .mgmt-field input,
-.mgmt-field select,
 .mgmt-field textarea {
   width: 100%;
   padding: 11px 14px;
@@ -598,16 +600,14 @@
 }
 
 .mgmt-field input:focus,
-.mgmt-field select:focus,
 .mgmt-field textarea:focus {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--secondary, #3b82f6);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.mgmt-field select option {
-  background: #0f172a;
-  color: #ffffff;
+.mgmt-field-select {
+  width: 100%;
 }
 
 /* Upload zone */
@@ -1091,5 +1091,147 @@
   .mgmt-pagination-controls {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Team Details Redesign specific styles */
+.mgmt-trophy-emblem {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.03) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+}
+
+.mgmt-trophy-emblem svg {
+  width: 30px;
+  height: 30px;
+}
+
+.mgmt-details-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.mgmt-card-stat-box {
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.mgmt-card-stat-box--blue {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+.mgmt-card-stat-box--blue strong { color: #3b82f6; }
+
+.mgmt-card-stat-box--purple {
+  background: rgba(139, 92, 246, 0.06);
+  border-color: rgba(139, 92, 246, 0.15);
+}
+.mgmt-card-stat-box--purple strong { color: #8b5cf6; }
+
+.mgmt-card-stat-box--green {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.mgmt-card-stat-box--green strong { color: #10b981; }
+
+.mgmt-card-stat-box--yellow {
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+.mgmt-card-stat-box--yellow strong { color: #f59e0b; }
+
+.mgmt-card-stat-box span {
+  font-size: 0.76rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+.mgmt-card-stat-box strong {
+  font-family: var(--font-title, 'Outfit', sans-serif);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.mgmt-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 32px;
+}
+
+.mgmt-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mgmt-info-label {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 600;
+}
+
+.mgmt-info-value {
+  font-size: 0.94rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.mgmt-info-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mgmt-info-value-row svg {
+  width: 16px;
+  height: 16px;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.mgmt-recent-matches-score {
+  font-size: 0.76rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+  display: block;
+  margin-top: 3px;
+  letter-spacing: 0.2px;
+}
+
+@media (max-width: 768px) {
+  .mgmt-details-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mgmt-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mgmt-details-stats-row {
+    grid-template-columns: 1fr;
   }
 }

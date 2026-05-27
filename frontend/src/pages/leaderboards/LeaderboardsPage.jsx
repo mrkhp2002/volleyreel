@@ -1,6 +1,32 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/leaderboards.css";
+
+const teamRoutesMap = {
+  "Thunder Strikers": "TM-2026-001",
+  "Ocean Waves": "TM-2026-002",
+  "Sky Hawks": "TM-2026-003",
+  "Net Ninjas": "TM-2026-004",
+  "Beach Blazers": "TM-2026-005",
+  "Court Kings": "TM-2026-001"
+};
+
+const playerRoutesMap = {
+  "James Anderson": "PL-2026-001",
+  "Sarah Kim": "PL-2026-002",
+  "Michael Chen": "PL-2026-003",
+  "Emily Davis": "PL-2026-004",
+  "David Martinez": "PL-2026-005",
+  "Lisa Thompson": "PL-2026-006",
+  "Alex Rivera": "PL-2026-001",
+  "Chris Lee": "PL-2026-003",
+  "Jordan Smith": "PL-2026-002",
+  "Sam Patel": "PL-2026-004",
+  "David Miller": "PL-2026-004",
+  "Emily Watson": "PL-2026-005",
+  "Jessica Taylor": "PL-2026-006"
+};
 
 // Comprehensive Mock Data
 const teamRankings = [
@@ -140,7 +166,9 @@ export default function LeaderboardsPage() {
                         {team.rank}
                       </div>
                       <div className="leaderboard-item-details">
-                        <span className="leaderboard-item-name">{team.name}</span>
+                        <Link to={`/teams/${teamRoutesMap[team.name] || "TM-2026-001"}`} className="leaderboard-item-name-link">
+                          {team.name}
+                        </Link>
                         <span className="leaderboard-item-subtext">{team.record}</span>
                       </div>
                     </div>
@@ -194,8 +222,12 @@ export default function LeaderboardsPage() {
                         {player.rank}
                       </div>
                       <div className="leaderboard-item-details">
-                        <span className="leaderboard-item-name">{player.name}</span>
-                        <span className="leaderboard-item-subtext">{player.team}</span>
+                        <Link to={`/players/${playerRoutesMap[player.name] || "PL-2026-001"}`} className="leaderboard-item-name-link">
+                          {player.name}
+                        </Link>
+                        <Link to={`/teams/${teamRoutesMap[player.team] || "TM-2026-001"}`} className="leaderboard-item-subtext-link">
+                          {player.team}
+                        </Link>
                       </div>
                     </div>
 

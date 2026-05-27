@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../../services/apiClient";
 import useAuth from "../../../hooks/useAuth";
+import CustomSelect from "../../common/CustomSelect";
 
 const initialForm = {
   fullName: "",
@@ -139,7 +140,7 @@ export default function RegisterForm() {
           />
         </div>
 
-        <label htmlFor="role">Role</label>
+        <label>Role</label>
         <div className="input-group-wrapper">
           <svg
             className="input-icon"
@@ -153,27 +154,17 @@ export default function RegisterForm() {
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
           </svg>
-          <select
-            id="role"
+          <CustomSelect
             value={form.role}
-            disabled={loading}
             onChange={(e) => setField("role", e.target.value)}
-          >
-            <option value="" disabled>Select your role...</option>
-            <option value="coach">Coach</option>
-            <option value="player">Player</option>
-          </select>
-          <svg
-            className="select-arrow-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+            options={[
+              { value: "coach", label: "Coach" },
+              { value: "player", label: "Player" }
+            ]}
+            placeholder="Select your role..."
+            id="role"
+            className="auth-custom-select"
+          />
         </div>
 
         <label htmlFor="password">Password</label>

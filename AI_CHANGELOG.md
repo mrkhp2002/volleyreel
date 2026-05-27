@@ -440,3 +440,122 @@
 ### Files Changed
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/pages/matches/MatchDetailsPage.jsx`
+
+## [2026-05-27T17:05:00+05:30] - Player Management Dashboard & CustomSelect Theme Integration
+
+### Added
+- Created `playersData.js` containing initial player profiles and dynamic stats helper base values.
+- Created `players.css` containing dark glassmorphic styling, dotted file uploader dropzones, avatar badges, and pop-up modal configurations.
+
+### Changed
+- Re-architected `PlayersPage.jsx` to build a complete Player Management dashboard supporting search filtering, dynamic metrics updates, directory table pagination, and local persistence.
+- Implemented centered pop-up modals for adding, editing, viewing, and deleting players (replacing right-side drawers).
+- Integrated `CustomSelect` dropdown filters across matches lists, timeline editors, report creators, team managers, and signup role forms.
+- Updated `analytics.css`, `reports.css`, `management.css`, `auth.css`, and `matches.css` to target custom select trigger class rules.
+
+### Files Changed
+- `frontend/src/pages/players/playersData.js`
+- `frontend/src/styles/players.css`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+- `frontend/src/pages/reports/TournamentReportsPage.jsx`
+- `frontend/src/pages/reports/PublicReportsPage.jsx`
+- `frontend/src/styles/reports.css`
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/styles/management.css`
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `frontend/src/styles/auth.css`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T17:15:00+05:30] - Player Details Page & Directory Links
+
+### Added
+- Created `PlayerDetailsPage.jsx` featuring dynamic biography cards, dynamic performance stats rows, mock matches recent table, quick actions list, edit modal, and delete confirmation modal.
+
+### Changed
+- Configured nested routing for `/players/:playerId` route mapping to `PlayerDetailsPage` in `AppRoutes.jsx`.
+- Wrapped table name cells in `PlayersPage.jsx` with clickable navigation Links leading to the Player Details page.
+- Appended styling rules in `players.css` for details grids, performance tables, card stat boxes, and info item rows.
+
+### Files Changed
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/styles/players.css`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+
+## [2026-05-27T17:25:00+05:30] - Complete Team Name Clickable Routing
+
+### Changed
+- Wrapped team names in `RecentMatchesPanel.jsx` (Dashboard) in individual `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped team and player names in `LeaderboardsPage.jsx` in individual `<Link>` tags pointing to `/teams/:teamId` and `/players/:playerId` respectively.
+- Wrapped top performing team names in `TournamentAnalyticsPage.jsx` in `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped team names in `PlayerDetailsPage.jsx` (biography details and recent performance table) in `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped recent match opponent team names in `TeamDetailsPage.jsx` in `<Link>` tags pointing to `/teams/:teamId`.
+- Added hover transition styles in `leaderboards.css` and `analytics.css` for the newly linked tags.
+
+### Files Changed
+- `frontend/src/components/dashboard/RecentMatchesPanel.jsx`
+- `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
+- `frontend/src/styles/leaderboards.css`
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+
+## [2026-05-27T17:35:00+05:30] - Redesign Tournaments Page & Create Tournament Wizard
+
+### Added
+- Created `tournamentsData.js` containing initial mock tournaments dataset (12 profiles) and routing helpers.
+- Created `CreateTournamentPage.jsx` featuring multi-section form fields, schedule dates, setup limits, drag-and-drop uploader dropzones, settings options, and localStorage sync.
+- Created `EditTournamentPage.jsx` to load selected profile states and save in-place changes.
+- Created `TournamentDetailsPage.jsx` rendering detailed metrics card, schedule summaries, and quick action panels.
+
+### Changed
+- Refactored `Sidebar.jsx` to convert simple Tournaments link into collapsible `NavGroup` submenu.
+- Registered nested routing paths for index, create, edit, and details subpages of `/tournaments` in `AppRoutes.jsx`.
+- Overwrote `TournamentsPage.jsx` to add card stats boxes, search inputs, custom location/status filter selects, listing rows with hover highlights, pagination, and `DeleteConfirmModal` overrides.
+
+### Files Changed
+- `frontend/src/pages/tournaments/tournamentsData.js`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/pages/tournaments/TournamentsPage.jsx`
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+- `frontend/src/pages/tournaments/EditTournamentPage.jsx`
+- `frontend/src/pages/tournaments/TournamentDetailsPage.jsx`
+
+## [2026-05-27T17:40:00+05:30] - Fix Missing useMemo Import in CreateTournamentPage
+
+### Changed
+- Imported `useMemo` in `CreateTournamentPage.jsx` to fix the runtime ReferenceError causing the creation page to crash and redirect back to the main dashboard.
+
+### Files Changed
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+
+## [2026-05-27T17:45:00+05:30] - Implement Defensive Local Storage Parsing & Self-Healing
+
+### Added
+- Integrated self-healing logic on startup in `main.jsx` to clean up corrupted or malformed local storage keys (`volleyreel_tournaments`, `volleyreel_matches`, `volleyreel_players`) to prevent routing crashes.
+
+### Changed
+- Patched all tournament pages (`CreateTournamentPage.jsx`, `EditTournamentPage.jsx`, `TournamentDetailsPage.jsx`, and `tournamentsData.js`) to verify parsing arrays using `Array.isArray`.
+- Patched all matches pages (`MatchesPage.jsx`, `MatchDetailsPage.jsx`, `MatchesCreatePage.jsx`, `MatchesUploadPage.jsx`, and `MatchesVideosPage.jsx`) to verify parsing arrays using `Array.isArray` with try-catch fallbacks.
+- Patched player pages (`PlayersPage.jsx` and `PlayerDetailsPage.jsx`) to verify parsing arrays using `Array.isArray`.
+
+### Files Changed
+- `frontend/src/main.jsx`
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+- `frontend/src/pages/tournaments/EditTournamentPage.jsx`
+- `frontend/src/pages/tournaments/TournamentDetailsPage.jsx`
+- `frontend/src/pages/tournaments/tournamentsData.js`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchDetailsPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/reports.css";
 
 // Initial Mock Data
@@ -224,16 +225,18 @@ export default function TournamentReportsPage() {
           />
         </div>
         
-        <select 
+        <CustomSelect 
           value={selectedType} 
           onChange={(e) => setSelectedType(e.target.value)}
+          options={[
+            { value: "All", label: "All Types" },
+            { value: "Tournament Summary", label: "Tournament Summary" },
+            { value: "Performance Analysis", label: "Performance Analysis" },
+            { value: "Statistical Report", label: "Statistical Report" }
+          ]}
           id="filter-report-type"
-        >
-          <option value="All">All Types</option>
-          <option value="Tournament Summary">Tournament Summary</option>
-          <option value="Performance Analysis">Performance Analysis</option>
-          <option value="Statistical Report">Statistical Report</option>
-        </select>
+          className="reports-filter-select"
+        />
       </div>
 
       {/* Report List */}
@@ -339,16 +342,18 @@ export default function TournamentReportsPage() {
               </div>
 
               <div className="reports-modal-field">
-                <label htmlFor="modal-report-type">Report Type</label>
-                <select
-                  id="modal-report-type"
+                <label>Report Type</label>
+                <CustomSelect
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                >
-                  <option value="Tournament Summary">Tournament Summary</option>
-                  <option value="Performance Analysis">Performance Analysis</option>
-                  <option value="Statistical Report">Statistical Report</option>
-                </select>
+                  options={[
+                    { value: "Tournament Summary", label: "Tournament Summary" },
+                    { value: "Performance Analysis", label: "Performance Analysis" },
+                    { value: "Statistical Report", label: "Statistical Report" }
+                  ]}
+                  id="modal-report-type"
+                  className="reports-modal-select"
+                />
               </div>
             </div>
 

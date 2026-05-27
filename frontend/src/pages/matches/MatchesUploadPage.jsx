@@ -70,7 +70,17 @@ export default function MatchesUploadPage() {
   // Load data on mount and check query params
   useEffect(() => {
     const saved = localStorage.getItem("volleyreel_matches");
-    const list = saved ? JSON.parse(saved) : initialMatchesCopy;
+    let list = initialMatchesCopy;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          list = parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
     setMatches(list);
     
     // Check if matchId query parameter exists
@@ -617,18 +627,20 @@ export default function MatchesUploadPage() {
                         <td>{evt.time}</td>
                         <td>
                           {isEditing ? (
-                            <select 
-                              className="matches-event-select-edit" 
-                              value={editType} 
-                              onChange={(e) => setEditType(e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <option value="Serve">Serve</option>
-                              <option value="Dig">Dig</option>
-                              <option value="Set">Set</option>
-                              <option value="Spike">Spike</option>
-                              <option value="Block">Block</option>
-                            </select>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <CustomSelect 
+                                className="matches-event-select-edit" 
+                                value={editType} 
+                                onChange={(e) => setEditType(e.target.value)}
+                                options={[
+                                  { value: "Serve", label: "Serve" },
+                                  { value: "Dig", label: "Dig" },
+                                  { value: "Set", label: "Set" },
+                                  { value: "Spike", label: "Spike" },
+                                  { value: "Block", label: "Block" }
+                                ]}
+                              />
+                            </div>
                           ) : (
                             evt.type
                           )}

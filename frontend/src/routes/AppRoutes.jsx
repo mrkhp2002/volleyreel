@@ -7,11 +7,15 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import TournamentsPage from "../pages/tournaments/TournamentsPage";
+import CreateTournamentPage from "../pages/tournaments/CreateTournamentPage";
+import EditTournamentPage from "../pages/tournaments/EditTournamentPage";
+import TournamentDetailsPage from "../pages/tournaments/TournamentDetailsPage";
 import TeamsPage from "../pages/teams/TeamsPage";
 import CreateTeamPage from "../pages/teams/CreateTeamPage";
 import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
 import EditTeamPage from "../pages/teams/EditTeamPage";
 import PlayersPage from "../pages/players/PlayersPage";
+import PlayerDetailsPage from "../pages/players/PlayerDetailsPage";
 import MatchesPage from "../pages/matches/MatchesPage";
 import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
 import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
@@ -36,14 +40,22 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/tournaments" element={<TournamentsPage />} />
+          <Route path="/tournaments">
+            <Route index element={<TournamentsPage />} />
+            <Route path="create" element={<CreateTournamentPage />} />
+            <Route path=":tournamentId/edit" element={<EditTournamentPage />} />
+            <Route path=":tournamentId" element={<TournamentDetailsPage />} />
+          </Route>
           <Route path="/teams">
             <Route index element={<TeamsPage />} />
             <Route path="create" element={<CreateTeamPage />} />
             <Route path=":teamId/edit" element={<EditTeamPage />} />
             <Route path=":teamId" element={<TeamDetailsPage />} />
           </Route>
-          <Route path="/players" element={<PlayersPage />} />
+          <Route path="/players">
+            <Route index element={<PlayersPage />} />
+            <Route path=":playerId" element={<PlayerDetailsPage />} />
+          </Route>
           <Route path="/matches">
             <Route index element={<MatchesPage />} />
             <Route path="create" element={<MatchesCreatePage />} />
