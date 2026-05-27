@@ -33,12 +33,16 @@ export default function RecentMatchesPanel({ matches }) {
             {matches.map((match) => (
               <tr key={match.id}>
                 <td>
-                  <Link to={`/matches`} className="dash-table-id">
+                  <Link to={`/matches/${match.id}`} className="dash-table-id">
                     {match.id}
                   </Link>
                 </td>
                 <td>{match.tournament}</td>
-                <td>{match.teams}</td>
+                <td>
+                  <Link to={`/matches/${match.id}`} className="dash-table-teams-link">
+                    {match.teams}
+                  </Link>
+                </td>
                 <td className="dash-table-score">{match.score}</td>
                 <td>
                   <span className={statusClass[match.status] || "dash-badge"}>

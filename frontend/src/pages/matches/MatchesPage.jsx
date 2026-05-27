@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../../styles/matches.css";
 
 // Initial Mock Match List
@@ -379,17 +379,19 @@ export default function MatchesPage() {
                 pageItems.map((match) => (
                   <tr key={match.id}>
                     <td>
-                      <a href="#!" onClick={() => openPlayerModal(match)} className="matches-link-id">
+                      <Link to={`/matches/${match.id}`} className="matches-link-id">
                         {match.id}
-                      </a>
+                      </Link>
                     </td>
                     <td>{match.tournament}</td>
                     <td>
-                      <div className="matches-teams-cell">
-                        {match.teams.split(" vs ")[0]} <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs</span>
-                        <br />
-                        {match.teams.split(" vs ")[1]}
-                      </div>
+                      <Link to={`/matches/${match.id}`} className="matches-teams-cell-link">
+                        <div className="matches-teams-cell">
+                          {match.teams.split(" vs ")[0]} <span style={{ color: "var(--text-muted)", fontWeight: "normal" }}>vs</span>
+                          <br />
+                          {match.teams.split(" vs ")[1]}
+                        </div>
+                      </Link>
                     </td>
                     <td>{match.date}</td>
                     <td>{renderUploadBadge(match.upload)}</td>
