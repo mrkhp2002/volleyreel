@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/matches.css";
 
 // Initial Mock Match List
@@ -304,38 +305,44 @@ export default function MatchesPage() {
           />
         </div>
 
-        <select 
+        <CustomSelect 
           value={selectedTournament} 
           onChange={(e) => setSelectedTournament(e.target.value)}
           id="filter-match-tournament"
-        >
-          <option value="All">All Tournaments</option>
-          <option value="Spring Championship 2026">Spring Championship 2026</option>
-          <option value="Regional Cup">Regional Cup</option>
-        </select>
+          className="matches-filter-select"
+          options={[
+            { value: "All", label: "All Tournaments" },
+            { value: "Spring Championship 2026", label: "Spring Championship 2026" },
+            { value: "Regional Cup", label: "Regional Cup" }
+          ]}
+        />
 
-        <select 
+        <CustomSelect 
           value={selectedUploadStatus} 
           onChange={(e) => setSelectedUploadStatus(e.target.value)}
           id="filter-match-upload"
-        >
-          <option value="All">All Upload Status</option>
-          <option value="Completed">Completed</option>
-          <option value="Processing">Processing</option>
-          <option value="Failed">Failed</option>
-          <option value="Not Uploaded">Not Uploaded</option>
-        </select>
+          className="matches-filter-select"
+          options={[
+            { value: "All", label: "All Upload Status" },
+            { value: "Completed", label: "Completed" },
+            { value: "Processing", label: "Processing" },
+            { value: "Failed", label: "Failed" },
+            { value: "Not Uploaded", label: "Not Uploaded" }
+          ]}
+        />
 
-        <select 
+        <CustomSelect 
           value={selectedVideoStatus} 
           onChange={(e) => setSelectedVideoStatus(e.target.value)}
           id="filter-match-video"
-        >
-          <option value="All">All Video Status</option>
-          <option value="Ready">Ready</option>
-          <option value="Generating">Generating</option>
-          <option value="Not Generated">Not Generated</option>
-        </select>
+          className="matches-filter-select"
+          options={[
+            { value: "All", label: "All Video Status" },
+            { value: "Ready", label: "Ready" },
+            { value: "Generating", label: "Generating" },
+            { value: "Not Generated", label: "Not Generated" }
+          ]}
+        />
       </div>
 
       {/* Stat Cards Grid */}

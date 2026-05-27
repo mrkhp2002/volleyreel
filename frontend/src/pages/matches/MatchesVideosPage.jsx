@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/matches.css";
 
 const defaultMockVideos = [
@@ -203,42 +204,45 @@ export default function MatchesVideosPage() {
           />
         </div>
 
-        <select 
+        <CustomSelect 
           className="matches-videos-filter-select"
           value={filterType} 
           onChange={(e) => setFilterType(e.target.value)}
           id="select-video-type"
-        >
-          <option value="All">All Highlight Types</option>
-          <option value="Full Highlights">Full Highlights</option>
-          <option value="Team Highlights">Team Highlights</option>
-          <option value="Key Moments">Key Moments</option>
-          <option value="Top Plays">Top Plays</option>
-          <option value="Condensed Highlights">Condensed Highlights</option>
-        </select>
+          options={[
+            { value: "All", label: "All Highlight Types" },
+            { value: "Full Highlights", label: "Full Highlights" },
+            { value: "Team Highlights", label: "Team Highlights" },
+            { value: "Key Moments", label: "Key Moments" },
+            { value: "Top Plays", label: "Top Plays" },
+            { value: "Condensed Highlights", label: "Condensed Highlights" }
+          ]}
+        />
 
-        <select 
+        <CustomSelect 
           className="matches-videos-filter-select"
           value={filterTourney} 
           onChange={(e) => setFilterTourney(e.target.value)}
           id="select-video-tournament"
-        >
-          <option value="All">All Tournaments</option>
-          <option value="Spring Championship 2026">Spring Championship 2026</option>
-          <option value="Regional Cup">Regional Cup</option>
-        </select>
+          options={[
+            { value: "All", label: "All Tournaments" },
+            { value: "Spring Championship 2026", label: "Spring Championship 2026" },
+            { value: "Regional Cup", label: "Regional Cup" }
+          ]}
+        />
 
-        <select 
+        <CustomSelect 
           className="matches-videos-filter-select"
           value={filterStatus} 
           onChange={(e) => setFilterStatus(e.target.value)}
           id="select-video-status"
-        >
-          <option value="All">All Statuses</option>
-          <option value="ready">Ready</option>
-          <option value="generating">Generating</option>
-          <option value="failed">Failed</option>
-        </select>
+          options={[
+            { value: "All", label: "All Statuses" },
+            { value: "ready", label: "Ready" },
+            { value: "generating", label: "Generating" },
+            { value: "failed", label: "Failed" }
+          ]}
+        />
       </div>
 
       {/* Redesigned 3-Column Videos Cards Grid */}

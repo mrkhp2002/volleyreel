@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/leaderboards.css";
 
 // Comprehensive Mock Data
@@ -13,35 +14,32 @@ const teamRankings = [
 
 const playerRankings = [
   { rank: 1, name: "James Anderson", team: "Thunder Strikers", points: 247, matches: 17, tournament: "Spring Championship 2026", division: "Premier Division" },
-  { rank: 2, name: "Sarah Kim", team: "Ocean Waves", points: 189, matches: 18, tournament: "Regional Cup", division: "Premier Division" },
-  { rank: 3, name: "Michael Chen", team: "Sky Hawks", points: 176, matches: 18, tournament: "Regional Cup", division: "Division 1" },
-  { rank: 4, name: "Emily Davis", team: "Net Ninjas", points: 165, matches: 17, tournament: "Spring Championship 2026", division: "Division 1" },
-  { rank: 5, name: "David Martinez", team: "Beach Blazers", points: 158, matches: 17, tournament: "Regional Cup", division: "Division 2" },
+  { rank: 2, name: "Sarah Kim", team: "Ocean Waves", points: 215, matches: 18, tournament: "Regional Cup", division: "Premier Division" },
+  { rank: 3, name: "Michael Chen", team: "Thunder Strikers", points: 198, matches: 17, tournament: "Spring Championship 2026", division: "Division 1" },
+  { rank: 4, name: "David Miller", team: "Net Ninjas", points: 184, matches: 18, tournament: "Spring Championship 2026", division: "Division 1" },
+  { rank: 5, name: "Emily Watson", team: "Sky Hawks", points: 172, matches: 18, tournament: "Regional Cup", division: "Division 2" },
+  { rank: 6, name: "Jessica Taylor", team: "Beach Blazers", points: 155, matches: 17, tournament: "Regional Cup", division: "Division 2" },
 ];
 
 export default function LeaderboardsPage() {
   const [selectedTournament, setSelectedTournament] = useState("All");
   const [selectedDivision, setSelectedDivision] = useState("All");
 
-  // Dynamic filter processing
+  // Filter rankings dynamically
   const filteredTeams = useMemo(() => {
-    return teamRankings
-      .filter((team) => {
-        const matchesTourney = selectedTournament === "All" || team.tournament === selectedTournament;
-        const matchesDivision = selectedDivision === "All" || team.division === selectedDivision;
-        return matchesTourney && matchesDivision;
-      })
-      .map((team, idx) => ({ ...team, rank: idx + 1 })); // recalculate ranks for filtered list
+    return teamRankings.filter((t) => {
+      const matchTourney = selectedTournament === "All" || t.tournament === selectedTournament;
+      const matchDiv = selectedDivision === "All" || t.division === selectedDivision;
+      return matchTourney && matchDiv;
+    });
   }, [selectedTournament, selectedDivision]);
 
   const filteredPlayers = useMemo(() => {
-    return playerRankings
-      .filter((player) => {
-        const matchesTourney = selectedTournament === "All" || player.tournament === selectedTournament;
-        const matchesDivision = selectedDivision === "All" || player.division === selectedDivision;
-        return matchesTourney && matchesDivision;
-      })
-      .map((player, idx) => ({ ...player, rank: idx + 1 }));
+    return playerRankings.filter((p) => {
+      const matchTourney = selectedTournament === "All" || p.tournament === selectedTournament;
+      const matchDiv = selectedDivision === "All" || p.division === selectedDivision;
+      return matchTourney && matchDiv;
+    });
   }, [selectedTournament, selectedDivision]);
 
   // Highlights state calculated dynamically based on filters
@@ -82,26 +80,30 @@ export default function LeaderboardsPage() {
 
       {/* Filters */}
       <div className="leaderboard-filter-bar">
-        <select 
+        <CustomSelect 
           value={selectedTournament} 
           onChange={(e) => setSelectedTournament(e.target.value)}
           id="filter-leaderboard-tournament"
-        >
-          <option value="All">All Tournaments</option>
-          <option value="Spring Championship 2026">Spring Championship 2026</option>
-          <option value="Regional Cup">Regional Cup</option>
-        </select>
+          className="leaderboard-filter-select"
+          options={[
+            { value: "All", label: "All Tournaments" },
+            { value: "Spring Championship 2026", label: "Spring Championship 2026" },
+            { value: "Regional Cup", label: "Regional Cup" }
+          ]}
+        />
 
-        <select 
+        <CustomSelect 
           value={selectedDivision} 
           onChange={(e) => setSelectedDivision(e.target.value)}
           id="filter-leaderboard-division"
-        >
-          <option value="All">All Divisions</option>
-          <option value="Premier Division">Premier Division</option>
-          <option value="Division 1">Division 1</option>
-          <option value="Division 2">Division 2</option>
-        </select>
+          className="leaderboard-filter-select"
+          options={[
+            { value: "All", label: "All Divisions" },
+            { value: "Premier Division", label: "Premier Division" },
+            { value: "Division 1", label: "Division 1" },
+            { value: "Division 2", label: "Division 2" }
+          ]}
+        />
       </div>
 
       {/* Rankings Grid */}

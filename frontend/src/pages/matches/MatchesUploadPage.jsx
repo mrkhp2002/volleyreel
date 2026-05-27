@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/matches.css";
 
 const initialMatchesCopy = [
@@ -332,24 +333,22 @@ export default function MatchesUploadPage() {
       <div className="matches-form-card" style={{ gap: "12px", padding: "16px 24px" }}>
         <div className="matches-field" style={{ maxWidth: "320px" }}>
           <label htmlFor="select-upload-match">Active Match for Review</label>
-          <select
+          <CustomSelect
             id="select-upload-match"
             value={selectedMatchId}
             onChange={(e) => {
               setSelectedMatchId(e.target.value);
-              // reset upload states
+              // reset uploader states
               setUploadFile(null);
               setIsUploading(false);
               setUploadCompleted(false);
               setAiStage(0);
             }}
-          >
-            {matches.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.id} - {m.teams} ({m.tournament})
-              </option>
-            ))}
-          </select>
+            options={matches.map((m) => ({
+              value: m.id,
+              label: `${m.id} - ${m.teams} (${m.tournament})`
+            }))}
+          />
         </div>
       </div>
 
@@ -565,20 +564,30 @@ export default function MatchesUploadPage() {
                 onChange={(e) => setSearchPlayer(e.target.value)}
                 style={{ flex: 1 }}
               />
-              <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-                <option value="All">All Types</option>
-                <option value="Serve">Serve</option>
-                <option value="Dig">Dig</option>
-                <option value="Set">Set</option>
-                <option value="Spike">Spike</option>
-                <option value="Block">Block</option>
-              </select>
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                <option value="All">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Rejected">Rejected</option>
-              </select>
+              <CustomSelect
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                options={[
+                  { value: "All", label: "All Types" },
+                  { value: "Serve", label: "Serve" },
+                  { value: "Dig", label: "Dig" },
+                  { value: "Set", label: "Set" },
+                  { value: "Spike", label: "Spike" },
+                  { value: "Block", label: "Block" }
+                ]}
+                className="matches-event-select-filter"
+              />
+              <CustomSelect
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                options={[
+                  { value: "All", label: "All Status" },
+                  { value: "Pending", label: "Pending" },
+                  { value: "Confirmed", label: "Confirmed" },
+                  { value: "Rejected", label: "Rejected" }
+                ]}
+                className="matches-event-select-filter"
+              />
             </div>
 
             {/* Event Table Wrap */}
