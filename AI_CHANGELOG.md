@@ -315,3 +315,33 @@
 ### Files Changed
 - `frontend/src/pages/matches/MatchesPage.jsx`
 - `frontend/src/pages/matches/MatchesCreatePage.jsx`
+
+## [2026-05-27T12:20:00+05:30] - Mobile & Tablet Responsive Layouts
+
+### Added
+- Implemented slide-out mobile navigation drawer overlay (`.sidebar--mobile-open`) for devices smaller than `1024px`.
+- Added transparent backdrop overlay behind the drawer on mobile to close the navigation panel on external clicks.
+- Added hamburger toggle button to the `Topbar` and close button (✕) to the `Sidebar` for viewport responsiveness.
+
+### Changed
+- Refactored `AppLayout.jsx` to manage mobile sidebar toggling states and close drawer automatically on location/path changes.
+- Optimized Topbar grid flow and alignment, collapsing username label and wrapping search inputs cleanly onto a separate line on phones.
+- Overrode margin, card paddings, page container paddings, and pagination button lists in `global.css` and `management.css` under `768px` and `480px` to optimize layout flow for touch targets.
+
+### Files Changed
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/styles/global.css`
+- `frontend/src/styles/management.css`
+
+## [2026-05-27T12:50:00+05:30] - Mobile & Tablet Responsive Layouts for Authentication Pages
+
+### Changed
+- Converted `.auth-container` to stack vertically on viewports under `820px` by shifting the grid structure to `1fr`.
+- Refactored `.auth-left` to collapse into a clean, horizontal top brand header bar on mobile devices by hiding the description copy, footer, and feature panel checklist.
+- Optimized form spacing padding for `.auth-right` and card content wrapping in `.auth-card` to match touch guidelines on mobile and tablet devices.
+- Refined `.auth-centered-page` paddings, layout gap sizes, and checkbox options rows for forgot password screens to align on screens under `480px`.
+
+### Files Changed
+- `frontend/src/styles/auth.css`

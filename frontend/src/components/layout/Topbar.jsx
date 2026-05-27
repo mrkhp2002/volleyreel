@@ -27,12 +27,34 @@ function UserIcon() {
   );
 }
 
-export default function Topbar() {
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+export default function Topbar({ onMobileToggle }) {
   const { user } = useAuth();
   const displayName = user?.fullName || "Coach Admin";
 
   return (
     <header className="topbar">
+      <div className="topbar-left">
+        <button
+          type="button"
+          className="mobile-menu-toggle"
+          onClick={onMobileToggle}
+          aria-label="Toggle menu"
+        >
+          <MenuIcon />
+        </button>
+        <span className="topbar-logo-mark" title="VolleyReel">🏐</span>
+      </div>
+
       <div className="topbar-search">
         <SearchIcon />
         <input
@@ -52,7 +74,7 @@ export default function Topbar() {
           <span className="topbar-user-pill-icon">
             <UserIcon />
           </span>
-          <span>{displayName}</span>
+          <span className="topbar-user-name-text">{displayName}</span>
         </div>
       </div>
     </header>
