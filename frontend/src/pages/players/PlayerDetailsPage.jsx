@@ -6,6 +6,15 @@ import { initialPlayers } from "./playersData";
 import "../../styles/management.css";
 import "../../styles/players.css";
 
+const teamRoutesMap = {
+  "Thunder Strikers": "TM-2026-001",
+  "Ocean Waves": "TM-2026-002",
+  "Sky Hawks": "TM-2026-003",
+  "Net Ninjas": "TM-2026-004",
+  "Beach Blazers": "TM-2026-005",
+  "Court Kings": "TM-2026-001"
+};
+
 // Unique background colors for avatars (purple shades for mock coherence)
 const avatarBgColors = [
   "#8b5cf6", // Purple
@@ -379,7 +388,11 @@ export default function PlayerDetailsPage() {
             <div className="players-info-grid">
               <div className="players-info-item">
                 <span className="players-info-label">Team</span>
-                <span className="players-info-value">{player.team}</span>
+                <span className="players-info-value">
+                  <Link to={`/teams/${teamRoutesMap[player.team] || "TM-2026-001"}`} className="mgmt-table-link">
+                    {player.team}
+                  </Link>
+                </span>
               </div>
               <div className="players-info-item">
                 <span className="players-info-label">Tournament</span>
@@ -477,21 +490,36 @@ export default function PlayerDetailsPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td style={{ fontWeight: 600 }}>vs Ocean Waves</td>
+                  <td style={{ fontWeight: 600 }}>
+                    vs{" "}
+                    <Link to="/teams/TM-2026-002" className="mgmt-table-link">
+                      Ocean Waves
+                    </Link>
+                  </td>
                   <td>Mar 15, 2026</td>
                   <td style={{ fontWeight: 700, color: "#ffffff" }}>18</td>
                   <td>3</td>
                   <td>4</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 600 }}>vs Sky Hawks</td>
+                  <td style={{ fontWeight: 600 }}>
+                    vs{" "}
+                    <Link to="/teams/TM-2026-003" className="mgmt-table-link">
+                      Sky Hawks
+                    </Link>
+                  </td>
                   <td>Mar 10, 2026</td>
                   <td style={{ fontWeight: 700, color: "#ffffff" }}>22</td>
                   <td>5</td>
                   <td>2</td>
                 </tr>
                 <tr>
-                  <td style={{ fontWeight: 600 }}>vs Net Ninjas</td>
+                  <td style={{ fontWeight: 600 }}>
+                    vs{" "}
+                    <Link to="/teams/TM-2026-004" className="mgmt-table-link">
+                      Net Ninjas
+                    </Link>
+                  </td>
                   <td>Mar 05, 2026</td>
                   <td style={{ fontWeight: 700, color: "#ffffff" }}>15</td>
                   <td>2</td>

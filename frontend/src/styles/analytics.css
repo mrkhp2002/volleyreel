@@ -338,6 +338,18 @@
   font-size: 0.95rem;
 }
 
+.analytics-team-name-link {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.analytics-team-name-link:hover {
+  color: #60a5fa;
+}
+
 .analytics-team-record {
   font-size: 0.8rem;
   color: var(--text-muted, #94a3b8);

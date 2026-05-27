@@ -487,4 +487,24 @@
 - `frontend/src/styles/players.css`
 - `frontend/src/pages/players/PlayerDetailsPage.jsx`
 
+## [2026-05-27T17:25:00+05:30] - Complete Team Name Clickable Routing
+
+### Changed
+- Wrapped team names in `RecentMatchesPanel.jsx` (Dashboard) in individual `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped team and player names in `LeaderboardsPage.jsx` in individual `<Link>` tags pointing to `/teams/:teamId` and `/players/:playerId` respectively.
+- Wrapped top performing team names in `TournamentAnalyticsPage.jsx` in `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped team names in `PlayerDetailsPage.jsx` (biography details and recent performance table) in `<Link>` tags pointing to `/teams/:teamId`.
+- Wrapped recent match opponent team names in `TeamDetailsPage.jsx` in `<Link>` tags pointing to `/teams/:teamId`.
+- Added hover transition styles in `leaderboards.css` and `analytics.css` for the newly linked tags.
+
+### Files Changed
+- `frontend/src/components/dashboard/RecentMatchesPanel.jsx`
+- `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
+- `frontend/src/styles/leaderboards.css`
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+
+
 

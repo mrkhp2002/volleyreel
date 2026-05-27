@@ -1,6 +1,16 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/analytics.css";
+
+const teamRoutesMap = {
+  "Thunder Strikers": "TM-2026-001",
+  "Ocean Waves": "TM-2026-002",
+  "Sky Hawks": "TM-2026-003",
+  "Net Ninjas": "TM-2026-004",
+  "Beach Blazers": "TM-2026-005",
+  "Court Kings": "TM-2026-001"
+};
 
 // Datastores mapping to each tournament filter selection
 const database = {
@@ -267,7 +277,9 @@ export default function TournamentAnalyticsPage() {
                 <div className="analytics-team-row-left">
                   <span className="analytics-team-rank">#{team.rank}</span>
                   <div className="analytics-team-details">
-                    <span className="analytics-team-name">{team.name}</span>
+                    <Link to={`/teams/${teamRoutesMap[team.name] || "TM-2026-001"}`} className="analytics-team-name-link">
+                      {team.name}
+                    </Link>
                     <span className="analytics-team-record">{team.record}</span>
                   </div>
                 </div>

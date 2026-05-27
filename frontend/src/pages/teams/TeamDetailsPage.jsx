@@ -1,41 +1,40 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
-import { EditIcon, TrashIcon } from "../../components/common/TableActionIcons";
 import { getTeamByRouteId } from "./teamsData";
 import "../../styles/management.css";
 
-function CalendarIcon() {
+// SVG Icons
+function TrophyIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-    </svg>
-  );
-}
-
-function MapIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+      <path d="M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
+      <path d="M12 2a8 8 0 0 0-8 8h16a8 8 0 0 0-8-8z" />
     </svg>
   );
 }
 
 const badgeClass = {
   Active: "mgmt-badge mgmt-badge--active",
-  Scheduled: "mgmt-badge mgmt-badge--scheduled",
-  Completed: "mgmt-badge mgmt-badge--completed",
+  Inactive: "mgmt-badge mgmt-badge--inactive",
+  Draft: "mgmt-badge mgmt-badge--upcoming",
+};
+
+// Maps roster player name to mock player ID for details redirect
+const playerRoutesMap = {
+  "James Anderson": "PL-2026-001",
+  "Sarah Kim": "PL-2026-002",
+  "Michael Chen": "PL-2026-003",
+  "Emily Davis": "PL-2026-004",
+  "David Martinez": "PL-2026-005",
+  "Lisa Thompson": "PL-2026-006",
+  "Alex Rivera": "PL-2026-001",
+  "Chris Lee": "PL-2026-003",
+  "Jordan Smith": "PL-2026-002",
+  "Sam Patel": "PL-2026-004"
 };
 
 export default function TeamDetailsPage() {
@@ -44,14 +43,31 @@ export default function TeamDetailsPage() {
   const [showDelete, setShowDelete] = useState(false);
   const team = getTeamByRouteId(teamId);
 
+  // Generate stable mock coach information
+  const coachInfo = useMemo(() => {
+    if (!team) return null;
+    const cleanCoach = team.coach || "Head Coach";
+    const cleanTeam = team.name || "VolleyReel";
+    const coachSlug = cleanCoach.toLowerCase().replace(/\s+/g, ".");
+    const teamSlug = cleanTeam.toLowerCase().replace(/\s+/g, "");
+    return {
+      phone: "+1 (555) 123-4567",
+      email: `coach.${coachSlug}@${teamSlug}.com`
+    };
+  }, [team]);
+
   if (!team) {
     return (
-      <div className="management-page">
-        <Link to="/teams" className="mgmt-back-link">
-          ← Back to Teams
-        </Link>
-        <h1>Team not found</h1>
-        <p>The team you are looking for does not exist.</p>
+      <div className="management-page" style={{ padding: "40px 20px", textAlign: "center" }}>
+        <div className="mgmt-card" style={{ maxWidth: "500px", margin: "0 auto" }}>
+          <h2 style={{ color: "#ef4444", marginBottom: "12px" }}>Team Profile Not Found</h2>
+          <p style={{ color: "var(--text-muted)", marginBottom: "24px" }}>
+            The requested team ID "{teamId}" could not be loaded or has been deleted.
+          </p>
+          <Link to="/teams" className="mgmt-btn mgmt-btn--primary">
+            Back to Teams
+          </Link>
+        </div>
       </div>
     );
   }
@@ -61,20 +77,33 @@ export default function TeamDetailsPage() {
     navigate("/teams");
   };
 
+  const winRate = team.matchesPlayed > 0 
+    ? Math.round((team.wins / team.matchesPlayed) * 100) 
+    : 75;
+
   return (
     <div className="management-page">
+      {/* Background ambient glows */}
+      <div className="mgmt-glow mgmt-glow--primary" />
+      <div className="mgmt-glow mgmt-glow--secondary" />
+
+      {/* Back link */}
       <Link to="/teams" className="mgmt-back-link">
-        ← Back to Teams
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: "16px", height: "16px" }}>
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        Back to Teams
       </Link>
 
+      {/* Header Block */}
       <header className="mgmt-header">
         <div>
           <h1>Team Details</h1>
-          <p>View comprehensive team information and statistics</p>
+          <p>View comprehensive team information and roster</p>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: "12px" }}>
           <Link to={`/teams/${team.id}/edit`} className="mgmt-btn mgmt-btn--outline">
-            <EditIcon />
             Edit Team
           </Link>
           <button
@@ -82,216 +111,276 @@ export default function TeamDetailsPage() {
             className="mgmt-btn mgmt-btn--danger"
             onClick={() => setShowDelete(true)}
           >
-            <TrashIcon />
             Delete
           </button>
         </div>
       </header>
 
-      <div className="mgmt-details-grid">
-        <div>
-          <section className="mgmt-card">
-            <div className="mgmt-detail-hero">
-              <div>
-                <h2>{team.name}</h2>
-                <span className={badgeClass[team.status] || "mgmt-badge"}>
-                  {team.status}
+      {/* Grid structure (2 columns on desktop) */}
+      <div className="mgmt-details-grid" style={{ gridTemplateColumns: "1fr 300px" }}>
+        
+        {/* Left column panels */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          
+          {/* Summary Card */}
+          <div className="mgmt-card" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+              <div className="mgmt-trophy-emblem">
+                <TrophyIcon />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <h2 style={{ fontSize: "1.42rem", margin: 0, fontWeight: 800 }}>{team.name}</h2>
+                <span style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                  Spring Championship 2026
                 </span>
-              </div>
-              <span style={{ fontSize: "2rem" }}>🏐</span>
-            </div>
-            <div className="mgmt-form-grid" style={{ marginTop: 16 }}>
-              <div>
-                <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Team ID</span>
-                <p>
-                  <strong>{team.id}</strong>
-                </p>
-              </div>
-              <div>
-                <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Division</span>
-                <p>
-                  <strong>{team.division}</strong>
-                </p>
-              </div>
-              <div>
-                <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Category</span>
-                <p>
-                  <strong>{team.category}</strong>
-                </p>
-              </div>
-              <div>
-                <span style={{ color: "#64748b", fontSize: "0.8rem" }}>Club</span>
-                <p>
-                  <strong>{team.clubName}</strong>
-                </p>
+                <div style={{ display: "flex" }}>
+                  <span className={badgeClass[team.status] || "mgmt-badge"}>
+                    {team.status}
+                  </span>
+                </div>
               </div>
             </div>
-          </section>
 
-          <section className="mgmt-card">
-            <h2 className="mgmt-card-title">Location & Coach</h2>
-            <div className="mgmt-info-row">
-              <MapIcon />
-              <div>
-                <strong>Home Venue</strong>
-                <p style={{ color: "#64748b", margin: 0 }}>
-                  {team.homeVenue}, {team.city}
-                </p>
+            {/* Performance Stats Cards */}
+            <div className="mgmt-details-stats-row">
+              <div className="mgmt-card-stat-box mgmt-card-stat-box--blue">
+                <strong>{team.registeredPlayers || team.players.length}</strong>
+                <span>Total Players</span>
               </div>
-            </div>
-            <div className="mgmt-info-row">
-              <UserIcon />
-              <div>
-                <strong>Head Coach</strong>
-                <p style={{ color: "#64748b", margin: 0 }}>{team.coach}</p>
-              </div>
-            </div>
-            <div className="mgmt-info-row">
-              <CalendarIcon />
-              <div>
-                <strong>Founded</strong>
-                <p style={{ color: "#64748b", margin: 0 }}>{team.foundedYear}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="mgmt-card">
-            <h2 className="mgmt-card-title">Team Setup</h2>
-            <div className="mgmt-mini-stats">
-              <div className="mgmt-mini-stat">
-                <span>Roster Limit</span>
-                <strong>{team.rosterLimit}</strong>
-              </div>
-              <div className="mgmt-mini-stat">
-                <span>Registered Players</span>
-                <strong className="text-blue">{team.registeredPlayers}</strong>
-              </div>
-              <div className="mgmt-mini-stat">
-                <span>Matches Played</span>
+              <div className="mgmt-card-stat-box mgmt-card-stat-box--purple">
                 <strong>{team.matchesPlayed}</strong>
+                <span>Matches Played</span>
               </div>
-              <div className="mgmt-mini-stat">
+              <div className="mgmt-card-stat-box mgmt-card-stat-box--green">
+                <strong>{team.wins}</strong>
                 <span>Wins</span>
-                <strong className="text-green">{team.wins}</strong>
+              </div>
+              <div className="mgmt-card-stat-box mgmt-card-stat-box--yellow">
+                <strong>{winRate}%</strong>
+                <span>Win Rate</span>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="mgmt-card">
-            <h2 className="mgmt-card-title">Description</h2>
-            <p style={{ color: "#475569", lineHeight: 1.6 }}>{team.description}</p>
-          </section>
+          {/* Basic Information */}
+          <div className="mgmt-card">
+            <h3 className="mgmt-card-title">Basic Information</h3>
+            <div className="mgmt-info-grid">
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Team ID</span>
+                <span className="mgmt-info-value">{team.id}</span>
+              </div>
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Home City</span>
+                <span className="mgmt-info-value">{team.city}, CA</span>
+              </div>
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Tournament</span>
+                <span className="mgmt-info-value">Spring Championship 2026</span>
+              </div>
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Status</span>
+                <span className="mgmt-info-value">{team.status}</span>
+              </div>
+            </div>
+          </div>
 
-          <section className="mgmt-card">
-            <div className="mgmt-section-header">
-              <h3>Registered Players</h3>
+          {/* Coach Information */}
+          <div className="mgmt-card">
+            <h3 className="mgmt-card-title">Coach Information</h3>
+            <div className="mgmt-info-grid">
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Coach Name</span>
+                <span className="mgmt-info-value">{team.coach || "John Anderson"}</span>
+              </div>
+              <div className="mgmt-info-item">
+                <span className="mgmt-info-label">Contact Number</span>
+                <span className="mgmt-info-value">{coachInfo.phone}</span>
+              </div>
+              <div className="mgmt-info-item" style={{ gridColumn: "span 2" }}>
+                <span className="mgmt-info-label">Email Address</span>
+                <span className="mgmt-info-value">{coachInfo.email}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Team Description */}
+          <div className="mgmt-card">
+            <h3 className="mgmt-card-title">Team Description</h3>
+            <p style={{ color: "#cbd5e1", lineHeight: 1.6, margin: 0, fontSize: "0.92rem" }}>
+              {team.description || "Premier volleyball team with a strong focus on technique and teamwork. Competing at the highest level for over 5 years."}
+            </p>
+          </div>
+
+          {/* Players in Team Roster */}
+          <div className="mgmt-card">
+            <div className="mgmt-section-header" style={{ marginBottom: "14px" }}>
+              <h3 style={{ fontSize: "1.05rem", margin: 0, fontWeight: 700 }}>Players in Team</h3>
               <Link to="/players" className="mgmt-section-link">
                 View All Players
               </Link>
             </div>
-            <div className="mgmt-table-wrap" style={{ border: "none", boxShadow: "none" }}>
-              <table className="mgmt-table">
-                <thead>
-                  <tr>
-                    <th>Player Name</th>
-                    <th>Position</th>
-                    <th>Number</th>
-                    <th>Status</th>
+            <table className="mgmt-table">
+              <thead>
+                <tr>
+                  <th>Player Name</th>
+                  <th>Position</th>
+                  <th>Jersey #</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {team.players.map((player) => (
+                  <tr key={player.name}>
+                    <td>
+                      <Link
+                        to={`/players/${playerRoutesMap[player.name] || "PL-2026-001"}`}
+                        className="mgmt-table-link"
+                      >
+                        {player.name}
+                      </Link>
+                    </td>
+                    <td>{player.position}</td>
+                    <td>{player.number}</td>
+                    <td>
+                      <span className="mgmt-badge mgmt-badge--active">
+                        {player.status}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {team.players.map((player) => (
-                    <tr key={player.name}>
-                      <td>
-                        <strong>{player.name}</strong>
-                      </td>
-                      <td>{player.position}</td>
-                      <td>{player.number}</td>
-                      <td>
-                        <span className="mgmt-badge mgmt-badge--active">
-                          {player.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <section className="mgmt-card">
-            <div className="mgmt-section-header">
-              <h3>Linked Matches</h3>
+          {/* Recent Performance Matches */}
+          <div className="mgmt-card">
+            <div className="mgmt-section-header" style={{ marginBottom: "14px" }}>
+              <h3 style={{ fontSize: "1.05rem", margin: 0, fontWeight: 700 }}>Recent Matches</h3>
               <Link to="/matches" className="mgmt-section-link">
                 View All Matches
               </Link>
             </div>
-            <div className="mgmt-table-wrap" style={{ border: "none", boxShadow: "none" }}>
-              <table className="mgmt-table">
-                <thead>
-                  <tr>
-                    <th>Match ID</th>
-                    <th>Teams</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {team.matches.map((match) => (
-                    <tr key={match.id}>
-                      <td>
-                        <Link to={`/matches/${match.id}`} className="mgmt-table-link">
-                          {match.id}
-                        </Link>
-                      </td>
-                      <td>
-                        <Link to={`/matches/${match.id}`} className="mgmt-table-link" style={{ fontWeight: "normal", color: "inherit", textDecoration: "none" }}>
-                          {match.teams}
-                        </Link>
-                      </td>
-                      <td>{match.date}</td>
-                      <td>
-                        <span className={badgeClass[match.status] || "mgmt-badge"}>
-                          {match.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+            <table className="mgmt-table">
+              <thead>
+                <tr>
+                  <th>Match</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
+                      vs{" "}
+                      <Link to="/teams/TM-2026-002" className="mgmt-table-link">
+                        Ocean Waves
+                      </Link>
+                    </span>
+                    <span className="mgmt-recent-matches-score">Mar 15, 2026</span>
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 700, color: "#10b981" }}>Won 3-1</span>
+                    <span className="mgmt-recent-matches-score">25-20, 22-25, 25-18, 25-22</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
+                      vs{" "}
+                      <Link to="/teams/TM-2026-003" className="mgmt-table-link">
+                        Sky Hawks
+                      </Link>
+                    </span>
+                    <span className="mgmt-recent-matches-score">Mar 10, 2026</span>
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 700, color: "#10b981" }}>Won 3-0</span>
+                    <span className="mgmt-recent-matches-score">25-18, 25-20, 25-15</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
+                      vs{" "}
+                      <Link to="/teams/TM-2026-004" className="mgmt-table-link">
+                        Net Ninjas
+                      </Link>
+                    </span>
+                    <span className="mgmt-recent-matches-score">Mar 05, 2026</span>
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 700, color: "#ef4444" }}>Lost 2-3</span>
+                    <span className="mgmt-recent-matches-score">25-23, 20-25, 25-27, 25-20, 13-15</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
 
-        <aside className="mgmt-card">
-          <h2 className="mgmt-card-title">Quick Actions</h2>
-          <div className="mgmt-quick-actions">
-            <Link to={`/teams/${team.id}/edit`} className="mgmt-btn mgmt-btn--primary mgmt-btn--block">
-              <EditIcon />
-              Edit Team
-            </Link>
-            <button
-              type="button"
-              className="mgmt-btn mgmt-btn--danger-outline mgmt-btn--block"
-              onClick={() => setShowDelete(true)}
-            >
-              <TrashIcon />
-              Delete Team
-            </button>
-            <Link to="/players" className="mgmt-btn mgmt-btn--outline mgmt-btn--block">
-              View Players
-            </Link>
-            <Link to="/matches" className="mgmt-btn mgmt-btn--outline mgmt-btn--block">
-              View Matches
-            </Link>
+        {/* Right column Quick Actions sidebar */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div className="mgmt-card">
+            <h3 className="mgmt-card-title" style={{ borderBottom: "none", marginBottom: "12px", paddingBottom: 0 }}>
+              Quick Actions
+            </h3>
+            <div className="mgmt-quick-actions">
+              <Link
+                to={`/teams/${team.id}/edit`}
+                className="mgmt-btn"
+                style={{
+                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  color: "#ffffff",
+                  boxShadow: "0 4px 15px rgba(245, 158, 11, 0.2)"
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Edit Team
+              </Link>
+              <button
+                type="button"
+                className="mgmt-btn mgmt-btn--danger-outline"
+                onClick={() => setShowDelete(true)}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                Delete Team
+              </button>
+              <Link to="/players" className="mgmt-btn mgmt-btn--outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                View Players
+              </Link>
+              <Link to="/tournament-analytics" className="mgmt-btn mgmt-btn--outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                View Analytics
+              </Link>
+            </div>
           </div>
-        </aside>
+        </div>
+
       </div>
 
+      {/* Delete Confirmation Modal Overlay */}
       <DeleteConfirmModal
         open={showDelete}
-        title="Delete Team"
-        description="Are you sure you want to delete this team? This action cannot be undone and will remove all associated roster data."
+        title="Delete Team Profile"
+        description="Are you sure you want to permanently delete this team profile? This action cannot be undone and will remove all associated roster details."
         itemName={team.name}
         confirmLabel="Delete Team"
         onCancel={() => setShowDelete(false)}

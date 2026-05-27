@@ -166,7 +166,9 @@ export default function TeamsPage() {
                         </Link>
                       </td>
                       <td>
-                        <strong>{team.name}</strong>
+                        <Link to={`/teams/${team.id}`} className="mgmt-table-link">
+                          {team.name}
+                        </Link>
                       </td>
                       <td>{team.coach}</td>
                       <td>{team.city}</td>

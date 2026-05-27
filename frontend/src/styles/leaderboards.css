@@ -233,9 +233,32 @@
   font-size: 0.95rem;
 }
 
+.leaderboard-item-name-link {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.leaderboard-item-name-link:hover {
+  color: #60a5fa;
+}
+
 .leaderboard-item-subtext {
   font-size: 0.8rem;
   color: var(--text-muted, #94a3b8);
+}
+
+.leaderboard-item-subtext-link {
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.leaderboard-item-subtext-link:hover {
+  color: #60a5fa;
 }
 
 /* Stats aligned right */

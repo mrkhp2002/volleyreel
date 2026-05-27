@@ -1,5 +1,14 @@
 import { Link } from "react-router-dom";
 
+const teamRoutesMap = {
+  "Thunder Strikers": "TM-2026-001",
+  "Ocean Waves": "TM-2026-002",
+  "Sky Hawks": "TM-2026-003",
+  "Net Ninjas": "TM-2026-004",
+  "Beach Blazers": "TM-2026-005",
+  "Court Kings": "TM-2026-001"
+};
+
 const statusClass = {
   Completed: "dash-badge dash-badge--completed",
   Upcoming: "dash-badge dash-badge--upcoming",
@@ -39,9 +48,15 @@ export default function RecentMatchesPanel({ matches }) {
                 </td>
                 <td>{match.tournament}</td>
                 <td>
-                  <Link to={`/matches/${match.id}`} className="dash-table-teams-link">
-                    {match.teams}
-                  </Link>
+                  <div className="dash-table-teams-flex" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    <Link to={`/teams/${teamRoutesMap[match.teams.split(" vs ")[0]] || "TM-2026-001"}`} className="dash-table-teams-link">
+                      {match.teams.split(" vs ")[0]}
+                    </Link>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>vs</span>
+                    <Link to={`/teams/${teamRoutesMap[match.teams.split(" vs ")[1]] || "TM-2026-001"}`} className="dash-table-teams-link">
+                      {match.teams.split(" vs ")[1]}
+                    </Link>
+                  </div>
                 </td>
                 <td className="dash-table-score">{match.score}</td>
                 <td>
