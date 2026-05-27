@@ -307,8 +307,7 @@
   backdrop-filter: blur(15px);
 }
 
-.mgmt-filter-bar input,
-.mgmt-filter-bar select {
+.mgmt-filter-bar input {
   flex: 1;
   min-width: 180px;
   padding: 11px 14px;
@@ -325,11 +324,15 @@
   color: var(--text-muted, #94a3b8);
 }
 
-.mgmt-filter-bar input:focus,
-.mgmt-filter-bar select:focus {
+.mgmt-filter-bar input:focus {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--secondary, #3b82f6);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.mgmt-filter-select {
+  flex: 1;
+  min-width: 180px;
 }
 
 /* Stats Row */
@@ -574,7 +577,6 @@
 }
 
 .mgmt-field input,
-.mgmt-field select,
 .mgmt-field textarea {
   width: 100%;
   padding: 11px 14px;
@@ -598,16 +600,14 @@
 }
 
 .mgmt-field input:focus,
-.mgmt-field select:focus,
 .mgmt-field textarea:focus {
   background: rgba(255, 255, 255, 0.06);
   border-color: var(--secondary, #3b82f6);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.mgmt-field select option {
-  background: #0f172a;
-  color: #ffffff;
+.mgmt-field-select {
+  width: 100%;
 }
 
 /* Upload zone */

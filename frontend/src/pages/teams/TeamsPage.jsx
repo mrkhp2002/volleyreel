@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../../components/common/TableActionIcons";
 import { teamSummaryStats, teamsList } from "./teamsData";
@@ -110,30 +111,34 @@ export default function TeamsPage() {
                 setPage(1);
               }}
             />
-            <select
+            <CustomSelect
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-            >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Draft">Draft</option>
-            </select>
-            <select
+              options={[
+                { value: "", label: "All Status" },
+                { value: "Active", label: "Active" },
+                { value: "Inactive", label: "Inactive" },
+                { value: "Draft", label: "Draft" }
+              ]}
+              className="mgmt-filter-select"
+            />
+            <CustomSelect
               value={divisionFilter}
               onChange={(e) => {
                 setDivisionFilter(e.target.value);
                 setPage(1);
               }}
-            >
-              <option value="">All Divisions</option>
-              <option value="Premier">Premier</option>
-              <option value="Division 1">Division 1</option>
-              <option value="Division 2">Division 2</option>
-            </select>
+              options={[
+                { value: "", label: "All Divisions" },
+                { value: "Premier", label: "Premier" },
+                { value: "Division 1", label: "Division 1" },
+                { value: "Division 2", label: "Division 2" }
+              ]}
+              className="mgmt-filter-select"
+            />
           </div>
 
           {/* Table */}

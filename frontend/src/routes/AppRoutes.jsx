@@ -12,6 +12,7 @@ import CreateTeamPage from "../pages/teams/CreateTeamPage";
 import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
 import EditTeamPage from "../pages/teams/EditTeamPage";
 import PlayersPage from "../pages/players/PlayersPage";
+import PlayerDetailsPage from "../pages/players/PlayerDetailsPage";
 import MatchesPage from "../pages/matches/MatchesPage";
 import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
 import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
@@ -43,7 +44,10 @@ export default function AppRoutes() {
             <Route path=":teamId/edit" element={<EditTeamPage />} />
             <Route path=":teamId" element={<TeamDetailsPage />} />
           </Route>
-          <Route path="/players" element={<PlayersPage />} />
+          <Route path="/players">
+            <Route index element={<PlayersPage />} />
+            <Route path=":playerId" element={<PlayerDetailsPage />} />
+          </Route>
           <Route path="/matches">
             <Route index element={<MatchesPage />} />
             <Route path="create" element={<MatchesCreatePage />} />

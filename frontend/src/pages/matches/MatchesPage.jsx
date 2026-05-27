@@ -537,15 +537,17 @@ export default function MatchesPage() {
               </div>
 
               <div className="matches-modal-field">
-                <label htmlFor="m-create-tournament">Tournament</label>
-                <select
-                  id="m-create-tournament"
+                <label>Tournament</label>
+                <CustomSelect
                   value={newTournament}
                   onChange={(e) => setNewTournament(e.target.value)}
-                >
-                  <option value="Spring Championship 2026">Spring Championship 2026</option>
-                  <option value="Regional Cup">Regional Cup</option>
-                </select>
+                  options={[
+                    { value: "Spring Championship 2026", label: "Spring Championship 2026" },
+                    { value: "Regional Cup", label: "Regional Cup" }
+                  ]}
+                  id="m-create-tournament"
+                  className="matches-modal-select"
+                />
               </div>
 
               <div className="matches-modal-field">

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/reports.css";
 
 // Initial Mock Data
@@ -332,18 +333,17 @@ export default function PublicReportsPage() {
             
             <div className="reports-modal-body">
               <div className="reports-modal-field">
-                <label htmlFor="modal-select-share">Select Analytical Report to Share</label>
-                <select
-                  id="modal-select-share"
+                <label>Select Analytical Report to Share</label>
+                <CustomSelect
                   value={selectedReportIndex}
                   onChange={(e) => setSelectedReportIndex(Number(e.target.value))}
-                >
-                  {shareableReports.map((report, idx) => (
-                    <option key={idx} value={idx}>
-                      {report.title} ({report.tournament})
-                    </option>
-                  ))}
-                </select>
+                  options={shareableReports.map((report, idx) => ({
+                    value: idx,
+                    label: `${report.title} (${report.tournament})`
+                  }))}
+                  id="modal-select-share"
+                  className="reports-modal-select"
+                />
               </div>
               <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.4" }}>
                 By clicking Share, you agree to make this performance statistics dashboard publicly viewable to all registered platform users and team spectators.

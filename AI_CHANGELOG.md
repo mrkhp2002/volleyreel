@@ -440,3 +440,51 @@
 ### Files Changed
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/pages/matches/MatchDetailsPage.jsx`
+
+## [2026-05-27T17:05:00+05:30] - Player Management Dashboard & CustomSelect Theme Integration
+
+### Added
+- Created `playersData.js` containing initial player profiles and dynamic stats helper base values.
+- Created `players.css` containing dark glassmorphic styling, dotted file uploader dropzones, avatar badges, and pop-up modal configurations.
+
+### Changed
+- Re-architected `PlayersPage.jsx` to build a complete Player Management dashboard supporting search filtering, dynamic metrics updates, directory table pagination, and local persistence.
+- Implemented centered pop-up modals for adding, editing, viewing, and deleting players (replacing right-side drawers).
+- Integrated `CustomSelect` dropdown filters across matches lists, timeline editors, report creators, team managers, and signup role forms.
+- Updated `analytics.css`, `reports.css`, `management.css`, `auth.css`, and `matches.css` to target custom select trigger class rules.
+
+### Files Changed
+- `frontend/src/pages/players/playersData.js`
+- `frontend/src/styles/players.css`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+- `frontend/src/pages/reports/TournamentReportsPage.jsx`
+- `frontend/src/pages/reports/PublicReportsPage.jsx`
+- `frontend/src/styles/reports.css`
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/styles/management.css`
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `frontend/src/styles/auth.css`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T17:15:00+05:30] - Player Details Page & Directory Links
+
+### Added
+- Created `PlayerDetailsPage.jsx` featuring dynamic biography cards, dynamic performance stats rows, mock matches recent table, quick actions list, edit modal, and delete confirmation modal.
+
+### Changed
+- Configured nested routing for `/players/:playerId` route mapping to `PlayerDetailsPage` in `AppRoutes.jsx`.
+- Wrapped table name cells in `PlayersPage.jsx` with clickable navigation Links leading to the Player Details page.
+- Appended styling rules in `players.css` for details grids, performance tables, card stat boxes, and info item rows.
+
+### Files Changed
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/styles/players.css`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+
+

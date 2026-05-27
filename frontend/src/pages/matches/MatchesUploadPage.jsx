@@ -617,18 +617,20 @@ export default function MatchesUploadPage() {
                         <td>{evt.time}</td>
                         <td>
                           {isEditing ? (
-                            <select 
-                              className="matches-event-select-edit" 
-                              value={editType} 
-                              onChange={(e) => setEditType(e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <option value="Serve">Serve</option>
-                              <option value="Dig">Dig</option>
-                              <option value="Set">Set</option>
-                              <option value="Spike">Spike</option>
-                              <option value="Block">Block</option>
-                            </select>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <CustomSelect 
+                                className="matches-event-select-edit" 
+                                value={editType} 
+                                onChange={(e) => setEditType(e.target.value)}
+                                options={[
+                                  { value: "Serve", label: "Serve" },
+                                  { value: "Dig", label: "Dig" },
+                                  { value: "Set", label: "Set" },
+                                  { value: "Spike", label: "Spike" },
+                                  { value: "Block", label: "Block" }
+                                ]}
+                              />
+                            </div>
                           ) : (
                             evt.type
                           )}

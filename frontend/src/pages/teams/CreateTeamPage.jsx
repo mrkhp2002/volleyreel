@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../services/apiClient";
+import CustomSelect from "../../components/common/CustomSelect";
 import { PlusIcon } from "../../components/common/TableActionIcons";
 import "../../styles/management.css";
 
@@ -213,16 +214,18 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
               />
             </div>
             <div className="mgmt-field">
-              <label htmlFor="status">Status</label>
-              <select
-                id="status"
+              <label>Status</label>
+              <CustomSelect
                 value={form.status}
                 onChange={(e) => setField("status", e.target.value)}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Draft">Draft</option>
-              </select>
+                options={[
+                  { value: "Active", label: "Active" },
+                  { value: "Inactive", label: "Inactive" },
+                  { value: "Draft", label: "Draft" }
+                ]}
+                id="status"
+                className="mgmt-field-select"
+              />
             </div>
           </div>
         </section>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/analytics.css";
 
 // Datastores mapping to each tournament filter selection
@@ -155,15 +156,17 @@ export default function TournamentAnalyticsPage() {
 
       {/* Filter Selector */}
       <div className="analytics-filter-row">
-        <select
+        <CustomSelect
           value={selectedTournament}
           onChange={(e) => setSelectedTournament(e.target.value)}
+          options={[
+            { value: "All", label: "All Tournaments" },
+            { value: "Spring Championship 2026", label: "Spring Championship 2026" },
+            { value: "Regional Cup", label: "Regional Cup" }
+          ]}
           id="filter-analytics-tournament"
-        >
-          <option value="All">All Tournaments</option>
-          <option value="Spring Championship 2026">Spring Championship 2026</option>
-          <option value="Regional Cup">Regional Cup</option>
-        </select>
+          className="analytics-filter-select"
+        />
       </div>
 
       {/* Stat Cards Grid */}

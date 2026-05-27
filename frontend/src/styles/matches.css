@@ -491,8 +491,7 @@
   color: #cbd5e1;
 }
 
-.matches-modal-field input,
-.matches-modal-field select {
+.matches-modal-field input {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 10px 12px;
@@ -504,10 +503,13 @@
   transition: all 0.2s ease;
 }
 
-.matches-modal-field input:focus,
-.matches-modal-field select:focus {
+.matches-modal-field input:focus {
   border-color: #3b82f6;
   background: rgba(255, 255, 255, 0.06);
+}
+
+.matches-modal-select {
+  width: 100%;
 }
 
 .matches-modal-footer {
@@ -1197,13 +1199,17 @@
 
 /* Event edit inline row fields */
 .matches-event-select-edit {
+  max-width: 120px;
+  width: 120px;
+}
+
+.matches-event-select-edit .custom-select-trigger {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid #3b82f6;
   border-radius: 6px;
-  padding: 4px 6px;
-  color: #ffffff;
+  padding: 4px 8px;
   font-size: 0.8rem;
-  max-width: 100px;
+  height: 28px;
 }
 
 /* Generated Videos Styles */
