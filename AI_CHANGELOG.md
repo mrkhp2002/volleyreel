@@ -578,7 +578,36 @@
 ### Changed
 - Added `position: relative` and `z-index: 100` to the `.topbar` container in `global.css` to prevent the user profile hover dropdown from rendering behind dashboard cards and elements.
 
+
+## [2026-05-27T19:17:00+05:30] - Create User Profile Page with Live Edit Modals
+
+### Added
+- Created `ProfilePage.jsx` featuring detailed profile cards (Summary, Personal Info, Account Info, Preferences, Security, and Activity stats counters) matching the mockup layouts.
+- Created `profile.css` containing custom grid columns, details list layouts, stats cards, and glassmorphic pop-up edit modals.
+- Implemented functional edit modals for editing profile details (with avatar picture uploader), changing password, managing security, and updating preferences in-place.
+
+### Changed
+- Extended `AuthContext.jsx` with an `updateUser` function to sync profile changes in real-time across the app.
+- Registered `/profile` route in `AppRoutes.jsx`.
+- Directed "View Profile" option inside `Topbar.jsx` user dropdown to `/profile`.
+- Patched `Topbar.jsx` and `Sidebar.jsx` to render custom profile avatars from context.
+
 ### Files Changed
-- `frontend/src/styles/global.css`
+- `frontend/src/contexts/AuthContext.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/styles/profile.css`
+- `frontend/src/pages/profile/ProfilePage.jsx`
 
+## [2026-05-27T19:35:00+05:30] - Fine-tune Dashboard Quick Actions & Player Registration Trigger
 
+### Added
+- Integrated a query parameter listener (`?add=true`) inside `PlayersPage.jsx` to automatically pop up the "Add Player" modal upon loading.
+
+### Changed
+- Refactored all Dashboard "Quick Actions" buttons inside `DashboardPage.jsx` to route directly to their respective subpage destinations (e.g. `/tournaments/create`, `/teams/create`, `/players?add=true`, `/matches/create`, `/matches/upload`, and `/reports/tournament`) rather than general indexes.
+
+### Files Changed
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/pages/players/PlayersPage.jsx`

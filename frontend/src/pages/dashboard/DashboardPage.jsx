@@ -54,42 +54,42 @@ export default function DashboardPage() {
         <h2 className="dashboard-section-title">Quick Actions</h2>
         <div className="dashboard-quick-actions">
           <QuickActionButton
-            to="/tournaments"
+            to="/tournaments/create"
             tone="blue"
             title="Create Tournament"
             subtitle="Set up a new tournament"
             icon={<TrophyIcon />}
           />
           <QuickActionButton
-            to="/teams"
+            to="/teams/create"
             tone="teal"
             title="Add Team"
             subtitle="Register a new team"
             icon={<UsersIcon />}
           />
           <QuickActionButton
-            to="/players"
+            to="/players?add=true"
             tone="purple"
             title="Add Player"
             subtitle="Add player to roster"
             icon={<UserIcon />}
           />
           <QuickActionButton
-            to="/matches"
+            to="/matches/create"
             tone="orange"
             title="Create Match"
             subtitle="Set up a new match"
             icon={<PlusCircleIcon />}
           />
           <QuickActionButton
-            to="/matches"
+            to="/matches/upload"
             tone="royal"
             title="Upload & Review"
             subtitle="Upload match videos"
             icon={<UploadIcon />}
           />
           <QuickActionButton
-            to="/reports"
+            to="/reports/tournament"
             tone="dark-teal"
             title="View Reports"
             subtitle="Access analytics reports"

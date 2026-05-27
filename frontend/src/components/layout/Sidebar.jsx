@@ -307,8 +307,12 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
 
         <div className="sidebar-footer-block">
           <div className="sidebar-user">
-            <div className="sidebar-user-avatar" title={displayName}>
-              {displayName.charAt(0).toUpperCase()}
+            <div className="sidebar-user-avatar" title={displayName} style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                displayName.charAt(0).toUpperCase()
+              )}
             </div>
             <div className="sidebar-user-details">
               <p className="sidebar-user-name">{displayName}</p>

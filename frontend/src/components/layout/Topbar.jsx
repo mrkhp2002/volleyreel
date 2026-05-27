@@ -93,16 +93,24 @@ export default function Topbar({ onMobileToggle }) {
 
         <div className="topbar-user-menu-container">
           <div className="topbar-user-pill">
-            <span className="topbar-user-pill-icon">
-              <UserIcon />
+            <span className="topbar-user-pill-icon" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <UserIcon />
+              )}
             </span>
             <span className="topbar-user-name-text">{displayName}</span>
           </div>
 
           <div className="topbar-user-dropdown">
             <div className="dropdown-user-header">
-              <div className="dropdown-user-avatar">
-                <UserIcon />
+              <div className="dropdown-user-avatar" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <UserIcon />
+                )}
               </div>
               <div className="dropdown-user-info">
                 <div className="dropdown-user-name">{displayName}</div>
@@ -114,7 +122,7 @@ export default function Topbar({ onMobileToggle }) {
 
             <ul className="dropdown-links">
               <li>
-                <Link to="/settings?tab=profile" className="dropdown-link-item">
+                <Link to="/profile" className="dropdown-link-item">
                   <span className="dropdown-link-icon">
                     <UserIcon />
                   </span>

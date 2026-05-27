@@ -26,6 +26,7 @@ import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
 import PublicReportsPage from "../pages/reports/PublicReportsPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
+import ProfilePage from "../pages/profile/ProfilePage";
 
 export default function AppRoutes() {
   return (
@@ -69,6 +70,7 @@ export default function AppRoutes() {
           <Route path="/reports/public" element={<PublicReportsPage />} />
           <Route path="/leaderboards" element={<LeaderboardsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         {/* Fallback route */}
