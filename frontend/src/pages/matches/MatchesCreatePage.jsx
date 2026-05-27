@@ -201,7 +201,17 @@ export default function MatchesCreatePage() {
     };
 
     const saved = localStorage.getItem("volleyreel_matches");
-    const list = saved ? JSON.parse(saved) : initialMatchesCopy;
+    let list = initialMatchesCopy;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          list = parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
     const existsIndex = list.findIndex((m) => m.id === newMatch.id);
     let updatedList = [...list];

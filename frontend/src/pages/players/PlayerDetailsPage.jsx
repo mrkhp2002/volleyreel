@@ -135,7 +135,8 @@ export default function PlayerDetailsPage() {
     const saved = localStorage.getItem("volleyreel_players");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         console.error(e);
       }

@@ -33,7 +33,17 @@ export default function MatchesVideosPage() {
   // Load matches and initialize list
   useEffect(() => {
     const savedMatches = localStorage.getItem("volleyreel_matches");
-    const matches = savedMatches ? JSON.parse(savedMatches) : [];
+    let matches = [];
+    if (savedMatches) {
+      try {
+        const parsed = JSON.parse(savedMatches);
+        if (Array.isArray(parsed)) {
+          matches = parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
     
     // Parse matches from local storage that have generated highlights
     const userVideos = matches

@@ -23,7 +23,15 @@ export default function MatchesPage() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState(() => {
     const saved = localStorage.getItem("volleyreel_matches");
-    return saved ? JSON.parse(saved) : initialMatches;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return initialMatches;
   });
 
   useEffect(() => {

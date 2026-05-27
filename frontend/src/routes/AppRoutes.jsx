@@ -7,6 +7,9 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import TournamentsPage from "../pages/tournaments/TournamentsPage";
+import CreateTournamentPage from "../pages/tournaments/CreateTournamentPage";
+import EditTournamentPage from "../pages/tournaments/EditTournamentPage";
+import TournamentDetailsPage from "../pages/tournaments/TournamentDetailsPage";
 import TeamsPage from "../pages/teams/TeamsPage";
 import CreateTeamPage from "../pages/teams/CreateTeamPage";
 import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
@@ -37,7 +40,12 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/tournaments" element={<TournamentsPage />} />
+          <Route path="/tournaments">
+            <Route index element={<TournamentsPage />} />
+            <Route path="create" element={<CreateTournamentPage />} />
+            <Route path=":tournamentId/edit" element={<EditTournamentPage />} />
+            <Route path=":tournamentId" element={<TournamentDetailsPage />} />
+          </Route>
           <Route path="/teams">
             <Route index element={<TeamsPage />} />
             <Route path="create" element={<CreateTeamPage />} />

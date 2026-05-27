@@ -14,8 +14,18 @@ import {
 
 const simpleNavItems = [
   { to: "/dashboard", label: "Dashboard", icon: <GridIcon /> },
-  { to: "/tournaments", label: "Tournaments", icon: <TrophyIcon /> },
 ];
+
+const tournamentsNavGroup = {
+  key: "tournaments",
+  label: "Tournaments",
+  icon: <TrophyIcon />,
+  basePath: "/tournaments",
+  children: [
+    { to: "/tournaments", label: "Tournament List", end: true },
+    { to: "/tournaments/create", label: "Create Tournament" },
+  ],
+};
 
 const teamsNavGroup = {
   key: "teams",
@@ -160,6 +170,9 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
   const displayName = user?.fullName || "Coach Admin";
   const displayEmail = user?.email || "admin@volleyreel.com";
 
+  const isTournamentsSection = location.pathname.startsWith("/tournaments");
+  const [tournamentsOpen, setTournamentsOpen] = useState(isTournamentsSection);
+
   const isTeamsSection = location.pathname.startsWith("/teams");
   const [teamsOpen, setTeamsOpen] = useState(isTeamsSection);
 
@@ -171,6 +184,10 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
 
   const isReportsSection = location.pathname.startsWith("/reports");
   const [reportsOpen, setReportsOpen] = useState(isReportsSection);
+
+  useEffect(() => {
+    setTournamentsOpen(isTournamentsSection);
+  }, [isTournamentsSection]);
 
   useEffect(() => {
     setTeamsOpen(isTeamsSection);
@@ -228,6 +245,16 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
           {simpleNavItems.map((item) => (
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
+
+          <NavGroup 
+            group={tournamentsNavGroup} 
+            isOpen={tournamentsOpen} 
+            onToggle={() => setTournamentsOpen(prev => !prev)} 
+            onMouseEnter={() => setTournamentsOpen(true)}
+            onMouseLeave={() => !isTournamentsSection && setTournamentsOpen(false)}
+            isSectionActive={isTournamentsSection} 
+            collapsed={collapsed} 
+          />
 
           <NavGroup 
             group={teamsNavGroup} 

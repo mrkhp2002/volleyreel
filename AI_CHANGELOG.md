@@ -506,5 +506,56 @@
 - `frontend/src/pages/players/PlayerDetailsPage.jsx`
 - `frontend/src/pages/teams/TeamDetailsPage.jsx`
 
+## [2026-05-27T17:35:00+05:30] - Redesign Tournaments Page & Create Tournament Wizard
 
+### Added
+- Created `tournamentsData.js` containing initial mock tournaments dataset (12 profiles) and routing helpers.
+- Created `CreateTournamentPage.jsx` featuring multi-section form fields, schedule dates, setup limits, drag-and-drop uploader dropzones, settings options, and localStorage sync.
+- Created `EditTournamentPage.jsx` to load selected profile states and save in-place changes.
+- Created `TournamentDetailsPage.jsx` rendering detailed metrics card, schedule summaries, and quick action panels.
 
+### Changed
+- Refactored `Sidebar.jsx` to convert simple Tournaments link into collapsible `NavGroup` submenu.
+- Registered nested routing paths for index, create, edit, and details subpages of `/tournaments` in `AppRoutes.jsx`.
+- Overwrote `TournamentsPage.jsx` to add card stats boxes, search inputs, custom location/status filter selects, listing rows with hover highlights, pagination, and `DeleteConfirmModal` overrides.
+
+### Files Changed
+- `frontend/src/pages/tournaments/tournamentsData.js`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/pages/tournaments/TournamentsPage.jsx`
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+- `frontend/src/pages/tournaments/EditTournamentPage.jsx`
+- `frontend/src/pages/tournaments/TournamentDetailsPage.jsx`
+
+## [2026-05-27T17:40:00+05:30] - Fix Missing useMemo Import in CreateTournamentPage
+
+### Changed
+- Imported `useMemo` in `CreateTournamentPage.jsx` to fix the runtime ReferenceError causing the creation page to crash and redirect back to the main dashboard.
+
+### Files Changed
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+
+## [2026-05-27T17:45:00+05:30] - Implement Defensive Local Storage Parsing & Self-Healing
+
+### Added
+- Integrated self-healing logic on startup in `main.jsx` to clean up corrupted or malformed local storage keys (`volleyreel_tournaments`, `volleyreel_matches`, `volleyreel_players`) to prevent routing crashes.
+
+### Changed
+- Patched all tournament pages (`CreateTournamentPage.jsx`, `EditTournamentPage.jsx`, `TournamentDetailsPage.jsx`, and `tournamentsData.js`) to verify parsing arrays using `Array.isArray`.
+- Patched all matches pages (`MatchesPage.jsx`, `MatchDetailsPage.jsx`, `MatchesCreatePage.jsx`, `MatchesUploadPage.jsx`, and `MatchesVideosPage.jsx`) to verify parsing arrays using `Array.isArray` with try-catch fallbacks.
+- Patched player pages (`PlayersPage.jsx` and `PlayerDetailsPage.jsx`) to verify parsing arrays using `Array.isArray`.
+
+### Files Changed
+- `frontend/src/main.jsx`
+- `frontend/src/pages/tournaments/CreateTournamentPage.jsx`
+- `frontend/src/pages/tournaments/EditTournamentPage.jsx`
+- `frontend/src/pages/tournaments/TournamentDetailsPage.jsx`
+- `frontend/src/pages/tournaments/tournamentsData.js`
+- `frontend/src/pages/players/PlayersPage.jsx`
+- `frontend/src/pages/players/PlayerDetailsPage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchDetailsPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
