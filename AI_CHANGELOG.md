@@ -213,3 +213,23 @@
 - `frontend/src/components/layout/Sidebar.jsx`
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/styles/global.css`
+
+## [2026-05-27T11:25:00+05:30] - Tournament & Public Reports Pages + Collapsible Navigation Submenus
+
+### Added
+- Created `TournamentReportsPage.jsx` featuring dynamic searches, report type filtering, modal-based simulated report generation, and detail popups.
+- Created `PublicReportsPage.jsx` featuring a 3-column glassmorphic grid layout of shared highlights, views count increments, social sharing simulations, and a select-and-share report wizard.
+- Created `SettingsPage.jsx` scaffold component to enable valid link resolution in sidebar.
+- Created `reports.css` with dark glassmorphism rules for lists, card headers, view layouts, badges, and modals.
+
+### Changed
+- Refactored `Sidebar.jsx` to dynamically support multiple expandable navigation sections (Teams, Players, Matches, Reports) with collapsible submenus and integrated settings icon.
+- Updated `AppRoutes.jsx` to map nested paths for `/reports/tournament`, `/reports/public`, and `/settings`.
+
+### Files Changed
+- `frontend/src/pages/reports/TournamentReportsPage.jsx`
+- `frontend/src/pages/reports/PublicReportsPage.jsx`
+- `frontend/src/pages/settings/SettingsPage.jsx`
+- `frontend/src/styles/reports.css`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`

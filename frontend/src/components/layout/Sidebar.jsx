@@ -28,13 +28,54 @@ const teamsNavGroup = {
   ],
 };
 
+const playersNavGroup = {
+  key: "players",
+  label: "Players",
+  icon: <UserIcon />,
+  basePath: "/players",
+  children: [
+    { to: "/players", label: "Player Management", end: true },
+  ],
+};
+
+const matchesNavGroup = {
+  key: "matches",
+  label: "Matches",
+  icon: <ListIcon />,
+  basePath: "/matches",
+  children: [
+    { to: "/matches", label: "Match Management", end: true },
+  ],
+};
+
+const reportsNavGroup = {
+  key: "reports",
+  label: "Reports",
+  icon: <FileIcon />,
+  basePath: "/reports",
+  children: [
+    { to: "/reports/tournament", label: "Tournament Reports" },
+    { to: "/reports/public", label: "Public Reports" },
+  ],
+};
+
 const simpleNavItemsAfter = [
-  { to: "/players", label: "Players", icon: <UserIcon /> },
-  { to: "/matches", label: "Matches", icon: <ListIcon /> },
   { to: "/tournament-analytics", label: "Tournament Analytics", icon: <ChartIcon /> },
-  { to: "/reports", label: "Reports", icon: <FileIcon /> },
-  { to: "/leaderboards", label: "Leaderboards", icon: <MedalIcon /> },
 ];
+
+const simpleNavItemsBottom = [
+  { to: "/leaderboards", label: "Leaderboards", icon: <MedalIcon /> },
+  { to: "/settings", label: "Settings", icon: <SettingsIcon /> },
+];
+
+function SettingsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
 
 function ChevronRight({ className = "nav-chevron" }) {
   return (
@@ -71,6 +112,41 @@ function NavItem({ item, collapsed }) {
   );
 }
 
+function NavGroup({ group, isOpen, onToggle, isSectionActive, collapsed }) {
+  return (
+    <div className={`sidebar-nav-group${isOpen ? " open" : ""}${isSectionActive ? " active-group" : ""}`}>
+      <button
+        type="button"
+        className="sidebar-nav-item sidebar-nav-group-toggle"
+        onClick={onToggle}
+        title={collapsed ? group.label : undefined}
+        aria-expanded={isOpen}
+      >
+        <span className="sidebar-nav-icon">{group.icon}</span>
+        <span className="sidebar-nav-label">{group.label}</span>
+        <ChevronRight className="nav-chevron nav-chevron--expand" />
+      </button>
+
+      {!collapsed && isOpen && (
+        <div className="sidebar-nav-sub">
+          {group.children.map((child) => (
+            <NavLink
+              key={child.to}
+              to={child.to}
+              end={child.end}
+              className={({ isActive }) =>
+                isActive ? "sidebar-nav-sub-item active" : "sidebar-nav-sub-item"
+              }
+            >
+              {child.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Sidebar({ collapsed = false, onToggle }) {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -80,11 +156,30 @@ export default function Sidebar({ collapsed = false, onToggle }) {
   const isTeamsSection = location.pathname.startsWith("/teams");
   const [teamsOpen, setTeamsOpen] = useState(isTeamsSection);
 
+  const isPlayersSection = location.pathname.startsWith("/players");
+  const [playersOpen, setPlayersOpen] = useState(isPlayersSection);
+
+  const isMatchesSection = location.pathname.startsWith("/matches");
+  const [matchesOpen, setMatchesOpen] = useState(isMatchesSection);
+
+  const isReportsSection = location.pathname.startsWith("/reports");
+  const [reportsOpen, setReportsOpen] = useState(isReportsSection);
+
   useEffect(() => {
-    if (isTeamsSection) {
-      setTeamsOpen(true);
-    }
+    if (isTeamsSection) setTeamsOpen(true);
   }, [isTeamsSection]);
+
+  useEffect(() => {
+    if (isPlayersSection) setPlayersOpen(true);
+  }, [isPlayersSection]);
+
+  useEffect(() => {
+    if (isMatchesSection) setMatchesOpen(true);
+  }, [isMatchesSection]);
+
+  useEffect(() => {
+    if (isReportsSection) setReportsOpen(true);
+  }, [isReportsSection]);
 
   return (
     <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
@@ -117,38 +212,43 @@ export default function Sidebar({ collapsed = false, onToggle }) {
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
 
-          <div className={`sidebar-nav-group${teamsOpen ? " open" : ""}${isTeamsSection ? " active-group" : ""}`}>
-            <button
-              type="button"
-              className="sidebar-nav-item sidebar-nav-group-toggle"
-              onClick={() => setTeamsOpen((prev) => !prev)}
-              title={collapsed ? teamsNavGroup.label : undefined}
-              aria-expanded={teamsOpen}
-            >
-              <span className="sidebar-nav-icon">{teamsNavGroup.icon}</span>
-              <span className="sidebar-nav-label">{teamsNavGroup.label}</span>
-              <ChevronRight className="nav-chevron nav-chevron--expand" />
-            </button>
+          <NavGroup 
+            group={teamsNavGroup} 
+            isOpen={teamsOpen} 
+            onToggle={() => setTeamsOpen(prev => !prev)} 
+            isSectionActive={isTeamsSection} 
+            collapsed={collapsed} 
+          />
 
-            {!collapsed && teamsOpen && (
-              <div className="sidebar-nav-sub">
-                {teamsNavGroup.children.map((child) => (
-                  <NavLink
-                    key={child.to}
-                    to={child.to}
-                    end={child.end}
-                    className={({ isActive }) =>
-                      isActive ? "sidebar-nav-sub-item active" : "sidebar-nav-sub-item"
-                    }
-                  >
-                    {child.label}
-                  </NavLink>
-                ))}
-              </div>
-            )}
-          </div>
+          <NavGroup 
+            group={playersNavGroup} 
+            isOpen={playersOpen} 
+            onToggle={() => setPlayersOpen(prev => !prev)} 
+            isSectionActive={isPlayersSection} 
+            collapsed={collapsed} 
+          />
+
+          <NavGroup 
+            group={matchesNavGroup} 
+            isOpen={matchesOpen} 
+            onToggle={() => setMatchesOpen(prev => !prev)} 
+            isSectionActive={isMatchesSection} 
+            collapsed={collapsed} 
+          />
 
           {simpleNavItemsAfter.map((item) => (
+            <NavItem key={item.to} item={item} collapsed={collapsed} />
+          ))}
+
+          <NavGroup 
+            group={reportsNavGroup} 
+            isOpen={reportsOpen} 
+            onToggle={() => setReportsOpen(prev => !prev)} 
+            isSectionActive={isReportsSection} 
+            collapsed={collapsed} 
+          />
+
+          {simpleNavItemsBottom.map((item) => (
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
         </nav>
