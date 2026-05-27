@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
 function SearchIcon() {
@@ -27,6 +28,25 @@ function UserIcon() {
   );
 }
 
+function SettingsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 function MenuIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -38,8 +58,9 @@ function MenuIcon() {
 }
 
 export default function Topbar({ onMobileToggle }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const displayName = user?.fullName || "Coach Admin";
+  const displayEmail = user?.email || "admin@volleyreel.com";
 
   return (
     <header className="topbar">
@@ -70,11 +91,65 @@ export default function Topbar({ onMobileToggle }) {
           <span className="topbar-notify-dot" />
         </button>
 
-        <div className="topbar-user-pill">
-          <span className="topbar-user-pill-icon">
-            <UserIcon />
-          </span>
-          <span className="topbar-user-name-text">{displayName}</span>
+        <div className="topbar-user-menu-container">
+          <div className="topbar-user-pill">
+            <span className="topbar-user-pill-icon">
+              <UserIcon />
+            </span>
+            <span className="topbar-user-name-text">{displayName}</span>
+          </div>
+
+          <div className="topbar-user-dropdown">
+            <div className="dropdown-user-header">
+              <div className="dropdown-user-avatar">
+                <UserIcon />
+              </div>
+              <div className="dropdown-user-info">
+                <div className="dropdown-user-name">{displayName}</div>
+                <div className="dropdown-user-email">{displayEmail}</div>
+              </div>
+            </div>
+
+            <div className="dropdown-divider" />
+
+            <ul className="dropdown-links">
+              <li>
+                <Link to="/settings?tab=profile" className="dropdown-link-item">
+                  <span className="dropdown-link-icon">
+                    <UserIcon />
+                  </span>
+                  <span className="dropdown-link-label">View Profile</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/settings?tab=account" className="dropdown-link-item">
+                  <span className="dropdown-link-icon">
+                    <SettingsIcon />
+                  </span>
+                  <span className="dropdown-link-label">Account Settings</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/settings?tab=notifications" className="dropdown-link-item">
+                  <span className="dropdown-link-icon">
+                    <BellIcon />
+                  </span>
+                  <span className="dropdown-link-label">Notifications</span>
+                </Link>
+              </li>
+            </ul>
+
+            <div className="dropdown-divider" />
+
+            <div className="dropdown-footer">
+              <button onClick={logout} className="dropdown-logout-btn">
+                <span className="dropdown-link-icon dropdown-link-icon--danger">
+                  <LogoutIcon />
+                </span>
+                <span className="dropdown-link-label">Logout</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>

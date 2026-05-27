@@ -558,4 +558,27 @@
 - `frontend/src/pages/matches/MatchDetailsPage.jsx`
 - `frontend/src/pages/matches/MatchesCreatePage.jsx`
 - `frontend/src/pages/matches/MatchesUploadPage.jsx`
-- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+
+## [2026-05-27T17:51:00+05:30] - Implement User Profile Dropdown & Settings Dashboard Tabs
+
+### Added
+- Integrated hover-triggered user profile dropdown menu inside the `Topbar.jsx` component that displays profile metadata, links to dedicated tabs, and actions logout.
+- Styled user dropdown card inside `global.css` with radial gradient glowing avatar, typography, dividers, and custom transitions (smooth fade-in and scale-up on hover).
+- Completely re-architected `SettingsPage.jsx` to build a multi-tab settings panel containing interactive forms for Profile Biography (with avatar upload triggers), Platform Defaults (CV calibration sliders and rules selects), Instant Notification Toggles, and Account Security zones.
+
+### Changed
+- Configured settings navigation tabs to automatically route and update view panes dynamically based on query parameters matching dropdown option selections.
+
+### Files Changed
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/styles/global.css`
+
+## [2026-05-27T19:10:00+05:30] - Fix Stacking Context for User Profile Dropdown
+
+### Changed
+- Added `position: relative` and `z-index: 100` to the `.topbar` container in `global.css` to prevent the user profile hover dropdown from rendering behind dashboard cards and elements.
+
+### Files Changed
+- `frontend/src/styles/global.css`
+
+
