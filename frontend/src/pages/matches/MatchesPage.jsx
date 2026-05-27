@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/matches.css";
 
 // Initial Mock Match List
@@ -18,7 +19,15 @@ const initialMatches = [
 ];
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState(initialMatches);
+  const navigate = useNavigate();
+  const [matches, setMatches] = useState(() => {
+    const saved = localStorage.getItem("volleyreel_matches");
+    return saved ? JSON.parse(saved) : initialMatches;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("volleyreel_matches", JSON.stringify(matches));
+  }, [matches]);
   
   // Filters
   const [search, setSearch] = useState("");
@@ -266,7 +275,7 @@ export default function MatchesPage() {
           <p>Manage created matches, uploads, reviews, and generated videos</p>
         </div>
         <button 
-          onClick={() => setIsCreateOpen(true)} 
+          onClick={() => navigate("/matches/create")} 
           className="matches-btn-orange"
           id="btn-create-match"
         >

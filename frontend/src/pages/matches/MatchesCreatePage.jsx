@@ -2,6 +2,21 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../styles/matches.css";
 
+const initialMatchesCopy = [
+  { id: "VM-2026-001", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Ocean Waves", date: "Mar 15, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
+  { id: "VM-2026-002", tournament: "Regional Cup", teams: "Sky Hawks vs Net Ninjas", date: "Mar 14, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
+  { id: "VM-2026-003", tournament: "Spring Championship 2026", teams: "Beach Blazers vs Court Kings", date: "Mar 13, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
+  { id: "VM-2026-004", tournament: "Regional Cup", teams: "Thunder Strikers vs Sky Hawks", date: "Mar 12, 2026", upload: "Completed", review: "Completed", video: "Generating" },
+  { id: "VM-2026-005", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Beach Blazers", date: "Mar 11, 2026", upload: "Not Uploaded", review: "Not Started", video: "Not Generated" },
+  { id: "VM-2026-006", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Court Kings", date: "Mar 10, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
+  { id: "VM-2026-007", tournament: "Regional Cup", teams: "Ocean Waves vs Beach Blazers", date: "Mar 09, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
+  { id: "VM-2026-008", tournament: "Regional Cup", teams: "Sky Hawks vs Court Kings", date: "Mar 08, 2026", upload: "Completed", review: "Completed", video: "Ready" },
+  { id: "VM-2026-009", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Thunder Strikers", date: "Mar 07, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
+  { id: "VM-2026-010", tournament: "Regional Cup", teams: "Ocean Waves vs Net Ninjas", date: "Mar 06, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
+  { id: "VM-2026-011", tournament: "Regional Cup", teams: "Beach Blazers vs Sky Hawks", date: "Mar 05, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
+  { id: "VM-2026-012", tournament: "Spring Championship 2026", teams: "Court Kings vs Ocean Waves", date: "Mar 04, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
+];
+
 export default function MatchesCreatePage() {
   const navigate = useNavigate();
 
@@ -132,9 +147,76 @@ export default function MatchesCreatePage() {
     }, 250);
   };
 
+  const saveMatch = (isDraft) => {
+    let formattedDate = "TBD";
+    if (matchDate) {
+      formattedDate = new Date(matchDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      });
+    }
+
+    let uploadStatus = "Not Uploaded";
+    if (uploadCompleted) {
+      uploadStatus = "Completed";
+    } else if (isUploading) {
+      uploadStatus = "Processing";
+    } else if (fileName) {
+      uploadStatus = "Not Uploaded";
+    }
+
+    let reviewStatusVal = "Not Started";
+    if (analysisCompleted) {
+      reviewStatusVal = "In Review";
+    } else if (isAnalyzing) {
+      reviewStatusVal = "Processing";
+    }
+
+    let videoStatus = "Not Generated";
+    if (videoGenerated) {
+      videoStatus = "Ready";
+    } else if (isGeneratingVideo) {
+      videoStatus = "Generating";
+    }
+
+    const newMatch = {
+      id: matchId.trim().toUpperCase() || `VM-${Date.now().toString().slice(-3)}`,
+      tournament: tournamentName || "General Tournament",
+      teams: `${teamA.trim() || "Thunder Strikers"} vs ${teamB.trim() || "Ocean Waves"}`,
+      date: formattedDate,
+      upload: uploadStatus,
+      review: reviewStatusVal,
+      video: videoStatus,
+      venue: venue,
+      stage: stage,
+      notes: notes,
+      fileName: fileName,
+      videoTitle: videoTitle,
+      cameraAngle: cameraAngle,
+      duration: duration,
+      scoreA: scoreA,
+      scoreB: scoreB,
+      uploadNotes: uploadNotes
+    };
+
+    const saved = localStorage.getItem("volleyreel_matches");
+    const list = saved ? JSON.parse(saved) : initialMatchesCopy;
+
+    const existsIndex = list.findIndex((m) => m.id === newMatch.id);
+    let updatedList = [...list];
+    if (existsIndex >= 0) {
+      updatedList[existsIndex] = { ...updatedList[existsIndex], ...newMatch };
+    } else {
+      updatedList = [newMatch, ...updatedList];
+    }
+
+    localStorage.setItem("volleyreel_matches", JSON.stringify(updatedList));
+  };
+
   const handleSaveMatchDraft = () => {
-    // Save draft and return to match list
     triggerToast("Saving match as draft...");
+    saveMatch(true);
     setTimeout(() => {
       navigate("/matches");
     }, 1000);
@@ -142,6 +224,7 @@ export default function MatchesCreatePage() {
 
   const handleSaveAndExit = () => {
     triggerToast("Saving match analytics...");
+    saveMatch(false);
     setTimeout(() => {
       navigate("/matches");
     }, 1000);
