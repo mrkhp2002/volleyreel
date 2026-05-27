@@ -166,19 +166,19 @@ export default function Sidebar({ collapsed = false, onToggle }) {
   const [reportsOpen, setReportsOpen] = useState(isReportsSection);
 
   useEffect(() => {
-    if (isTeamsSection) setTeamsOpen(true);
+    setTeamsOpen(isTeamsSection);
   }, [isTeamsSection]);
 
   useEffect(() => {
-    if (isPlayersSection) setPlayersOpen(true);
+    setPlayersOpen(isPlayersSection);
   }, [isPlayersSection]);
 
   useEffect(() => {
-    if (isMatchesSection) setMatchesOpen(true);
+    setMatchesOpen(isMatchesSection);
   }, [isMatchesSection]);
 
   useEffect(() => {
-    if (isReportsSection) setReportsOpen(true);
+    setReportsOpen(isReportsSection);
   }, [isReportsSection]);
 
   return (

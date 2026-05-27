@@ -233,3 +233,29 @@
 - `frontend/src/styles/reports.css`
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/components/layout/Sidebar.jsx`
+
+## [2026-05-27T11:12:00+05:30] - Premium Dark Theme & Responsive Tabs for Teams Section
+
+### Added
+- Integrated shared page-level navigation tabs at the top of the Teams section, enabling seamless switching between Team Directory and Create Team.
+- Added responsive sub-tabs inside Team Directory: "All Teams" (table & pagination) and "Stats & Analytics" (aggregated cards, division breakdowns, roster ratio bars).
+- Created a multi-step form wizard layout inside Create/Edit Team pages (divided into Team Info, Logistics, and Roster & Media steps) with forward/backward footer navigation controls.
+- Added glowing ambient background accents to the Teams, Create Team, and Team Details views.
+
+### Changed
+- Overhauled `management.css` from a light theme to a premium dark glassmorphic design (transparent background panels, fine white borders, amber highlights) aligning with the app shell.
+- Refactored `TeamsPage.jsx`, `CreateTeamPage.jsx`, and `TeamDetailsPage.jsx` to adopt the dark-mode layout parameters, new typography, and micro-animations.
+
+### Files Changed
+- `frontend/src/styles/management.css`
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+
+## [2026-05-27T11:30:00+05:30] - Auto-Collapse Sidebar Sub-menus on Navigation
+
+### Changed
+- Refactored `Sidebar.jsx` navigation listeners to synchronize submenu collapse states bi-directionally. Expanded sub-menus (Teams, Players, Matches, Reports) now automatically collapse ("roll back") when the user navigates to another page section.
+
+### Files Changed
+- `frontend/src/components/layout/Sidebar.jsx`
