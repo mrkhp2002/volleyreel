@@ -13,6 +13,9 @@ import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
 import EditTeamPage from "../pages/teams/EditTeamPage";
 import PlayersPage from "../pages/players/PlayersPage";
 import MatchesPage from "../pages/matches/MatchesPage";
+import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
+import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
+import MatchesVideosPage from "../pages/matches/MatchesVideosPage";
 import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
 import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
 import PublicReportsPage from "../pages/reports/PublicReportsPage";
@@ -39,6 +42,9 @@ export default function AppRoutes() {
           <Route path="/teams/:teamId" element={<TeamDetailsPage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/matches/create" element={<MatchesCreatePage />} />
+          <Route path="/matches/upload" element={<MatchesUploadPage />} />
+          <Route path="/matches/videos" element={<MatchesVideosPage />} />
           <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
           <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />
           <Route path="/reports/tournament" element={<TournamentReportsPage />} />

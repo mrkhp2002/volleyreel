@@ -273,3 +273,33 @@
 ### Files Changed
 - `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
 - `frontend/src/styles/leaderboards.css`
+
+## [2026-05-27T11:58:00+05:30] - Smooth & Responsive Tournament Analytics Page
+
+### Added
+- Created `TournamentAnalyticsPage.jsx` containing dynamic tournament filters, interactive stats cards, an animated SVG line chart that draws itself on render with hover tooltips, top performing team rankings, and a click-to-filter tournament breakdown table.
+- Created `analytics.css` with dark glassmorphic styling, drawing animations, and media queries for responsive layouts.
+
+### Files Changed
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+
+## [2026-05-27T12:05:00+05:30] - Smooth & Responsive Match List
+
+### Added
+- Created `MatchesPage.jsx` containing paginated match lists, dynamic stats calculations, a "+ Create Match" form wizard, an animated video upload simulation with progress indicators, and an inline mockup video player modal.
+- Created scaffold pages for sub-items: `MatchesCreatePage.jsx`, `MatchesUploadPage.jsx`, and `MatchesVideosPage.jsx` under `frontend/src/pages/matches/`.
+- Created `matches.css` with dark mode glassmorphic templates for list tables, action items, status badges, and video components.
+
+### Changed
+- Updated matches submenu navigation links inside `Sidebar.jsx` to direct to individual match sections (Match List, Create Match, Upload & Review, Generated Videos).
+- Registered new matches subroutes in `AppRoutes.jsx`.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- `frontend/src/styles/matches.css`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`

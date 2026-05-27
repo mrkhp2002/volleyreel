@@ -44,7 +44,10 @@ const matchesNavGroup = {
   icon: <ListIcon />,
   basePath: "/matches",
   children: [
-    { to: "/matches", label: "Match Management", end: true },
+    { to: "/matches", label: "Match List", end: true },
+    { to: "/matches/create", label: "Create Match" },
+    { to: "/matches/upload", label: "Upload & Review" },
+    { to: "/matches/videos", label: "Generated Videos" },
   ],
 };
 
