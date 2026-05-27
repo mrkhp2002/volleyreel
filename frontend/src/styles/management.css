@@ -1033,6 +1033,12 @@
 }
 
 @media (max-width: 768px) {
+  .management-page {
+    margin: -16px;
+    padding: 16px;
+    min-height: calc(100% + 32px);
+  }
+
   .mgmt-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1067,5 +1073,23 @@
   
   .mgmt-wizard-step {
     padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mgmt-card {
+    padding: 16px;
+  }
+
+  .mgmt-pagination {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .mgmt-pagination-controls {
+    width: 100%;
+    justify-content: center;
   }
 }

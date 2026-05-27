@@ -273,3 +273,170 @@
 ### Files Changed
 - `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
 - `frontend/src/styles/leaderboards.css`
+
+## [2026-05-27T11:58:00+05:30] - Smooth & Responsive Tournament Analytics Page
+
+### Added
+- Created `TournamentAnalyticsPage.jsx` containing dynamic tournament filters, interactive stats cards, an animated SVG line chart that draws itself on render with hover tooltips, top performing team rankings, and a click-to-filter tournament breakdown table.
+- Created `analytics.css` with dark glassmorphic styling, drawing animations, and media queries for responsive layouts.
+
+### Files Changed
+- `frontend/src/pages/tournament-analytics/TournamentAnalyticsPage.jsx`
+- `frontend/src/styles/analytics.css`
+
+## [2026-05-27T12:05:00+05:30] - Smooth & Responsive Match List
+
+### Added
+- Created `MatchesPage.jsx` containing paginated match lists, dynamic stats calculations, a "+ Create Match" form wizard, an animated video upload simulation with progress indicators, and an inline mockup video player modal.
+- Created scaffold pages for sub-items: `MatchesCreatePage.jsx`, `MatchesUploadPage.jsx`, and `MatchesVideosPage.jsx` under `frontend/src/pages/matches/`.
+- Created `matches.css` with dark mode glassmorphic templates for list tables, action items, status badges, and video components.
+
+### Changed
+- Updated matches submenu navigation links inside `Sidebar.jsx` to direct to individual match sections (Match List, Create Match, Upload & Review, Generated Videos).
+- Registered new matches subroutes in `AppRoutes.jsx`.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+
+## [2026-05-27T12:12:00+05:30] - Complete Create Match Integration & Real-time State Sync
+
+### Added
+- Integrated localStorage state synchronization between `MatchesCreatePage.jsx` and `MatchesPage.jsx` to dynamically persist new matches and ensure they render immediately in the main directory.
+- Implemented full-fidelity saving functionality in `MatchesCreatePage` mapping selected upload details, event detection, and generated highlight status to the record schema.
+
+### Changed
+- Configured the "Create Match" button on the Match List page to redirect directly to the dedicated creation layout.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+
+## [2026-05-27T12:20:00+05:30] - Mobile & Tablet Responsive Layouts
+
+### Added
+- Implemented slide-out mobile navigation drawer overlay (`.sidebar--mobile-open`) for devices smaller than `1024px`.
+- Added transparent backdrop overlay behind the drawer on mobile to close the navigation panel on external clicks.
+- Added hamburger toggle button to the `Topbar` and close button (✕) to the `Sidebar` for viewport responsiveness.
+
+### Changed
+- Refactored `AppLayout.jsx` to manage mobile sidebar toggling states and close drawer automatically on location/path changes.
+- Optimized Topbar grid flow and alignment, collapsing username label and wrapping search inputs cleanly onto a separate line on phones.
+- Overrode margin, card paddings, page container paddings, and pagination button lists in `global.css` and `management.css` under `768px` and `480px` to optimize layout flow for touch targets.
+
+### Files Changed
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/styles/global.css`
+- `frontend/src/styles/management.css`
+
+## [2026-05-27T12:50:00+05:30] - Mobile & Tablet Responsive Layouts for Authentication Pages
+
+### Changed
+- Converted `.auth-container` to stack vertically on viewports under `820px` by shifting the grid structure to `1fr`.
+- Refactored `.auth-left` to collapse into a clean, horizontal top brand header bar on mobile devices by hiding the description copy, footer, and feature panel checklist.
+- Optimized form spacing padding for `.auth-right` and card content wrapping in `.auth-card` to match touch guidelines on mobile and tablet devices.
+- Refined `.auth-centered-page` paddings, layout gap sizes, and checkbox options rows for forgot password screens to align on screens under `480px`.
+
+### Files Changed
+- `frontend/src/styles/auth.css`
+
+## [2026-05-27T15:15:00+05:30] - Implement Interactive Upload & Review and Generated Videos Pages
+
+### Added
+- Created a fully interactive `MatchesUploadPage.jsx` featuring dynamic match selector, drag-and-drop file uploader, AI pipeline timeline stages checklist, timeline seeker video control, dynamic court overlays (pulsing calibration grid, ball coordinates indicator, player identification boxes), play/pause controls, search filters, and inline tag editing.
+- Created `MatchesVideosPage.jsx` containing the Video Library Summary counter matching the mockup screenshot, dynamic highlight card grids, "Retry Generation" progress triggers that fix statistics, and playback preview modal.
+- Appended styling rules in `matches.css` to cover 2-column layout, computer vision screen overlays, event tables, edit inline boxes, library summary counters, and highlight video cards.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T15:20:00+05:30] - Redesign Generated Videos Page Layout & Covers
+
+### Added
+- Created 3-column mock card grid inside `MatchesVideosPage.jsx` depicting the 6 standard video clips with custom cover thumbnails, Play icons, Duration stamps, status pills, meta info, and alerts.
+- Added custom search wrapper and three outlined filter select selectors (Video Type, Tournament, Status) in `MatchesVideosPage.jsx`.
+
+### Changed
+- Refactored styles in `matches.css` to add `.matches-video-card-thumbnail`, `.matches-video-card-play-icon`, `.matches-video-card-duration`, and `.matches-video-card-badge` modifiers.
+- Reworked in-card status alert panels (`.matches-video-card-generating-banner`, `.matches-video-card-failed-banner`, and `.matches-video-card-retry-btn`) to fit inside cards.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T15:22:00+05:30] - Add Video Library Summary Widget to Bottom
+
+### Added
+- Appended the full-width `Video Library Summary` card widget at the bottom of the redesigned cards grid in `MatchesVideosPage.jsx`.
+- Programmed dynamic stats counters: Total (31), Ready, Generating, and Failed quantities update in real-time as users retry generation pipelines or as generating tasks finish compiling.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+
+## [2026-05-27T16:35:00+05:30] - Implement Complete Match Details Dashboard
+
+### Added
+- Created `MatchDetailsPage.jsx` containing full score summaries, venue schedules, upload statistics (uploaded by, file size, duration), dynamic review progress metrics (events detected, approved, pending), recent events list, generated clips list, activity timelines, and deletion modals.
+- Registered `/matches/:matchId` route mapping to `MatchDetailsPage` inside `AppRoutes.jsx`.
+
+### Changed
+- Configured the Match ID column links in `MatchesPage.jsx` to navigate to `/matches/:matchId` instead of opening the video timeline modal.
+- Refactored `MatchesUploadPage.jsx` to parse the `matchId` query parameters from the URL, allowing automatic selection of matches redirected from details views.
+- Appended styling rules in `matches.css` to cover 2-column details layout grid, timeline bullet connector lines, metric containers, info rows, and back links.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchDetailsPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T16:40:00+05:30] - Verification & Compilation Checks for Match Flow
+
+### Changed
+- Executed production build checks using Vite compilation script to ensure complete asset resolution and build optimization without warnings.
+- Run local dev server checks to verify successful server initialization.
+- Finalized task lists and updated documentation.
+
+### Files Changed
+- None (Documentation & verification only)
+
+## [2026-05-27T16:45:00+05:30] - Make Match Teams Clickable Links to Match Details
+
+### Changed
+- Wrapped the team names cell (e.g. "Thunder Strikers vs Ocean Waves") in `MatchesPage.jsx` with a React Router `Link` component navigating to `/matches/:matchId`.
+- Added hover states and transitions for the teams cell link in `matches.css` to change the color to blue on mouse hover.
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/styles/matches.css`
+
+## [2026-05-27T16:50:00+05:30] - Link Dashboard and Team Details Matches to Match Details Page
+
+### Changed
+- Modified `RecentMatchesPanel.jsx` on the Dashboard to route both Match ID and Teams to the match details page (`/matches/:matchId`).
+- Modified `TeamDetailsPage.jsx` linked matches table to route Match ID and Teams to the match details page (`/matches/:matchId`).
+- Added styling rules and hover transitions for `.dash-table-teams-link` in `dashboard.css`.
+
+### Files Changed
+- `frontend/src/components/dashboard/RecentMatchesPanel.jsx`
+- `frontend/src/styles/dashboard.css`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+
+## [2026-05-27T16:55:00+05:30] - Nested Route Resolution and Defensive State Fallbacks
+
+### Changed
+- Refactored `AppRoutes.jsx` to group `/matches` and `/teams` subroutes under explicit nested route configurations (with index element and relative sub-paths) to eliminate path specificity resolving conflicts.
+- Patched `MatchDetailsPage.jsx` with defensive checks to prevent runtime splits on missing or corrupt `match.teams` and `match.date` properties, ensuring fallback templates load reliably without throwing component render exceptions.
+
+### Files Changed
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/pages/matches/MatchDetailsPage.jsx`

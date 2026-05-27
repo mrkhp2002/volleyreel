@@ -44,7 +44,10 @@ const matchesNavGroup = {
   icon: <ListIcon />,
   basePath: "/matches",
   children: [
-    { to: "/matches", label: "Match Management", end: true },
+    { to: "/matches", label: "Match List", end: true },
+    { to: "/matches/create", label: "Create Match" },
+    { to: "/matches/upload", label: "Upload & Review" },
+    { to: "/matches/videos", label: "Generated Videos" },
   ],
 };
 
@@ -151,7 +154,7 @@ function NavGroup({ group, isOpen, onToggle, onMouseEnter, onMouseLeave, isSecti
   );
 }
 
-export default function Sidebar({ collapsed = false, onToggle }) {
+export default function Sidebar({ collapsed = false, onToggle, mobileOpen = false, onMobileClose }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const displayName = user?.fullName || "Coach Admin";
@@ -186,29 +189,39 @@ export default function Sidebar({ collapsed = false, onToggle }) {
   }, [isReportsSection]);
 
   return (
-    <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
-      <div className="sidebar-header">
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-mark" title="VolleyReel">
-            🏐
+    <>
+      {mobileOpen && <div className="sidebar-backdrop" onClick={onMobileClose} />}
+      <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}${mobileOpen ? " sidebar--mobile-open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            <div className="sidebar-brand-mark" title="VolleyReel">
+              🏐
+            </div>
+            <div className="sidebar-brand-text">
+              <span className="sidebar-brand-title">VolleyReel</span>
+              <span className="sidebar-brand-subtitle">Analytics Platform</span>
+            </div>
           </div>
-          <div className="sidebar-brand-text">
-            <span className="sidebar-brand-title">VolleyReel</span>
-            <span className="sidebar-brand-subtitle">Analytics Platform</span>
-          </div>
+          <button
+            type="button"
+            className="sidebar-collapse-btn"
+            onClick={onToggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={onMobileClose}
+            aria-label="Close Sidebar"
+          >
+            ✕
+          </button>
         </div>
-        <button
-          type="button"
-          className="sidebar-collapse-btn"
-          onClick={onToggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-expanded={!collapsed}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-      </div>
 
       <div className="sidebar-scroll">
         <nav className="sidebar-nav" aria-label="Main navigation">
@@ -287,5 +300,6 @@ export default function Sidebar({ collapsed = false, onToggle }) {
         </div>
       </div>
     </aside>
+    </>
   );
 }

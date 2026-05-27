@@ -13,6 +13,10 @@ import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
 import EditTeamPage from "../pages/teams/EditTeamPage";
 import PlayersPage from "../pages/players/PlayersPage";
 import MatchesPage from "../pages/matches/MatchesPage";
+import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
+import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
+import MatchesVideosPage from "../pages/matches/MatchesVideosPage";
+import MatchDetailsPage from "../pages/matches/MatchDetailsPage";
 import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
 import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
 import PublicReportsPage from "../pages/reports/PublicReportsPage";
@@ -33,12 +37,20 @@ export default function AppRoutes() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tournaments" element={<TournamentsPage />} />
-          <Route path="/teams" element={<TeamsPage />} />
-          <Route path="/teams/create" element={<CreateTeamPage />} />
-          <Route path="/teams/:teamId/edit" element={<EditTeamPage />} />
-          <Route path="/teams/:teamId" element={<TeamDetailsPage />} />
+          <Route path="/teams">
+            <Route index element={<TeamsPage />} />
+            <Route path="create" element={<CreateTeamPage />} />
+            <Route path=":teamId/edit" element={<EditTeamPage />} />
+            <Route path=":teamId" element={<TeamDetailsPage />} />
+          </Route>
           <Route path="/players" element={<PlayersPage />} />
-          <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/matches">
+            <Route index element={<MatchesPage />} />
+            <Route path="create" element={<MatchesCreatePage />} />
+            <Route path="upload" element={<MatchesUploadPage />} />
+            <Route path="videos" element={<MatchesVideosPage />} />
+            <Route path=":matchId" element={<MatchDetailsPage />} />
+          </Route>
           <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
           <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />
           <Route path="/reports/tournament" element={<TournamentReportsPage />} />

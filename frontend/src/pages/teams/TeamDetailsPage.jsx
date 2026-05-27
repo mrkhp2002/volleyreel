@@ -240,11 +240,15 @@ export default function TeamDetailsPage() {
                   {team.matches.map((match) => (
                     <tr key={match.id}>
                       <td>
-                        <Link to="/matches" className="mgmt-table-link">
+                        <Link to={`/matches/${match.id}`} className="mgmt-table-link">
                           {match.id}
                         </Link>
                       </td>
-                      <td>{match.teams}</td>
+                      <td>
+                        <Link to={`/matches/${match.id}`} className="mgmt-table-link" style={{ fontWeight: "normal", color: "inherit", textDecoration: "none" }}>
+                          {match.teams}
+                        </Link>
+                      </td>
                       <td>{match.date}</td>
                       <td>
                         <span className={badgeClass[match.status] || "mgmt-badge"}>

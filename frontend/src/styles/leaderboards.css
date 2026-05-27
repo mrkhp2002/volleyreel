@@ -67,22 +67,10 @@
   position: relative;
 }
 
-.leaderboard-filter-bar select {
+.leaderboard-filter-select {
   min-width: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  font-size: 0.9rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.leaderboard-filter-bar select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  width: auto;
+  flex-shrink: 0;
 }
 
 /* Double column rankings layout */
@@ -386,7 +374,7 @@
     flex-direction: column;
     align-items: stretch;
   }
-  .leaderboard-filter-bar select {
+  .leaderboard-filter-select {
     width: 100%;
     min-width: unset;
   }

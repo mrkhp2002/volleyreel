@@ -515,6 +515,18 @@
   text-decoration: underline;
 }
 
+.dash-table-teams-link {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.dash-table-teams-link:hover {
+  color: #60a5fa;
+}
+
 .dash-table-score {
   font-weight: 700;
   color: #ffffff;
