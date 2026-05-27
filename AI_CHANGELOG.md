@@ -171,3 +171,105 @@
 ### Files Changed
 - `frontend/src/main.jsx`
 - `frontend/src/styles/dashboard.css`
+
+## [2026-05-26T20:45:00+05:30] - Collapsible Sidebar + Scrollable Logout
+
+### Added
+- Collapsible sidebar toggle (minimize to icon-only rail) with persisted state in `localStorage`.
+- Scrollable sidebar body so navigation, user info, and logout move together when scrolling.
+
+### Changed
+- Wired collapse state through `AppLayout` and animated grid width via CSS variables.
+- Refactored `Sidebar` layout: fixed header, scrollable nav + footer block (logout no longer pinned outside scroll flow).
+
+### Files Changed
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/styles/global.css`
+
+## [2026-05-26T21:15:00+05:30] - Team Management UI (Figma Screens)
+
+### Added
+- Built full Team Management module: list page with filters, stats, table, pagination, and delete modal.
+- Added Create Team multi-section form (details, coach/location, setup, branding upload, notes).
+- Added Team Details page with summary cards, quick actions, registered players table, linked matches table, and delete confirmation modal.
+- Added Edit Team page reusing the create form in edit mode.
+- Added shared management styles and reusable `DeleteConfirmModal` + table action icons.
+- Expanded sidebar with collapsible Teams submenu (Team List, Create Team).
+
+### Changed
+- Registered team routes: `/teams`, `/teams/create`, `/teams/:teamId`, `/teams/:teamId/edit`.
+- Create team form posts to `POST /api/teams/` when creating (edit mode updates UI locally for now).
+
+### Files Changed
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+- `frontend/src/pages/teams/EditTeamPage.jsx`
+- `frontend/src/pages/teams/teamsData.js`
+- `frontend/src/styles/management.css`
+- `frontend/src/components/common/DeleteConfirmModal.jsx`
+- `frontend/src/components/common/TableActionIcons.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/global.css`
+
+## [2026-05-27T11:25:00+05:30] - Tournament & Public Reports Pages + Collapsible Navigation Submenus
+
+### Added
+- Created `TournamentReportsPage.jsx` featuring dynamic searches, report type filtering, modal-based simulated report generation, and detail popups.
+- Created `PublicReportsPage.jsx` featuring a 3-column glassmorphic grid layout of shared highlights, views count increments, social sharing simulations, and a select-and-share report wizard.
+- Created `SettingsPage.jsx` scaffold component to enable valid link resolution in sidebar.
+- Created `reports.css` with dark glassmorphism rules for lists, card headers, view layouts, badges, and modals.
+
+### Changed
+- Refactored `Sidebar.jsx` to dynamically support multiple expandable navigation sections (Teams, Players, Matches, Reports) with collapsible submenus and integrated settings icon.
+- Updated `AppRoutes.jsx` to map nested paths for `/reports/tournament`, `/reports/public`, and `/settings`.
+
+### Files Changed
+- `frontend/src/pages/reports/TournamentReportsPage.jsx`
+- `frontend/src/pages/reports/PublicReportsPage.jsx`
+- `frontend/src/pages/settings/SettingsPage.jsx`
+- `frontend/src/styles/reports.css`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+
+## [2026-05-27T11:12:00+05:30] - Premium Dark Theme & Responsive Tabs for Teams Section
+
+### Added
+- Integrated shared page-level navigation tabs at the top of the Teams section, enabling seamless switching between Team Directory and Create Team.
+- Added responsive sub-tabs inside Team Directory: "All Teams" (table & pagination) and "Stats & Analytics" (aggregated cards, division breakdowns, roster ratio bars).
+- Created a multi-step form wizard layout inside Create/Edit Team pages (divided into Team Info, Logistics, and Roster & Media steps) with forward/backward footer navigation controls.
+- Added glowing ambient background accents to the Teams, Create Team, and Team Details views.
+
+### Changed
+- Overhauled `management.css` from a light theme to a premium dark glassmorphic design (transparent background panels, fine white borders, amber highlights) aligning with the app shell.
+- Refactored `TeamsPage.jsx`, `CreateTeamPage.jsx`, and `TeamDetailsPage.jsx` to adopt the dark-mode layout parameters, new typography, and micro-animations.
+
+### Files Changed
+- `frontend/src/styles/management.css`
+- `frontend/src/pages/teams/TeamsPage.jsx`
+- `frontend/src/pages/teams/CreateTeamPage.jsx`
+- `frontend/src/pages/teams/TeamDetailsPage.jsx`
+
+## [2026-05-27T11:30:00+05:30] - Auto-Collapse and Hover Expansion for Sidebar Sub-menus
+
+### Added
+- Implemented hover-triggered auto-expansion (`onMouseEnter`) for sidebar navigation submenus (Teams, Players, Matches, Reports), allowing sections to slide down without requiring clicks.
+- Added mouse exit handlers (`onMouseLeave`) to auto-collapse hovered submenus when moving the cursor away (active section submenus are preserved).
+
+### Changed
+- Refactored `Sidebar.jsx` navigation listeners to synchronize submenu collapse states bi-directionally. Expanded sub-menus now automatically collapse ("roll back") when navigating away.
+
+### Files Changed
+- `frontend/src/components/layout/Sidebar.jsx`
+
+## [2026-05-27T11:40:00+05:30] - Smooth & Responsive Leaderboard Page
+
+### Added
+- Created `LeaderboardsPage.jsx` containing interactive tournament and division filters, rank cards for both teams and players, top three top performer highlight badges (gold/silver/bronze), and responsive highlight stats at the bottom.
+- Created `leaderboards.css` with dark mode glassmorphism styles, hover transformations, layout grid columns, and media query wrappers.
+
+### Files Changed
+- `frontend/src/pages/leaderboards/LeaderboardsPage.jsx`
+- `frontend/src/styles/leaderboards.css`

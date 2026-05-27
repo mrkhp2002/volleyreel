@@ -8,10 +8,15 @@ import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import TournamentsPage from "../pages/tournaments/TournamentsPage";
 import TeamsPage from "../pages/teams/TeamsPage";
+import CreateTeamPage from "../pages/teams/CreateTeamPage";
+import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
+import EditTeamPage from "../pages/teams/EditTeamPage";
 import PlayersPage from "../pages/players/PlayersPage";
 import MatchesPage from "../pages/matches/MatchesPage";
 import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
-import ReportsPage from "../pages/reports/ReportsPage";
+import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
+import PublicReportsPage from "../pages/reports/PublicReportsPage";
+import SettingsPage from "../pages/settings/SettingsPage";
 import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
 
 export default function AppRoutes() {
@@ -29,11 +34,17 @@ export default function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tournaments" element={<TournamentsPage />} />
           <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/teams/create" element={<CreateTeamPage />} />
+          <Route path="/teams/:teamId/edit" element={<EditTeamPage />} />
+          <Route path="/teams/:teamId" element={<TeamDetailsPage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />
+          <Route path="/reports/tournament" element={<TournamentReportsPage />} />
+          <Route path="/reports/public" element={<PublicReportsPage />} />
           <Route path="/leaderboards" element={<LeaderboardsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         {/* Fallback route */}
