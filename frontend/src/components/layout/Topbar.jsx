@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import useNotifications from "../../hooks/useNotifications";
 
 function SearchIcon() {
   return (
@@ -59,6 +60,7 @@ function MenuIcon() {
 
 export default function Topbar({ onMobileToggle }) {
   const { user, logout } = useAuth();
+  const { alerts, unreadCount, handleMarkAsRead } = useNotifications();
   const displayName = user?.fullName || "Coach Admin";
   const displayEmail = user?.email || "admin@volleyreel.com";
 
@@ -86,10 +88,49 @@ export default function Topbar({ onMobileToggle }) {
       </div>
 
       <div className="topbar-actions">
-        <button type="button" className="topbar-notify-btn" aria-label="Notifications">
-          <BellIcon />
-          <span className="topbar-notify-dot" />
-        </button>
+        <div className="topbar-notify-container">
+          <button type="button" className="topbar-notify-btn" aria-label="Notifications">
+            <BellIcon />
+            {unreadCount > 0 && <span className="topbar-notify-dot" />}
+          </button>
+
+          <div className="topbar-notify-dropdown">
+            <div className="notify-header">
+              <span className="notify-header-title">Notifications</span>
+              <span className="notify-badge-new">{unreadCount} new</span>
+            </div>
+
+            <div className="notify-list">
+              {alerts.length > 0 ? (
+                alerts.slice(0, 4).map((alert) => (
+                  <Link
+                    key={alert.id}
+                    to={alert.link}
+                    onClick={() => handleMarkAsRead(alert.id)}
+                    className={`notify-item ${alert.unread ? "unread" : ""}`}
+                  >
+                    <div className="notify-item-content">
+                      <div className="notify-item-title">{alert.title}</div>
+                      <div className="notify-item-desc">{alert.desc}</div>
+                      <div className="notify-item-time">{alert.time}</div>
+                    </div>
+                    {alert.unread && <span className="notify-unread-dot" />}
+                  </Link>
+                ))
+              ) : (
+                <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                  No notifications
+                </div>
+              )}
+            </div>
+
+            <div className="notify-footer">
+              <Link to="/notifications" className="notify-view-all">
+                View All Notifications
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <div className="topbar-user-menu-container">
           <div className="topbar-user-pill">

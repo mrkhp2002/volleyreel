@@ -27,6 +27,7 @@ import PublicReportsPage from "../pages/reports/PublicReportsPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
+import NotificationsPage from "../pages/notifications/NotificationsPage";
 
 export default function AppRoutes() {
   return (
@@ -71,6 +72,7 @@ export default function AppRoutes() {
           <Route path="/leaderboards" element={<LeaderboardsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
 
         {/* Fallback route */}

@@ -611,3 +611,24 @@
 ### Files Changed
 - `frontend/src/pages/dashboard/DashboardPage.jsx`
 - `frontend/src/pages/players/PlayersPage.jsx`
+
+## [2026-05-27T19:55:00+05:30] - Implement Global Notifications Synchronized Dropdown & Logs Page
+
+### Added
+- Created `NotificationsContext.jsx` to maintain global, localStorage-persistent notifications and unread alert counts.
+- Created `useNotifications.js` React hook for component consumption.
+
+### Changed
+- Connected `Topbar.jsx` notifications dropdown to use the shared notifications state, dynamically updating the unread badge and the listed preview items.
+- Connected `NotificationsPage.jsx` to the global hook to sync notifications list management (mark-as-read, delete, clear all, tabs filter) across views.
+- Modified `main.jsx` to wrap the app root inside the new `NotificationsProvider` and added its state key to the local storage self-healing system.
+- Polished the responsive alignment of `.topbar-notify-dropdown` in `global.css` for viewports under 640px.
+
+### Files Changed
+- `frontend/src/contexts/NotificationsContext.jsx`
+- `frontend/src/hooks/useNotifications.js`
+- `frontend/src/main.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/pages/notifications/NotificationsPage.jsx`
+- `frontend/src/styles/global.css`
+
