@@ -717,3 +717,14 @@
 
 ### Files Changed
 - `frontend/src/styles/admin.css`
+
+## [2026-05-29T00:29:00+05:30] - Implement Hover Dynamics and Logo Centering on Admin Sidebar
+
+### Changed
+- Refactored `AdminDashboardPage.jsx` to expand the sidebar on hover (`onMouseEnter`/`onMouseLeave`) and removed the manual toggle collapse button from the sidebar header.
+- Updated `admin.css` to use a stable grid layout for the page, preventing reflow/shifting of main content when the sidebar expands.
+- Styled header centering, brand logo alignment, active nav items, and centered icons inside the collapsed state of the admin sidebar.
+
+### Files Changed
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/styles/admin.css`

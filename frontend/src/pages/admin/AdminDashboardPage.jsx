@@ -112,7 +112,8 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate();
   
   // State variables
-  const [collapsed, setCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const collapsed = !isHovered;
   const [currentView, setCurrentView] = useState("overview"); // overview, users, jobs, moderation
   const [searchQuery, setSearchQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -223,13 +224,17 @@ export default function AdminDashboardPage() {
     <div className="admin-dashboard">
       
       {/* Sidebar Layout */}
-      <aside className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}>
+      <aside 
+        className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className="admin-sidebar-header">
           <a href="#" className="admin-brand" onClick={(e) => { e.preventDefault(); setCurrentView("overview"); }}>
             <div className="admin-brand-logo">
               <svg viewBox="0 0 100 100" fill="none" style={{ width: "20px", height: "20px" }}>
-                <circle cx="50" cy="50" r="36" fill="#2563eb" />
-                <circle cx="50" cy="50" r="42" stroke="#ea580c" strokeWidth="2" strokeDasharray="5 3" />
+                <circle cx="50" cy="50" r="36" fill="#3b82f6" />
+                <circle cx="50" cy="50" r="42" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 3" />
               </svg>
             </div>
             <div className="admin-brand-text">
@@ -237,20 +242,6 @@ export default function AdminDashboardPage() {
               <span className="admin-brand-subtitle">Admin System</span>
             </div>
           </a>
-          <button 
-            type="button" 
-            className="admin-sidebar-toggle"
-            onClick={() => setCollapsed(!collapsed)}
-            aria-label="Toggle Sidebar"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ width: "16px", height: "16px" }}>
-              {collapsed ? (
-                <polyline points="9 18 15 12 9 6" />
-              ) : (
-                <polyline points="15 18 9 12 15 6" />
-              )}
-            </svg>
-          </button>
         </div>
 
         <nav className="admin-sidebar-nav">

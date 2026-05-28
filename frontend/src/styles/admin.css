@@ -28,9 +28,10 @@
   --admin-warning-light: rgba(245, 158, 11, 0.15);
   
   --admin-sidebar-width: 260px;
-  --admin-sidebar-width-collapsed: 72px;
+  --admin-sidebar-width-collapsed: 76px;
 
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--admin-sidebar-width-collapsed) 1fr;
   min-height: 100vh;
   background-color: var(--bg-admin-app);
   color: var(--text-admin-main);
@@ -71,13 +72,15 @@
   height: 100vh;
   position: sticky;
   top: 0;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
   overflow: hidden;
   z-index: 100;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
 }
 
 .admin-sidebar.collapsed {
   width: var(--admin-sidebar-width-collapsed);
+  box-shadow: none;
 }
 
 .admin-sidebar-header {
@@ -139,16 +142,18 @@
 }
 
 .admin-sidebar-toggle {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-admin);
-  color: var(--text-admin-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
+  display: none !important;
+}
+
+.admin-sidebar.collapsed .admin-sidebar-header {
   justify-content: center;
-  transition: all 0.2s;
+  padding: 16px 0;
+}
+
+.admin-sidebar.collapsed .admin-brand {
+  justify-content: center;
+  width: 100%;
+  gap: 0;
 }
 
 .admin-sidebar-toggle:hover {
@@ -221,11 +226,13 @@
 .admin-sidebar.collapsed .admin-nav-item {
   justify-content: center;
   padding: 10px;
+  gap: 0;
 }
 
 .admin-sidebar.collapsed .admin-nav-item.active {
   border-left: none;
-  background-color: rgba(245, 158, 11, 0.2);
+  background-color: var(--admin-accent-orange-light);
+  border-radius: 8px;
 }
 
 /* Sidebar Footer (Logout) */
