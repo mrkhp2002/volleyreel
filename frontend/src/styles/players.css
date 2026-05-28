@@ -34,8 +34,7 @@
 /* Specific filter select layout override */
 .players-filter-select {
   min-width: 150px;
-  width: auto;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 /* Modal Overlay Centered */
