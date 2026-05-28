@@ -7,22 +7,8 @@ const SIDEBAR_STORAGE_KEY = "volleyreel-sidebar-collapsed";
 
 export default function AppLayout() {
   const location = useLocation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [isHovered, setIsHovered] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
-    } catch {
-      // ignore storage errors
-    }
-  }, [sidebarCollapsed]);
 
   // Close mobile sidebar drawer automatically on page transitions
   useEffect(() => {
@@ -30,12 +16,14 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className={`app-shell${sidebarCollapsed ? " app-shell--sidebar-collapsed" : ""}`}>
+    <div className="app-shell app-shell--sidebar-collapsed">
       <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((prev) => !prev)}
+        collapsed={!isHovered}
+        onToggle={() => {}}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       />
       <div className="main-content">
         <Topbar onMobileToggle={() => setMobileSidebarOpen((prev) => !prev)} />

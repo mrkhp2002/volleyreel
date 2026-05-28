@@ -659,11 +659,35 @@
 - Updated `.reports-filter-select` and `.leaderboard-filter-select` to use `flex: 1` instead of `width: auto`, allowing desktop scaling.
 - Updated `.reports-search-wrapper` to use `flex: 2` to match the proportions of the other filter rows.
 
-### Files Changed
-- `frontend/src/styles/analytics.css`
-- `frontend/src/styles/reports.css`
 - `frontend/src/styles/leaderboards.css`
 
+## [2026-05-28T22:58:00+05:30] - Implement Hover-Triggered Sidebar Expansion (Desktop Overlay)
 
+### Added
+- Integrated `onMouseEnter` and `onMouseLeave` props and callbacks in `Sidebar.jsx` and attached them to the sidebar's `<aside>` container.
 
+### Changed
+- Refactored `AppLayout.jsx` to maintain a stable, non-shifting grid width (`76px`) on desktop, while using a local hover state to control the collapsed state of the sidebar.
+- Modified `global.css` sidebar layout rules to explicit pixel dimensions (`250px` when expanded, `76px` when collapsed) with a smooth transition and premium overlay drop shadow.
+- Hid the redundant manual toggle collapse button (`.sidebar-collapse-btn`) on desktop viewports.
 
+### Files Changed
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/styles/global.css`
+## [2026-05-28T23:48:00+05:30] - Center and Redesign Brand Logo Mark
+
+### Added
+- Created modern, geometric SVG `Logo.jsx` component representing a volleyball with custom linear gradients and clean transparent seam masking.
+
+### Changed
+- Integrated `<Logo />` in `Sidebar.jsx`, `Topbar.jsx`, `AuthBrand.jsx`, and `AuthLayout.jsx` to replace the raw `🏐` emoji.
+- Centered the brand logo in the collapsed desktop sidebar in `global.css` using `justify-content: center` and padding overrides.
+
+### Files Changed
+- `frontend/src/components/common/Logo.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/components/layout/auth/AuthBrand.jsx`
+- `frontend/src/components/layout/auth/AuthLayout.jsx`
+- `frontend/src/styles/global.css`
