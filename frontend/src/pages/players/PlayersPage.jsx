@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { ViewIcon, EditIcon, TrashIcon, PlusIcon } from "../../components/common/TableActionIcons";
@@ -82,6 +82,15 @@ export default function PlayersPage() {
   useEffect(() => {
     localStorage.setItem("volleyreel_players", JSON.stringify(players));
   }, [players]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("add") === "true") {
+      setIsAddOpen(true);
+    }
+  }, [location]);
 
   // Search & filter states
   const [search, setSearch] = useState("");

@@ -558,4 +558,77 @@
 - `frontend/src/pages/matches/MatchDetailsPage.jsx`
 - `frontend/src/pages/matches/MatchesCreatePage.jsx`
 - `frontend/src/pages/matches/MatchesUploadPage.jsx`
-- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+
+## [2026-05-27T17:51:00+05:30] - Implement User Profile Dropdown & Settings Dashboard Tabs
+
+### Added
+- Integrated hover-triggered user profile dropdown menu inside the `Topbar.jsx` component that displays profile metadata, links to dedicated tabs, and actions logout.
+- Styled user dropdown card inside `global.css` with radial gradient glowing avatar, typography, dividers, and custom transitions (smooth fade-in and scale-up on hover).
+- Completely re-architected `SettingsPage.jsx` to build a multi-tab settings panel containing interactive forms for Profile Biography (with avatar upload triggers), Platform Defaults (CV calibration sliders and rules selects), Instant Notification Toggles, and Account Security zones.
+
+### Changed
+- Configured settings navigation tabs to automatically route and update view panes dynamically based on query parameters matching dropdown option selections.
+
+### Files Changed
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/styles/global.css`
+
+## [2026-05-27T19:10:00+05:30] - Fix Stacking Context for User Profile Dropdown
+
+### Changed
+- Added `position: relative` and `z-index: 100` to the `.topbar` container in `global.css` to prevent the user profile hover dropdown from rendering behind dashboard cards and elements.
+
+
+## [2026-05-27T19:17:00+05:30] - Create User Profile Page with Live Edit Modals
+
+### Added
+- Created `ProfilePage.jsx` featuring detailed profile cards (Summary, Personal Info, Account Info, Preferences, Security, and Activity stats counters) matching the mockup layouts.
+- Created `profile.css` containing custom grid columns, details list layouts, stats cards, and glassmorphic pop-up edit modals.
+- Implemented functional edit modals for editing profile details (with avatar picture uploader), changing password, managing security, and updating preferences in-place.
+
+### Changed
+- Extended `AuthContext.jsx` with an `updateUser` function to sync profile changes in real-time across the app.
+- Registered `/profile` route in `AppRoutes.jsx`.
+- Directed "View Profile" option inside `Topbar.jsx` user dropdown to `/profile`.
+- Patched `Topbar.jsx` and `Sidebar.jsx` to render custom profile avatars from context.
+
+### Files Changed
+- `frontend/src/contexts/AuthContext.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/styles/profile.css`
+- `frontend/src/pages/profile/ProfilePage.jsx`
+
+## [2026-05-27T19:35:00+05:30] - Fine-tune Dashboard Quick Actions & Player Registration Trigger
+
+### Added
+- Integrated a query parameter listener (`?add=true`) inside `PlayersPage.jsx` to automatically pop up the "Add Player" modal upon loading.
+
+### Changed
+- Refactored all Dashboard "Quick Actions" buttons inside `DashboardPage.jsx` to route directly to their respective subpage destinations (e.g. `/tournaments/create`, `/teams/create`, `/players?add=true`, `/matches/create`, `/matches/upload`, and `/reports/tournament`) rather than general indexes.
+
+### Files Changed
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/pages/players/PlayersPage.jsx`
+
+## [2026-05-27T19:55:00+05:30] - Implement Global Notifications Synchronized Dropdown & Logs Page
+
+### Added
+- Created `NotificationsContext.jsx` to maintain global, localStorage-persistent notifications and unread alert counts.
+- Created `useNotifications.js` React hook for component consumption.
+
+### Changed
+- Connected `Topbar.jsx` notifications dropdown to use the shared notifications state, dynamically updating the unread badge and the listed preview items.
+- Connected `NotificationsPage.jsx` to the global hook to sync notifications list management (mark-as-read, delete, clear all, tabs filter) across views.
+- Modified `main.jsx` to wrap the app root inside the new `NotificationsProvider` and added its state key to the local storage self-healing system.
+- Polished the responsive alignment of `.topbar-notify-dropdown` in `global.css` for viewports under 640px.
+
+### Files Changed
+- `frontend/src/contexts/NotificationsContext.jsx`
+- `frontend/src/hooks/useNotifications.js`
+- `frontend/src/main.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/pages/notifications/NotificationsPage.jsx`
+- `frontend/src/styles/global.css`
+

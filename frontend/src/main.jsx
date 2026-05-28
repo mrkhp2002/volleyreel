@@ -2,10 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 import "./styles/global.css";
 
 // Self-healing check for local storage
-const keys = ["volleyreel_tournaments", "volleyreel_matches", "volleyreel_players"];
+const keys = ["volleyreel_tournaments", "volleyreel_matches", "volleyreel_players", "volleyreel_notifications"];
 keys.forEach(key => {
   const saved = localStorage.getItem(key);
   if (saved) {
@@ -25,6 +26,8 @@ keys.forEach(key => {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <AuthProvider>
-    <App />
+    <NotificationsProvider>
+      <App />
+    </NotificationsProvider>
   </AuthProvider>
 );
