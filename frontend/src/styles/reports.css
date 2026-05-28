@@ -78,10 +78,34 @@
   gap: 14px;
   align-items: center;
   z-index: 1;
+  position: relative;
+  transition: z-index 0.2s ease;
+}
+
+.reports-filter-bar:hover {
+  z-index: 2;
+}
+
+.reports-filter-bar:focus-within {
+  z-index: 10;
+}
+
+/* Override custom select trigger inside reports filter bar to blend with search inputs */
+.reports-filter-bar .custom-select-trigger {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.reports-filter-bar .custom-select-trigger:hover,
+.reports-filter-bar .custom-select-trigger:focus,
+.reports-filter-bar .custom-select-trigger.open {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
 }
 
 .reports-search-wrapper {
-  flex: 1;
+  flex: 2;
   position: relative;
   display: flex;
   align-items: center;
@@ -120,8 +144,7 @@
 
 .reports-filter-select {
   min-width: 200px;
-  width: auto;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 /* Tournament Reports List View */

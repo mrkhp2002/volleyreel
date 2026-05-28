@@ -753,6 +753,10 @@ body {
   width: 100%;
 }
 
+.custom-select-container:focus-within {
+  z-index: 100;
+}
+
 .custom-select-trigger {
   width: 100%;
   padding: 10px 16px;

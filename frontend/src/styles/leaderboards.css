@@ -65,12 +65,34 @@
   gap: 14px;
   z-index: 1;
   position: relative;
+  transition: z-index 0.2s ease;
+}
+
+.leaderboard-filter-bar:hover {
+  z-index: 2;
+}
+
+.leaderboard-filter-bar:focus-within {
+  z-index: 10;
+}
+
+/* Override custom select trigger inside leaderboard filter bar to blend with dashboard elements */
+.leaderboard-filter-bar .custom-select-trigger {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-filter-bar .custom-select-trigger:hover,
+.leaderboard-filter-bar .custom-select-trigger:focus,
+.leaderboard-filter-bar .custom-select-trigger.open {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--secondary, #3b82f6);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
 }
 
 .leaderboard-filter-select {
   min-width: 220px;
-  width: auto;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 /* Double column rankings layout */

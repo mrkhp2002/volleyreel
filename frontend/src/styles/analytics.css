@@ -65,6 +65,29 @@
   justify-content: flex-end;
   z-index: 1;
   position: relative;
+  transition: z-index 0.2s ease;
+}
+
+.analytics-filter-row:hover {
+  z-index: 2;
+}
+
+.analytics-filter-row:focus-within {
+  z-index: 10;
+}
+
+/* Override custom select trigger inside analytics filter row to blend with dashboard theme */
+.analytics-filter-row .custom-select-trigger {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.analytics-filter-row .custom-select-trigger:hover,
+.analytics-filter-row .custom-select-trigger:focus,
+.analytics-filter-row .custom-select-trigger.open {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--secondary, #3b82f6);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
 }
 
 .analytics-filter-select {

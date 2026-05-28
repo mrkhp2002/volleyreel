@@ -632,3 +632,38 @@
 - `frontend/src/pages/notifications/NotificationsPage.jsx`
 - `frontend/src/styles/global.css`
 
+## [2026-05-28T22:20:00+05:30] - Fix Dropdown Select List Z-Index Stacking Context
+
+### Changed
+- Added `:focus-within` and `:hover` z-index overrides on `.mgmt-card` in `management.css` to dynamically lift the stacking layer of cards containing active form elements.
+- Added `:focus-within` z-index rule for `.custom-select-container` in `global.css` to guarantee open select dropdown menus stack on top of other sibling inputs inside the same card.
+
+- `frontend/src/styles/global.css`
+
+## [2026-05-28T22:38:00+05:30] - Fix Filter Dropdowns Z-Index Layering and Layout Alignment
+
+### Changed
+- Added focus-within z-index rules for `.mgmt-filter-bar` and `.matches-filter-bar` to lift their stacking layer above stats rows and tables when select dropdowns are active.
+- Overrode custom select trigger background colors in filter bars to match input fields (e.g. `rgba(255, 255, 255, 0.04)` on Matches page and `rgba(255, 255, 255, 0.03)` on Player Management page) for visual consistency.
+- Updated `.matches-filter-select` and `.players-filter-select` to use `flex: 1` instead of `width: auto`, allowing even desktop scaling.
+- Configured media queries for filter bars to stack vertically on screen widths <= 768px and set width to 100% for full mobile layout blending.
+
+### Files Changed
+- `frontend/src/styles/management.css`
+
+## [2026-05-28T22:46:00+05:30] - Fix Dropdowns Z-Index Layering and Layout for Analytics, Reports, and Leaderboards
+
+### Changed
+- Added focus-within z-index rules for `.analytics-filter-row`, `.reports-filter-bar`, and `.leaderboard-filter-bar` to lift their stacking layer above stats grids and lists when select dropdowns are active.
+- Overrode custom select trigger background colors in those filter rows to match input fields (e.g. `rgba(255, 255, 255, 0.04)` on Reports and `rgba(255, 255, 255, 0.03)` on Analytics and Leaderboards) for visual consistency.
+- Updated `.reports-filter-select` and `.leaderboard-filter-select` to use `flex: 1` instead of `width: auto`, allowing desktop scaling.
+- Updated `.reports-search-wrapper` to use `flex: 2` to match the proportions of the other filter rows.
+
+### Files Changed
+- `frontend/src/styles/analytics.css`
+- `frontend/src/styles/reports.css`
+- `frontend/src/styles/leaderboards.css`
+
+
+
+
