@@ -708,3 +708,12 @@
 - `frontend/src/styles/admin.css`
 - `frontend/src/pages/admin/AdminDashboardPage.jsx`
 - `frontend/src/routes/AppRoutes.jsx`
+
+## [2026-05-29T00:25:00+05:30] - Redesign Admin Dashboard Theme with Premium Dark Glassmorphism
+
+### Changed
+- Refactored `admin.css` variables, background filters, borders, and modal shadows to implement the dark glassmorphic styling, matching the exact look-and-feel of other platform UIs.
+- Styled panels, sidebar links, header controls, KPI cards, text readability, inputs, and moderation lists with a gold, blue, and dark theme.
+
+### Files Changed
+- `frontend/src/styles/admin.css`
