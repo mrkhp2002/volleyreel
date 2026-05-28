@@ -28,6 +28,7 @@ import SettingsPage from "../pages/settings/SettingsPage";
 import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 
 export default function AppRoutes() {
   return (
@@ -74,6 +75,16 @@ export default function AppRoutes() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
+
+        {/* Admin Dashboard Routes */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Fallback route */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -688,6 +688,23 @@
 - `frontend/src/components/common/Logo.jsx`
 - `frontend/src/components/layout/Sidebar.jsx`
 - `frontend/src/components/layout/Topbar.jsx`
-- `frontend/src/components/layout/auth/AuthBrand.jsx`
 - `frontend/src/components/layout/auth/AuthLayout.jsx`
 - `frontend/src/styles/global.css`
+
+## [2026-05-29T00:15:00+05:30] - Create Scoped Admin Dashboard UI and Intercept Credentials
+
+### Added
+- Created `frontend/src/pages/admin/AdminDashboardPage.jsx` featuring System Overview default cards, KPI widgets with sparkline charts, User Management, AI Job Queue monitor, and Content Moderation lists.
+- Created `frontend/src/styles/admin.css` containing variables, layouts, tables, and badge styling, scoped under `.admin-dashboard` to isolate it from the rest of the application.
+
+### Changed
+- Intercepted the admin credentials (`admin@volleyreel.com` / `admin123`) in `LoginForm.jsx` to log in as role `"admin"` and redirect to the admin panel.
+- Modified `ProtectedRoute.jsx` to check `allowedRoles` for role-locked pages.
+- Mounted `/admin/dashboard` in `AppRoutes.jsx` locked to `"admin"` users.
+
+### Files Changed
+- `frontend/src/routes/ProtectedRoute.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/styles/admin.css`
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
