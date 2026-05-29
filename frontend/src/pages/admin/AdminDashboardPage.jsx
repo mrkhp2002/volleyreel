@@ -114,13 +114,38 @@ export default function AdminDashboardPage() {
   // State variables
   const [isHovered, setIsHovered] = useState(false);
   const collapsed = !isHovered;
-  const [currentView, setCurrentView] = useState("overview"); // overview, users, jobs, moderation
+  const [currentView, setCurrentView] = useState("overview"); // overview, users, jobs, moderation, system_settings, database_backups
   const [searchQuery, setSearchQuery] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [passwordModal, setPasswordModal] = useState(null); // coach object or null
   const [tempPassword, setTempPassword] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // System Settings States
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [systemSettings, setSystemSettings] = useState({
+    platformName: "VolleyReel",
+    maintenanceMode: false,
+    supportEmail: "support@volleyreel.com",
+    aiModel: "VolleyNet-v4.2",
+    maxUploadSize: "1GB",
+    frameRate: "30fps",
+    mfaRequired: true,
+    rateLimit: 120,
+    allowedFormats: "mp4, mov"
+  });
+
+  // Database Backups States
+  const [backups, setBackups] = useState([
+    { id: "BK-1001", date: "2026-05-28 02:00", size: "74.8 KB", createdBy: "System (Auto)", status: "Completed" },
+    { id: "BK-1002", date: "2026-05-27 02:00", size: "73.2 KB", createdBy: "System (Auto)", status: "Completed" },
+    { id: "BK-1003", date: "2026-05-26 14:10", size: "72.5 KB", createdBy: "System Admin", status: "Completed" },
+    { id: "BK-1004", date: "2026-05-25 02:00", size: "71.9 KB", createdBy: "System (Auto)", status: "Completed" }
+  ]);
+  const [restoreModal, setRestoreModal] = useState(null); // backup object or null
+  const [restoring, setRestoring] = useState(false);
+  const [restoreConfirmInput, setRestoreConfirmInput] = useState("");
 
   // Close menus when clicking outside
   const profileRef = useRef(null);
@@ -365,14 +390,28 @@ export default function AdminDashboardPage() {
 
               {profileOpen && (
                 <div className="admin-dropdown-menu">
-                  <button className="admin-dropdown-item" onClick={() => alert("Admin profile settings page placeholder.")}>
+                  <button className="admin-dropdown-item" onClick={() => { setCurrentView("system_settings"); setProfileOpen(false); setSearchQuery(""); }}>
+                    <svg className="admin-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
                     System Settings
                   </button>
-                  <button className="admin-dropdown-item" onClick={() => alert("Database backups status: Normal.")}>
+                  <button className="admin-dropdown-item" onClick={() => { setCurrentView("database_backups"); setProfileOpen(false); setSearchQuery(""); }}>
+                    <svg className="admin-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <ellipse cx="12" cy="5" rx="9" ry="3" />
+                      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                    </svg>
                     Database Backups
                   </button>
                   <div className="admin-dropdown-divider" />
-                  <button className="admin-dropdown-item text-red-600" onClick={handleLogout} style={{ color: "var(--admin-danger)" }}>
+                  <button className="admin-dropdown-item text-red-600" onClick={handleLogout}>
+                    <svg className="admin-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
                     Logout
                   </button>
                 </div>
@@ -875,6 +914,332 @@ export default function AdminDashboardPage() {
             </>
           )}
 
+          {/* 5. SYSTEM SETTINGS VIEW */}
+          {currentView === "system_settings" && (
+            <>
+              <div className="admin-page-header">
+                <h1 className="admin-page-title">System Settings</h1>
+                <p className="admin-page-subtitle">Configure VolleyReel platform properties, AI processing defaults, security keys, and maintenance toggles.</p>
+              </div>
+
+              {settingsSaved && (
+                <div className="admin-alert-banner" style={{ backgroundColor: "var(--admin-success-light)", borderColor: "rgba(16, 185, 129, 0.25)", color: "var(--admin-success)", marginBottom: "20px" }}>
+                  <div className="admin-alert-banner-text">
+                    <span style={{ width: "18px", height: "18px", display: "inline-block" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: "100%", height: "100%" }}>
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                    <span>System settings successfully updated! Changes are live across all coach profiles.</span>
+                  </div>
+                  <button className="admin-modal-close" onClick={() => setSettingsSaved(false)} style={{ color: "var(--admin-success)" }}>×</button>
+                </div>
+              )}
+
+              <div className="admin-section-card">
+                <div className="admin-section-header">
+                  <h2 className="admin-section-title">Global Configuration Details</h2>
+                </div>
+
+                <form onSubmit={(e) => { e.preventDefault(); setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 4000); }} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  
+                  {/* Grid System */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
+                    
+                    {/* General Settings */}
+                    <div>
+                      <h3 style={{ fontSize: "0.9rem", fontWeight: "600", marginBottom: "16px", color: "var(--admin-accent-orange)", borderBottom: "1px solid var(--border-admin)", paddingBottom: "6px" }}>General Setup</h3>
+                      <div className="admin-form-group">
+                        <label htmlFor="platformName">Platform Name</label>
+                        <input 
+                          id="platformName"
+                          type="text" 
+                          className="admin-form-input" 
+                          value={systemSettings.platformName}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, platformName: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label htmlFor="supportEmail">Support Email</label>
+                        <input 
+                          id="supportEmail"
+                          type="email" 
+                          className="admin-form-input" 
+                          value={systemSettings.supportEmail}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, supportEmail: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="admin-form-group" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "24px" }}>
+                        <input 
+                          id="maintenanceMode"
+                          type="checkbox" 
+                          checked={systemSettings.maintenanceMode}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, maintenanceMode: e.target.checked })}
+                          style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                        />
+                        <label htmlFor="maintenanceMode" style={{ margin: 0, cursor: "pointer", textTransform: "none", fontSize: "0.85rem", fontWeight: "600", color: "var(--text-admin-main)" }}>
+                          Enable Global Maintenance Mode
+                        </label>
+                      </div>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-admin-muted)", margin: "4px 0 0 26px" }}>Blocks coaches from uploading videos and schedules offline messages.</p>
+                    </div>
+
+                    {/* AI Pipeline Settings */}
+                    <div>
+                      <h3 style={{ fontSize: "0.9rem", fontWeight: "600", marginBottom: "16px", color: "var(--admin-accent-orange)", borderBottom: "1px solid var(--border-admin)", paddingBottom: "6px" }}>AI Processing Rules</h3>
+                      <div className="admin-form-group">
+                        <label htmlFor="aiModel">Volleyball Track AI Model</label>
+                        <select 
+                          id="aiModel"
+                          className="admin-form-input animate-none" 
+                          style={{ background: "var(--bg-admin-sidebar)" }}
+                          value={systemSettings.aiModel}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, aiModel: e.target.value })}
+                        >
+                          <option value="VolleyNet-v4.2">VolleyNet-v4.2 (Default Active)</option>
+                          <option value="VolleyNet-v3.8">VolleyNet-v3.8 (Legacy Stable)</option>
+                          <option value="High-Precision Track-v2">High-Precision Track-v2 (Experimental)</option>
+                        </select>
+                      </div>
+                      <div className="admin-form-group">
+                        <label htmlFor="maxUploadSize">Max Video File Size</label>
+                        <select 
+                          id="maxUploadSize"
+                          className="admin-form-input animate-none"
+                          style={{ background: "var(--bg-admin-sidebar)" }}
+                          value={systemSettings.maxUploadSize}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, maxUploadSize: e.target.value })}
+                        >
+                          <option value="500MB">500 Megabytes (MB)</option>
+                          <option value="1GB">1 Gigabyte (GB)</option>
+                          <option value="2GB">2 Gigabytes (GB)</option>
+                        </select>
+                      </div>
+                      <div className="admin-form-group">
+                        <label htmlFor="frameRate">Target Inference Frame Rate</label>
+                        <select 
+                          id="frameRate"
+                          className="admin-form-input animate-none"
+                          style={{ background: "var(--bg-admin-sidebar)" }}
+                          value={systemSettings.frameRate}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, frameRate: e.target.value })}
+                        >
+                          <option value="30fps">30 Frames Per Second (Standard)</option>
+                          <option value="60fps">60 Frames Per Second (High Definition)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Security & Access */}
+                    <div>
+                      <h3 style={{ fontSize: "0.9rem", fontWeight: "600", marginBottom: "16px", color: "var(--admin-accent-orange)", borderBottom: "1px solid var(--border-admin)", paddingBottom: "6px" }}>Security & Network</h3>
+                      <div className="admin-form-group" style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px" }}>
+                        <input 
+                          id="mfaRequired"
+                          type="checkbox" 
+                          checked={systemSettings.mfaRequired}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, mfaRequired: e.target.checked })}
+                          style={{ width: "16px", height: "16px", cursor: "pointer" }}
+                        />
+                        <label htmlFor="mfaRequired" style={{ margin: 0, cursor: "pointer", textTransform: "none", fontSize: "0.85rem", fontWeight: "600", color: "var(--text-admin-main)" }}>
+                          Require Multi-Factor Auth (MFA)
+                        </label>
+                      </div>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-admin-muted)", margin: "4px 0 16px 26px" }}>Forces all registered coaches to link verification apps.</p>
+                      
+                      <div className="admin-form-group">
+                        <label htmlFor="rateLimit">API Rate Limit (Requests/Min)</label>
+                        <input 
+                          id="rateLimit"
+                          type="number" 
+                          className="admin-form-input" 
+                          value={systemSettings.rateLimit}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, rateLimit: parseInt(e.target.value) || 0 })}
+                          required
+                        />
+                      </div>
+                      <div className="admin-form-group">
+                        <label htmlFor="allowedFormats">Allowed Upload Formats</label>
+                        <input 
+                          id="allowedFormats"
+                          type="text" 
+                          className="admin-form-input" 
+                          value={systemSettings.allowedFormats}
+                          onChange={(e) => setSystemSettings({ ...systemSettings, allowedFormats: e.target.value })}
+                          placeholder="e.g. mp4, mov"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Form Actions Footer */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: "1px solid var(--border-admin)", paddingTop: "16px", marginTop: "12px" }}>
+                    <button type="button" className="admin-btn admin-btn-secondary" onClick={() => {
+                      setSystemSettings({
+                        platformName: "VolleyReel",
+                        maintenanceMode: false,
+                        supportEmail: "support@volleyreel.com",
+                        aiModel: "VolleyNet-v4.2",
+                        maxUploadSize: "1GB",
+                        frameRate: "30fps",
+                        mfaRequired: true,
+                        rateLimit: 120,
+                        allowedFormats: "mp4, mov"
+                      });
+                    }}>
+                      Reset Defaults
+                    </button>
+                    <button type="submit" className="admin-btn admin-btn-primary">
+                      Save System Settings
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </>
+          )}
+
+          {/* 6. DATABASE BACKUPS VIEW */}
+          {currentView === "database_backups" && (
+            <>
+              <div className="admin-page-header">
+                <h1 className="admin-page-title">Database Management & Backups</h1>
+                <p className="admin-page-subtitle">Schedule database dumps, view storage allocations, restore to past states, or manually trigger full SQLite system backups.</p>
+              </div>
+
+              {/* Stats/Status Row */}
+              <div className="admin-kpi-grid">
+                
+                {/* SQLite Health */}
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">SQLITE SYSTEM STATUS</span>
+                    <span className="admin-badge success">Online</span>
+                  </div>
+                  <div className="admin-kpi-body" style={{ flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+                    <span className="admin-kpi-value" style={{ fontSize: "1.4rem" }}>Stable Connection</span>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-admin-muted)" }}>Target File: <code>volleyreel.db</code></span>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-admin-muted)" }}>Database File Size: <strong>76.0 KB</strong></span>
+                  </div>
+                </div>
+
+                {/* Backups Summary */}
+                <div className="admin-kpi-card">
+                  <div className="admin-kpi-header">
+                    <span className="admin-kpi-label">BACKUP ARCHIVES HEALTH</span>
+                    <span className="admin-nav-icon" style={{ width: "16px", height: "16px", color: "var(--admin-accent-orange)" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="admin-kpi-body" style={{ flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+                    <span className="admin-kpi-value" style={{ fontSize: "1.4rem" }}>{backups.length} Recovery Points</span>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-admin-muted)" }}>Last Backup: <strong>{backups[0]?.date || "Never"}</strong></span>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-admin-muted)" }}>Storage Allocation: <strong>~292 KB</strong></span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Logs Card */}
+              <div className="admin-section-card">
+                <div className="admin-section-header">
+                  <h2 className="admin-section-title">
+                    <span className="admin-nav-icon" style={{ width: "18px", height: "18px" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+                        <ellipse cx="12" cy="5" rx="9" ry="3" />
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                      </svg>
+                    </span>
+                    Database Backup History
+                  </h2>
+                  <button 
+                    className="admin-btn admin-btn-primary admin-btn-xs"
+                    onClick={() => {
+                      const newId = `BK-${Math.floor(1005 + Math.random() * 9000)}`;
+                      const now = new Date();
+                      const dateString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+                      const sizeString = `${(75.5 + Math.random()).toFixed(1)} KB`;
+                      const newBackup = {
+                        id: newId,
+                        date: dateString,
+                        size: sizeString,
+                        createdBy: "System Admin",
+                        status: "Completed"
+                      };
+                      setBackups([newBackup, ...backups]);
+                      alert(`Manual database backup ${newId} has been successfully compiled and stored.`);
+                    }}
+                  >
+                    + Trigger Manual Backup
+                  </button>
+                </div>
+
+                <div className="admin-table-container">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Backup ID</th>
+                        <th>Created Timestamp</th>
+                        <th>Archive Size</th>
+                        <th>Created By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {backups.map((bk) => (
+                        <tr key={bk.id}>
+                          <td><code>{bk.id}</code></td>
+                          <td>{bk.date}</td>
+                          <td>{bk.size}</td>
+                          <td>{bk.createdBy}</td>
+                          <td>
+                            <span className="admin-badge success">{bk.status}</span>
+                          </td>
+                          <td>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button 
+                                className="admin-btn admin-btn-secondary admin-btn-xs"
+                                onClick={() => alert(`Downloading SQL script ${bk.id}.sql file to your computer.`)}
+                              >
+                                Download
+                              </button>
+                              <button 
+                                className="admin-btn admin-btn-warning admin-btn-xs"
+                                onClick={() => { setRestoreModal(bk); setRestoreConfirmInput(""); }}
+                              >
+                                Restore
+                              </button>
+                              <button 
+                                className="admin-btn admin-btn-danger admin-btn-xs"
+                                onClick={() => {
+                                  if (confirm(`Confirm deletion of backup archive ${bk.id}?`)) {
+                                    setBackups(backups.filter(b => b.id !== bk.id));
+                                  }
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
         </main>
       </div>
 
@@ -916,6 +1281,97 @@ export default function AdminDashboardPage() {
               <button className="admin-btn admin-btn-secondary" onClick={() => setPasswordModal(null)}>
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESTORE DATABASE MODAL */}
+      {restoreModal && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal">
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Restore Database State</h3>
+              <button 
+                className="admin-modal-close" 
+                onClick={() => { if (!restoring) setRestoreModal(null); }}
+                disabled={restoring}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="admin-modal-body">
+              {restoring ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "30px 0" }}>
+                  <div className="admin-spinner" style={{ marginBottom: "16px" }}></div>
+                  <p style={{ color: "var(--text-admin-main)", fontSize: "0.9rem", fontWeight: "500" }}>Restoring backup {restoreModal.id}...</p>
+                  <p style={{ color: "var(--text-admin-muted)", fontSize: "0.75rem", marginTop: "4px" }}>Rebuilding tables and indexes. Please do not close this window.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="admin-alert-banner" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", borderColor: "rgba(239, 68, 68, 0.25)", color: "#ef4444", marginBottom: "16px", padding: "10px 12px", borderRadius: "8px" }}>
+                    <div className="admin-alert-banner-text" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ width: "18px", height: "18px", display: "inline-block", flexShrink: 0 }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: "100%", height: "100%" }}>
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                          <line x1="12" y1="9" x2="12" y2="13" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                      </span>
+                      <span style={{ fontWeight: "600", fontSize: "0.85rem" }}>Critical Action Warning</span>
+                    </div>
+                  </div>
+                  
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-admin-muted)", margin: "0 0 16px 0", lineHeight: "1.4" }}>
+                    You are about to restore the system database using archive <strong>{restoreModal.id}</strong> (Created on {restoreModal.date}). This will overwrite all current system settings, matches, and coach configurations.
+                  </p>
+
+                  <div className="admin-form-group">
+                    <label htmlFor="confirmBackupId" style={{ fontSize: "0.8rem", color: "var(--text-admin-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      To confirm, type <strong>{restoreModal.id}</strong> below:
+                    </label>
+                    <input 
+                      id="confirmBackupId"
+                      type="text" 
+                      className="admin-form-input" 
+                      placeholder={restoreModal.id}
+                      value={restoreConfirmInput}
+                      onChange={(e) => setRestoreConfirmInput(e.target.value)}
+                      style={{ marginTop: "8px" }}
+                      autoComplete="off"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="admin-modal-footer">
+              <button 
+                className="admin-btn admin-btn-secondary" 
+                onClick={() => setRestoreModal(null)}
+                disabled={restoring}
+              >
+                Cancel
+              </button>
+              {!restoring && (
+                <button 
+                  className="admin-btn admin-btn-danger" 
+                  onClick={() => {
+                    if (restoreConfirmInput === restoreModal.id) {
+                      setRestoring(true);
+                      setTimeout(() => {
+                        setRestoring(false);
+                        setRestoreModal(null);
+                        alert(`Database successfully restored to state ${restoreModal.id}.`);
+                      }, 1200);
+                    }
+                  }}
+                  disabled={restoreConfirmInput !== restoreModal.id}
+                >
+                  Confirm Restore
+                </button>
+              )}
             </div>
           </div>
         </div>

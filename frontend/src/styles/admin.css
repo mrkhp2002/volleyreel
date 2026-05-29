@@ -427,10 +427,12 @@
   top: 100%;
   margin-top: 8px;
   width: 200px;
-  background-color: var(--bg-admin-sidebar);
-  border: 1px solid var(--border-admin);
+  background-color: rgba(10, 15, 30, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   padding: 6px;
   z-index: 110;
 }
@@ -440,25 +442,92 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-size: 0.85rem;
-  color: var(--text-admin-main);
+  color: var(--text-admin-muted);
   background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: background 0.2s;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.admin-dropdown-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  background-color: var(--admin-accent-orange);
+  border-radius: 0 2px 2px 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-admin-main);
+  padding-left: 16px;
+}
+
+.admin-dropdown-item:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.admin-dropdown-item.text-red-600 {
+  color: var(--admin-danger);
+}
+
+.admin-dropdown-item.text-red-600:hover {
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+}
+
+.admin-dropdown-item.text-red-600::before {
+  background-color: var(--admin-danger);
 }
 
 .admin-dropdown-divider {
   height: 1px;
   background-color: var(--border-admin);
   margin: 4px 0;
+}
+
+.admin-dropdown-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+/* Spinner and Input Customizations */
+.admin-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(245, 158, 11, 0.1);
+  border-top-color: var(--admin-accent-orange);
+  border-radius: 50%;
+  animation: admin-spin 1s infinite linear;
+}
+
+@keyframes admin-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.admin-dashboard input[type="checkbox"] {
+  accent-color: var(--admin-accent-orange);
+  cursor: pointer;
+}
+
+select.admin-form-input option {
+  background-color: #0c1020;
+  color: #ffffff;
 }
 
 /* Notifications Popover */

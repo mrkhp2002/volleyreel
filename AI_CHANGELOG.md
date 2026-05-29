@@ -728,3 +728,17 @@
 ### Files Changed
 - `frontend/src/pages/admin/AdminDashboardPage.jsx`
 - `frontend/src/styles/admin.css`
+
+## [2026-05-29T00:36:00+05:30] - Implement Admin Settings, Database Backups, & Dropdown Fine-Tuning
+
+### Added
+- Created the **Database Restore confirmation overlay modal** in the admin dashboard, prompting for the backup ID as security validation and including a 1.2s mock loader with a modern visual spinner.
+- Integrated checkbox custom accent colors (`accent-color`) and customized select dropdown options styling to follow the dark glassmorphism theme.
+
+### Changed
+- Refactored header profile dropdown menu styling inside `admin.css` to utilize translucent background colors (`rgba(10, 15, 30, 0.95)`), backdrop filters (`blur(12px)`), inset highlights, left-aligned border accents on hover, and smooth slide/padding transitions.
+- Adjusted SVGs in the dropdown menu to utilize a structured SVG helper class (`.admin-dropdown-icon`).
+
+### Files Changed
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/styles/admin.css`
