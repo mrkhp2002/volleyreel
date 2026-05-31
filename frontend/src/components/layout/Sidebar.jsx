@@ -171,6 +171,13 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
   const displayName = user?.fullName || "Coach Admin";
   const displayEmail = user?.email || "admin@volleyreel.com";
 
+  const matchesGroupData = {
+    ...matchesNavGroup,
+    children: user?.role === "public_user"
+      ? matchesNavGroup.children.filter(c => c.to === "/matches" || c.to === "/matches/videos")
+      : matchesNavGroup.children
+  };
+
   const isTournamentsSection = location.pathname.startsWith("/tournaments");
   const [tournamentsOpen, setTournamentsOpen] = useState(isTournamentsSection);
 
@@ -251,38 +258,44 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
 
-          <NavGroup 
-            group={tournamentsNavGroup} 
-            isOpen={tournamentsOpen} 
-            onToggle={() => setTournamentsOpen(prev => !prev)} 
-            onMouseEnter={() => setTournamentsOpen(true)}
-            onMouseLeave={() => !isTournamentsSection && setTournamentsOpen(false)}
-            isSectionActive={isTournamentsSection} 
-            collapsed={collapsed} 
-          />
+          {user?.role !== "public_user" && (
+            <NavGroup 
+              group={tournamentsNavGroup} 
+              isOpen={tournamentsOpen} 
+              onToggle={() => setTournamentsOpen(prev => !prev)} 
+              onMouseEnter={() => setTournamentsOpen(true)}
+              onMouseLeave={() => !isTournamentsSection && setTournamentsOpen(false)}
+              isSectionActive={isTournamentsSection} 
+              collapsed={collapsed} 
+            />
+          )}
+
+          {user?.role !== "public_user" && (
+            <NavGroup 
+              group={teamsNavGroup} 
+              isOpen={teamsOpen} 
+              onToggle={() => setTeamsOpen(prev => !prev)} 
+              onMouseEnter={() => setTeamsOpen(true)}
+              onMouseLeave={() => !isTeamsSection && setTeamsOpen(false)}
+              isSectionActive={isTeamsSection} 
+              collapsed={collapsed} 
+            />
+          )}
+
+          {user?.role !== "public_user" && (
+            <NavGroup 
+              group={playersNavGroup} 
+              isOpen={playersOpen} 
+              onToggle={() => setPlayersOpen(prev => !prev)} 
+              onMouseEnter={() => setPlayersOpen(true)}
+              onMouseLeave={() => !isPlayersSection && setPlayersOpen(false)}
+              isSectionActive={isPlayersSection} 
+              collapsed={collapsed} 
+            />
+          )}
 
           <NavGroup 
-            group={teamsNavGroup} 
-            isOpen={teamsOpen} 
-            onToggle={() => setTeamsOpen(prev => !prev)} 
-            onMouseEnter={() => setTeamsOpen(true)}
-            onMouseLeave={() => !isTeamsSection && setTeamsOpen(false)}
-            isSectionActive={isTeamsSection} 
-            collapsed={collapsed} 
-          />
-
-          <NavGroup 
-            group={playersNavGroup} 
-            isOpen={playersOpen} 
-            onToggle={() => setPlayersOpen(prev => !prev)} 
-            onMouseEnter={() => setPlayersOpen(true)}
-            onMouseLeave={() => !isPlayersSection && setPlayersOpen(false)}
-            isSectionActive={isPlayersSection} 
-            collapsed={collapsed} 
-          />
-
-          <NavGroup 
-            group={matchesNavGroup} 
+            group={matchesGroupData} 
             isOpen={matchesOpen} 
             onToggle={() => setMatchesOpen(prev => !prev)} 
             onMouseEnter={() => setMatchesOpen(true)}

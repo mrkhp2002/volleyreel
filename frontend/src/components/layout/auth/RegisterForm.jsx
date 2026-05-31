@@ -69,6 +69,7 @@ export default function RegisterForm() {
           email: loginRes.data.email || form.email,
           fullName: loginRes.data.full_name || form.fullName,
           token: loginRes.data.access_token,
+          role: loginRes.data.role || form.role,
         });
         navigate("/dashboard");
       } else {
@@ -159,7 +160,8 @@ export default function RegisterForm() {
             onChange={(e) => setField("role", e.target.value)}
             options={[
               { value: "coach", label: "Coach" },
-              { value: "player", label: "Player" }
+              { value: "player", label: "Player" },
+              { value: "public_user", label: "Public User" }
             ]}
             placeholder="Select your role..."
             id="role"

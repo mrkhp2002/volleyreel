@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { NavLink } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/reports.css";
 
@@ -77,6 +79,7 @@ const shareableReports = [
 ];
 
 export default function PublicReportsPage() {
+  const { user } = useAuth();
   const [publicReports, setPublicReports] = useState(initialPublicReports);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -209,21 +212,39 @@ export default function PublicReportsPage() {
           <h1>Public Reports</h1>
           <p>Publicly shared tournament reports and highlights</p>
         </div>
-        <button 
-          onClick={() => setIsShareOpen(true)} 
-          className="reports-btn-orange"
-          id="btn-share-report"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-          Share Report
-        </button>
+        {user?.role !== "public_user" && (
+          <button 
+            onClick={() => setIsShareOpen(true)} 
+            className="reports-btn-orange"
+            id="btn-share-report"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+            Share Report
+          </button>
+        )}
       </header>
+
+      {/* Navigation Tabs */}
+      <div className="reports-tabs-nav">
+        <NavLink 
+          to="/reports/tournament" 
+          className={({ isActive }) => isActive ? "reports-tab-btn active" : "reports-tab-btn"}
+        >
+          Tournament Reports
+        </NavLink>
+        <NavLink 
+          to="/reports/public" 
+          className={({ isActive }) => isActive ? "reports-tab-btn active" : "reports-tab-btn"}
+        >
+          Public Reports
+        </NavLink>
+      </div>
 
       {/* Filter panel */}
       <div className="reports-filter-bar">
