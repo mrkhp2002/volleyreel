@@ -659,11 +659,86 @@
 - Updated `.reports-filter-select` and `.leaderboard-filter-select` to use `flex: 1` instead of `width: auto`, allowing desktop scaling.
 - Updated `.reports-search-wrapper` to use `flex: 2` to match the proportions of the other filter rows.
 
-### Files Changed
-- `frontend/src/styles/analytics.css`
-- `frontend/src/styles/reports.css`
 - `frontend/src/styles/leaderboards.css`
 
+## [2026-05-28T22:58:00+05:30] - Implement Hover-Triggered Sidebar Expansion (Desktop Overlay)
 
+### Added
+- Integrated `onMouseEnter` and `onMouseLeave` props and callbacks in `Sidebar.jsx` and attached them to the sidebar's `<aside>` container.
 
+### Changed
+- Refactored `AppLayout.jsx` to maintain a stable, non-shifting grid width (`76px`) on desktop, while using a local hover state to control the collapsed state of the sidebar.
+- Modified `global.css` sidebar layout rules to explicit pixel dimensions (`250px` when expanded, `76px` when collapsed) with a smooth transition and premium overlay drop shadow.
+- Hid the redundant manual toggle collapse button (`.sidebar-collapse-btn`) on desktop viewports.
 
+### Files Changed
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/AppLayout.jsx`
+- `frontend/src/styles/global.css`
+## [2026-05-28T23:48:00+05:30] - Center and Redesign Brand Logo Mark
+
+### Added
+- Created modern, geometric SVG `Logo.jsx` component representing a volleyball with custom linear gradients and clean transparent seam masking.
+
+### Changed
+- Integrated `<Logo />` in `Sidebar.jsx`, `Topbar.jsx`, `AuthBrand.jsx`, and `AuthLayout.jsx` to replace the raw `🏐` emoji.
+- Centered the brand logo in the collapsed desktop sidebar in `global.css` using `justify-content: center` and padding overrides.
+
+### Files Changed
+- `frontend/src/components/common/Logo.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/components/layout/Topbar.jsx`
+- `frontend/src/components/layout/auth/AuthLayout.jsx`
+- `frontend/src/styles/global.css`
+
+## [2026-05-29T00:15:00+05:30] - Create Scoped Admin Dashboard UI and Intercept Credentials
+
+### Added
+- Created `frontend/src/pages/admin/AdminDashboardPage.jsx` featuring System Overview default cards, KPI widgets with sparkline charts, User Management, AI Job Queue monitor, and Content Moderation lists.
+- Created `frontend/src/styles/admin.css` containing variables, layouts, tables, and badge styling, scoped under `.admin-dashboard` to isolate it from the rest of the application.
+
+### Changed
+- Intercepted the admin credentials (`admin@volleyreel.com` / `admin123`) in `LoginForm.jsx` to log in as role `"admin"` and redirect to the admin panel.
+- Modified `ProtectedRoute.jsx` to check `allowedRoles` for role-locked pages.
+- Mounted `/admin/dashboard` in `AppRoutes.jsx` locked to `"admin"` users.
+
+### Files Changed
+- `frontend/src/routes/ProtectedRoute.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/styles/admin.css`
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+
+## [2026-05-29T00:25:00+05:30] - Redesign Admin Dashboard Theme with Premium Dark Glassmorphism
+
+### Changed
+- Refactored `admin.css` variables, background filters, borders, and modal shadows to implement the dark glassmorphic styling, matching the exact look-and-feel of other platform UIs.
+- Styled panels, sidebar links, header controls, KPI cards, text readability, inputs, and moderation lists with a gold, blue, and dark theme.
+
+### Files Changed
+- `frontend/src/styles/admin.css`
+
+## [2026-05-29T00:29:00+05:30] - Implement Hover Dynamics and Logo Centering on Admin Sidebar
+
+### Changed
+- Refactored `AdminDashboardPage.jsx` to expand the sidebar on hover (`onMouseEnter`/`onMouseLeave`) and removed the manual toggle collapse button from the sidebar header.
+- Updated `admin.css` to use a stable grid layout for the page, preventing reflow/shifting of main content when the sidebar expands.
+- Styled header centering, brand logo alignment, active nav items, and centered icons inside the collapsed state of the admin sidebar.
+
+### Files Changed
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/styles/admin.css`
+
+## [2026-05-29T00:36:00+05:30] - Implement Admin Settings, Database Backups, & Dropdown Fine-Tuning
+
+### Added
+- Created the **Database Restore confirmation overlay modal** in the admin dashboard, prompting for the backup ID as security validation and including a 1.2s mock loader with a modern visual spinner.
+- Integrated checkbox custom accent colors (`accent-color`) and customized select dropdown options styling to follow the dark glassmorphism theme.
+
+### Changed
+- Refactored header profile dropdown menu styling inside `admin.css` to utilize translucent background colors (`rgba(10, 15, 30, 0.95)`), backdrop filters (`blur(12px)`), inset highlights, left-aligned border accents on hover, and smooth slide/padding transitions.
+- Adjusted SVGs in the dropdown menu to utilize a structured SVG helper class (`.admin-dropdown-icon`).
+
+### Files Changed
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/src/styles/admin.css`

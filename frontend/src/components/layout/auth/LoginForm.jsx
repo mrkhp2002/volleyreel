@@ -21,6 +21,17 @@ export default function LoginForm() {
       return;
     }
 
+    if (form.email === "admin@volleyreel.com" && form.password === "admin123") {
+      login({
+        email: "admin@volleyreel.com",
+        fullName: "System Admin",
+        role: "admin",
+        token: "mock-admin-token-12345",
+      });
+      navigate("/admin/dashboard");
+      return;
+    }
+
     setLoading(false);
     try {
       setLoading(true);

@@ -1,3 +1,5 @@
+import Logo from "../../common/Logo";
+
 const defaultFeatures = [
   "Automated Video Analysis",
   "Tournament Management",
@@ -45,7 +47,9 @@ export default function AuthLayout({
 
       <div className="auth-left">
         <div className="brand">
-          <div className="logo">🏐</div>
+          <div className="logo">
+            <Logo size="30px" />
+          </div>
           <div className="brand-copy">
             <h2>VolleyReel</h2>
             <p>Analytics Platform</p>

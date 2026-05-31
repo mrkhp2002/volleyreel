@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Logo from "../common/Logo";
 import { NavLink, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import {
@@ -164,7 +165,7 @@ function NavGroup({ group, isOpen, onToggle, onMouseEnter, onMouseLeave, isSecti
   );
 }
 
-export default function Sidebar({ collapsed = false, onToggle, mobileOpen = false, onMobileClose }) {
+export default function Sidebar({ collapsed = false, onToggle, mobileOpen = false, onMobileClose, onMouseEnter, onMouseLeave }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const displayName = user?.fullName || "Coach Admin";
@@ -208,11 +209,15 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
   return (
     <>
       {mobileOpen && <div className="sidebar-backdrop" onClick={onMobileClose} />}
-      <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}${mobileOpen ? " sidebar--mobile-open" : ""}`}>
+      <aside 
+        className={`sidebar${collapsed ? " sidebar--collapsed" : ""}${mobileOpen ? " sidebar--mobile-open" : ""}`}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="sidebar-brand-mark" title="VolleyReel">
-              🏐
+              <Logo size="24px" />
             </div>
             <div className="sidebar-brand-text">
               <span className="sidebar-brand-title">VolleyReel</span>

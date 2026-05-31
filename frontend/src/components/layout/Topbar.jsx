@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "../common/Logo";
 import useAuth from "../../hooks/useAuth";
 import useNotifications from "../../hooks/useNotifications";
 
@@ -75,7 +76,9 @@ export default function Topbar({ onMobileToggle }) {
         >
           <MenuIcon />
         </button>
-        <span className="topbar-logo-mark" title="VolleyReel">🏐</span>
+        <span className="topbar-logo-mark" title="VolleyReel">
+          <Logo size="24px" />
+        </span>
       </div>
 
       <div className="topbar-search">
