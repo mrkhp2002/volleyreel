@@ -764,3 +764,13 @@
 - `frontend/src/pages/reports/PublicReportsPage.jsx`
 - `frontend/src/styles/reports.css`
 - `AI_CHANGELOG.md`
+
+## [2026-05-31T13:08:00+05:30] - Fine-tune Global Scrollbars & Profile Dropdown Link Highlights
+
+### Changed
+- Redesigned the main app user profile dropdown hover state in `global.css` to introduce slide offsets (`transform: translateX(6px)`) and left-aligned active highlight indicator lines (`::before` scale actions) for a premium, unified aesthetic.
+- Upgraded the scrollbar design in `global.css` from solid layout tracks to translucent, glassmorphic tracks (`rgba(5, 8, 20, 0.4)`) and pill-shaped rounded scrollbar thumbs (`background-clip: content-box` with transparent borders) that expand smoothly on hover.
+
+### Files Changed
+- `frontend/src/styles/global.css`
+- `AI_CHANGELOG.md`
