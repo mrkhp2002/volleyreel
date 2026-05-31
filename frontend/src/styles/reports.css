@@ -717,3 +717,63 @@
     grid-column: span 1;
   }
 }
+
+/* Page-level Navigation Tabs styling */
+.reports-tabs-nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar for clean tab look */
+}
+
+.reports-tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.reports-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-family: var(--font-title, 'Outfit', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  white-space: nowrap;
+}
+
+.reports-tab-btn::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+
+.reports-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reports-tab-btn.active {
+  color: var(--primary, #f59e0b);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.reports-tab-btn.active::after {
+  background: var(--primary, #f59e0b);
+  transform: scaleX(1);
+}

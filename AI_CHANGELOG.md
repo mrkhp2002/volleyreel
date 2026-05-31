@@ -742,3 +742,25 @@
 ### Files Changed
 - `frontend/src/pages/admin/AdminDashboardPage.jsx`
 - `frontend/src/styles/admin.css`
+
+## [2026-05-31T12:55:00+05:30] - Implement Public User Role, Restrict Sidebar, and Add Responsive Report Tab Buttons
+
+### Added
+- Integrated the new `public_user` ("Public User") role options in the user registration flow (`RegisterForm.jsx`).
+- Configured a mock authentication bypass in the login panel (`LoginForm.jsx`) to sign in as a user with `user@volleyreel.com`/`user123` or `public@volleyreel.com`/`public123`.
+- Designed and styled smooth, responsive sub-navigation tabs (`reports-tabs-nav` and `reports-tab-btn`) within `reports.css` to switch views between Tournament Reports and Public Reports.
+
+### Changed
+- Filtered sidebar items inside `Sidebar.jsx` for public users: hidden Tournaments, Teams, and Players nav groups completely, and restricted Matches sub-items to only show Match List (reports) and Generated Videos (highlight reels).
+- Customized `DashboardPage.jsx` quick action cards for the public user role to display statistics, reports, video highlights, tournament analytics, and standings/leaderboards.
+- Hidden coach-level actions (generating new reports and sharing reports) on reports pages when viewed by a public user.
+
+### Files Changed
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/pages/reports/TournamentReportsPage.jsx`
+- `frontend/src/pages/reports/PublicReportsPage.jsx`
+- `frontend/src/styles/reports.css`
+- `AI_CHANGELOG.md`

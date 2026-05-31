@@ -32,6 +32,20 @@ export default function LoginForm() {
       return;
     }
 
+    if (
+      (form.email === "user@volleyreel.com" || form.email === "public@volleyreel.com") && 
+      (form.password === "user123" || form.password === "public123")
+    ) {
+      login({
+        email: form.email,
+        fullName: "Public User",
+        role: "public_user",
+        token: "mock-user-token-12345",
+      });
+      navigate("/dashboard");
+      return;
+    }
+
     setLoading(false);
     try {
       setLoading(true);
