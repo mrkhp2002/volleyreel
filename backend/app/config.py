@@ -1,15 +1,11 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from app.database import engine, Base
 
+from app.models.tournament_model import Tournament
+from app.models.team_model import Team
+from app.models.player_model import Player
+from app.models.match_model import Match
+from app.models.event_model import Event
 
-class Settings(BaseSettings):
-    app_name: str = "VolleyReel API"
-    debug: bool = True
-    database_url: str = "sqlite:///./volleyreel.db"
-    secret_key: str = "change-me"
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+Base.metadata.create_all(bind=engine)
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
-
-settings = Settings()
+print("Database Tables Created")
