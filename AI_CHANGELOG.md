@@ -774,3 +774,61 @@
 ### Files Changed
 - `frontend/src/styles/global.css`
 - `AI_CHANGELOG.md`
+
+## [2026-06-05T18:34:00-04:00] - Full Project Error Analysis
+
+### Analyzed (Read-Only)
+- Performed a comprehensive static analysis of the entire VolleyReel project — all backend and frontend files.
+- Identified 4 Critical runtime-breaking errors, 6 High-severity logic/security errors, 9 Medium-severity issues, and 5 Low-severity code quality issues.
+
+### Key Findings
+- **CRITICAL:** All `GET /{id}` backend routes filter by `Model.id` but SQLAlchemy models use custom PKs (`match_id`, `tournament_id`, `team_id`, `player_id`, `event_id`) — every by-ID lookup returns 404.
+- **CRITICAL:** All Pydantic `Read` schemas declare fields that do not exist on their corresponding SQLAlchemy models (`id`, `updated_at`, `audio_url`, `match_date`, `first_name`, `last_name`, `jersey_number`, `timestamp`, `is_verified`, etc.) — Pydantic serialization will fail on all endpoints.
+- **CRITICAL:** `bcrypt` package is used with `import bcrypt` but `requirements.txt` only lists `passlib[bcrypt]` — server cannot start.
+- **CRITICAL:** `PyJWT` (`jwt` module) is used in `security.py` and `dependencies.py` but missing from `requirements.txt`.
+- **HIGH:** `create_tournament` endpoint never sets `user_id` — DB NOT NULL constraint will fail.
+- **HIGH:** All list endpoints return all users' data (no user scoping) — multi-tenant data leak.
+- **HIGH:** `analytics.py` always returns hardcoded zeros — never queries the database.
+- **HIGH:** OAuth2 `tokenUrl` points to `/auth/login` instead of the correct `/api/auth/login`.
+- **MEDIUM:** `console.log("LOGIN DATA:", userData)` leaks JWT tokens to browser console.
+- **MEDIUM:** Entire frontend is localStorage-driven and not connected to backend API.
+
+### Files Analyzed
+- `backend/app/main.py`, `config.py`, `database.py`, `run.py`
+- `backend/app/models/` — all 6 model files
+- `backend/app/routes/` — all 10 route files
+- `backend/app/schemas/` — all 6 schema files
+- `backend/app/services/auth_service.py`
+- `backend/app/utils/security.py`
+- `backend/requirements.txt`, `.env`
+- `frontend/src/main.jsx`, `App.jsx`
+- `frontend/src/routes/AppRoutes.jsx`, `ProtectedRoute.jsx`
+- `frontend/src/contexts/AuthContext.jsx`, `NotificationsContext.jsx`
+- `frontend/src/services/apiClient.js`
+- `frontend/src/components/layout/AppLayout.jsx`, `Sidebar.jsx`, `Topbar.jsx`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`, `MatchesCreatePage.jsx`
+- `frontend/src/pages/admin/AdminDashboardPage.jsx`
+- `frontend/package.json`, `vite.config.js`
+
+## [2026-06-07T13:48:00-04:00] - Fix Critical Missing Python Dependencies
+
+### Fixed
+- Added `PyJWT==2.8.0` to `requirements.txt` — `app/utils/security.py` and `app/routes/dependencies.py` both do `import jwt` which requires the `PyJWT` package; without it the server cannot start (`ModuleNotFoundError`).
+- Added `bcrypt>=4.0.1` to `requirements.txt` — `app/utils/security.py` does `import bcrypt` directly; only `passlib[bcrypt]` was listed which does not install the standalone `bcrypt` package.
+
+### Files Changed
+- `backend/requirements.txt`
+
+## [2026-06-07T13:56:00-04:00] - Fix security.py — Replace Raw bcrypt with passlib CryptContext
+
+### Fixed
+- Removed `import bcrypt` and all direct `bcrypt.gensalt()`, `bcrypt.hashpw()`, `bcrypt.checkpw()` calls.
+- Replaced with a single `passlib.context.CryptContext` instance (`schemes=["bcrypt"], deprecated="auto"`).
+- `get_password_hash()` now delegates to `pwd_context.hash()`.
+- `verify_password()` now delegates to `pwd_context.verify()` with a try/except guard.
+- `create_access_token()` is unchanged — continues to use `PyJWT` (`import jwt`).
+
+### Files Changed
+- `backend/app/utils/security.py`
