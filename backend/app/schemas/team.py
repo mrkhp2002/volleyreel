@@ -4,26 +4,23 @@ from datetime import datetime
 
 class TeamBase(BaseModel):
     name: str
-    coach: str | None = None
-    club_name: str | None = None
-    logo_url: str | None = None
+    tournament_id: int
 
 
 class TeamCreate(TeamBase):
+    # tournament_id is inherited from TeamBase and is required (NOT NULL in DB).
+    # It must be supplied by the client since a team always belongs to a tournament.
     pass
 
 
 class TeamUpdate(BaseModel):
     name: str | None = None
-    coach: str | None = None
-    club_name: str | None = None
-    logo_url: str | None = None
 
 
-class TeamRead(TeamBase):
-    id: int
+class TeamRead(BaseModel):
+    team_id: int
+    name: str
+    tournament_id: int
     created_at: datetime
-    updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
