@@ -3,33 +3,28 @@ from datetime import datetime
 
 
 class PlayerBase(BaseModel):
-    first_name: str
-    last_name: str
-    jersey_number: int | None = None
-    position: str | None = None
-    height: float | None = None
-    weight: float | None = None
-    team_id: int | None = None
+    name: str
+    number: int | None = None
+    team_id: int
 
 
 class PlayerCreate(PlayerBase):
+    # team_id is inherited from PlayerBase and is required (NOT NULL in DB).
+    # A player must always be assigned to a team on creation.
     pass
 
 
 class PlayerUpdate(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
-    jersey_number: int | None = None
-    position: str | None = None
-    height: float | None = None
-    weight: float | None = None
+    name: str | None = None
+    number: int | None = None
     team_id: int | None = None
 
 
-class PlayerRead(PlayerBase):
-    id: int
+class PlayerRead(BaseModel):
+    player_id: int
+    name: str
+    number: int | None = None
+    team_id: int
     created_at: datetime
-    updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
