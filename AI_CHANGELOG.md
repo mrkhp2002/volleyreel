@@ -832,3 +832,210 @@
 
 ### Files Changed
 - `backend/app/utils/security.py`
+
+## [2026-06-07T21:02:00-04:00] - Fix dependencies.py — tokenUrl Path and PyJWT Exception Class
+
+### Fixed
+- Changed `OAuth2PasswordBearer(tokenUrl="/auth/login")` to `tokenUrl="/api/auth/login"` — the login route is mounted under the `/api` prefix in `main.py` + `/auth` in `api.py`, so the full path is `/api/auth/login`. The wrong `tokenUrl` caused Swagger UI's "Authorize" flow to hit a 404.
+- Changed `except jwt.PyJWTError` to `except jwt.exceptions.InvalidTokenError` — `PyJWTError` was removed as a top-level attribute in PyJWT 2.x. The correct base class for all decode/validation errors in PyJWT >= 2.0 is `jwt.exceptions.InvalidTokenError`.
+
+### Files Changed
+- `backend/app/routes/dependencies.py`
+
+## [2026-06-07T21:04:00-04:00] - Fix schemas/tournament.py — Align to Tournament Model
+
+### Fixed
+- Replaced `id: int` with `tournament_id: int` in `TournamentRead` — the model's primary key column is `tournament_id`, not `id`; the old field caused Pydantic `ValidationError` on every response.
+- Removed `description` and `location` from `TournamentBase`, `TournamentCreate`, and `TournamentUpdate` — the `Tournament` SQLAlchemy model has no such columns; these fields were phantom declarations that would serialize to `None` at best and raise attribute errors at worst.
+- Removed `updated_at: datetime` from `TournamentRead` — the `Tournament` model has no `updated_at` column.
+- Removed `user_id` from `TournamentCreate` / `TournamentBase` — `user_id` is a server-side FK populated from the authenticated user's JWT token inside the route handler, never from the incoming request body.
+- Exposed `user_id: int` in `TournamentRead` so callers can see the owner of each tournament.
+- Migrated `class Config: from_attributes = True` to the Pydantic v2 style `model_config = {"from_attributes": True}`.
+
+### Files Changed
+- `backend/app/schemas/tournament.py`
+
+## [2026-06-07T21:11:00-04:00] - Fix schemas/team.py — Align to Team Model
+
+### Fixed
+- Replaced `id: int` with `team_id: int` in `TeamRead` — the model PK column is `team_id`, not `id`.
+- Removed `coach`, `club_name`, `logo_url` from `TeamBase`, `TeamCreate`, and `TeamUpdate` — these columns do not exist on the `Team` SQLAlchemy model; their presence caused Pydantic `ValidationError` on every serialized response.
+- Removed `updated_at: datetime` from `TeamRead` — the `Team` model has no `updated_at` column.
+- Added `tournament_id: int` to `TeamBase` (and therefore `TeamCreate`) — it is a `NOT NULL` foreign key on the model; omitting it from the create schema caused every `POST /api/teams/` to raise a database integrity error.
+- `TeamUpdate` retains only `name` as optional — the only non-FK, non-PK mutable column.
+- Migrated `class Config: from_attributes = True` to Pydantic v2 style `model_config = {"from_attributes": True}`.
+
+### Files Changed
+- `backend/app/schemas/team.py`
+
+## [2026-06-07T21:27:00-04:00] - Fix schemas/player.py — Align to Player Model
+
+### Fixed
+- Replaced `id: int` with `player_id: int` in `PlayerRead` — the model PK column is `player_id`, not `id`.
+- Merged `first_name: str` and `last_name: str` into a single `name: str` — the `Player` model has one `name` column; the split fields caused a `ValidationError` on every serialized response.
+- Renamed `jersey_number` → `number` to match the actual model column name.
+- Removed `position`, `height`, `weight` from all schemas — these columns do not exist on the `Player` model.
+- Removed `updated_at: datetime` from `PlayerRead` — the `Player` model has no `updated_at` column.
+- Changed `team_id` in `PlayerBase` from `int | None = None` to `int` (required) — it is `NOT NULL` in the database; making it optional allowed clients to omit it and trigger an `IntegrityError`.
+- `PlayerUpdate` keeps `team_id` as optional (`int | None`) — a patch operation should allow updating only the name or number without re-specifying the team.
+- Migrated `class Config: from_attributes = True` to Pydantic v2 style `model_config = {"from_attributes": True}`.
+
+### Files Changed
+- `backend/app/schemas/player.py`
+
+## [2026-06-07T21:30:00-04:00] - Fix schemas/match.py — Align to Match Model
+
+### Fixed
+- Replaced `id: int` with `match_id: int` in `MatchRead` — the model PK column is `match_id`, not `id`.
+- Removed `match_date: datetime` — the `Match` model has no `match_date` column.
+- Removed `audio_url: str` — the `Match` model has no `audio_url` column.
+- Removed `updated_at: datetime` from `MatchRead` — the `Match` model has no `updated_at` column.
+- Changed `status` default from `"scheduled"` to `"pending"` — matches the SQLAlchemy model's `server_default` value; mismatched default meant newly created match objects could not round-trip through the schema correctly.
+- Changed `tournament_id` in `MatchBase` from `int | None = None` (optional) to `int` (required) — it is `NOT NULL` in the database; the optional declaration allowed clients to omit it and trigger a database `IntegrityError`.
+- Added `public_id: str | None`, `highlight_url: str | None`, and `transcript: str | None` to `MatchRead` — all three are real columns on the `Match` model that were previously invisible to API consumers.
+- Added `highlight_url` and `transcript` to `MatchUpdate` — these fields are written by the AI processing pipeline and need to be patchable.
+- Migrated `class Config: from_attributes = True` to Pydantic v2 style `model_config = {"from_attributes": True}`.
+
+### Files Changed
+- `backend/app/schemas/match.py`
+
+## [2026-06-09T01:00:00-04:00] - Fix schemas/event.py — Align to Event Model
+
+### Fixed
+- Replaced `id: int` with `event_id: int` in `EventRead` — the model PK column is `event_id`, not `id`.
+- Renamed `timestamp: float` → `timestamp_sec: float` everywhere — the SQLAlchemy model column is `timestamp_sec`; the wrong name caused every serialized event to silently drop the timestamp value.
+- Removed `is_verified: bool`, `verified_by_id: int`, and `notes: str` from all schemas — these columns do not exist on the `Event` model; they were phantom fields causing `ValidationError` on every response.
+- Removed `updated_at: datetime` from `EventRead` — the `Event` model has no `updated_at` column.
+- Added `player_id: int | None` to `EventBase` and `EventRead` — it is a real nullable FK column on the model that was previously missing from all schemas.
+- Added `clip_url: str | None` and `transcript_snippet: str | None` to `EventBase` and `EventRead` — both are real model columns that were invisible to API consumers.
+- `EventUpdate` drops `match_id` as patchable — changing which match an event belongs to after creation would be a destructive operation; only mutable event fields are included.
+- Migrated `class Config: from_attributes = True` to Pydantic v2 style `model_config = {"from_attributes": True}`.
+
+### Files Changed
+- `backend/app/schemas/event.py`
+
+## [2026-06-09T01:02:00-04:00] - Fix routes/tournaments.py — PK Filter, User Scoping, user_id Injection, PUT & DELETE
+
+### Fixed
+- Changed `Tournament.id == tournament_id` → `Tournament.tournament_id == tournament_id` in `GET /{tournament_id}` — the model PK is `tournament_id`; the old filter never matched any row and always returned 404.
+- Replaced `Tournament(**payload.model_dump())` with explicit field assignment in `create_tournament` — using `model_dump()` on the ORM constructor passes unknown/extra fields and omits `user_id` (NOT NULL FK), causing a database `IntegrityError` on every create call. Now `user_id` is always set from `current_user.id`.
+- Scoped `GET /` list to `Tournament.user_id == current_user.id` — the old handler returned every tournament from every user, leaking data across accounts.
+- All read/update/delete operations also filter by `Tournament.user_id == current_user.id` — prevents one user from reading or mutating another user's tournament.
+
+### Added
+- `PUT /{tournament_id}` endpoint using `payload.model_dump(exclude_unset=True)` — only fields actually sent in the request body are updated; unset fields are left unchanged.
+- `DELETE /{tournament_id}` endpoint returning `204 No Content` on success.
+
+### Files Changed
+- `backend/app/routes/tournaments.py`
+
+## [2026-06-09T01:05:00-04:00] - Fix routes/teams.py — PK Filter, Scoped Uniqueness, Explicit Fields, PUT & DELETE
+
+### Fixed
+- Changed `Team.id == team_id` → `Team.team_id == team_id` in `GET /{team_id}` — the model PK is `team_id`; the old filter never matched any row and always returned 404.
+- Replaced `Team(**payload.model_dump())` with explicit field assignment — `model_dump()` on the ORM constructor can pass phantom fields from the schema; explicit assignment (`name`, `tournament_id`) is safe and deliberate.
+- Scoped the name-uniqueness check to `Team.tournament_id == payload.tournament_id` — the old global check prevented two different tournaments from each having a team with the same name (e.g. both having "Tigers"), which is a valid and expected scenario.
+- Added `TeamUpdate` import alongside existing `TeamCreate`/`TeamRead` imports.
+
+### Added
+- `PUT /{team_id}` endpoint using `payload.model_dump(exclude_unset=True)` — partial updates; only fields sent in the body are changed.
+- `DELETE /{team_id}` endpoint returning `204 No Content` on success.
+
+### Files Changed
+- `backend/app/routes/teams.py`
+
+## [2026-06-09T01:09:00-04:00] - Fix routes/players.py — PK Filter, Explicit Fields, PUT & DELETE
+
+### Fixed
+- Changed `Player.id == player_id` → `Player.player_id == player_id` in `GET /{player_id}` — the model PK is `player_id`; the old filter never matched any row and always returned 404.
+- Replaced `Player(**payload.model_dump())` with explicit field assignment (`name`, `number`, `team_id`) — avoids passing any phantom schema fields into the ORM constructor.
+- Added `PlayerUpdate` import.
+
+### Added
+- `PUT /{player_id}` endpoint using `payload.model_dump(exclude_unset=True)` — partial updates; only fields sent in the request body are changed.
+- `DELETE /{player_id}` endpoint returning `204 No Content` on success.
+
+### Files Changed
+- `backend/app/routes/players.py`
+
+## [2026-06-09T01:13:00-04:00] - Fix routes/matches.py — PK Filter, Explicit Fields, PUT & DELETE
+
+### Fixed
+- Changed `Match.id == match_id` → `Match.match_id == match_id` in `GET /{match_id}` — the model PK is `match_id`; the old filter never matched any row and always returned 404.
+- Replaced `Match(**payload.model_dump())` with explicit field assignment — maps all seven writable columns (`home_team_id`, `away_team_id`, `tournament_id`, `video_url`, `status`, `home_score`, `away_score`) individually; prevents phantom schema fields from reaching the ORM and ensures `public_id` (auto-generated by the model) is never overridden.
+- Added `MatchUpdate` import.
+
+### Added
+- `PUT /{match_id}` endpoint using `payload.model_dump(exclude_unset=True)` — partial updates; supports patching scores, status, video_url, highlight_url, and transcript independently (e.g. by the AI pipeline).
+- `DELETE /{match_id}` endpoint returning `204 No Content` on success.
+
+### Files Changed
+- `backend/app/routes/matches.py`
+
+## [2026-06-09T14:07:56-04:00] - Fix routes/events.py — PK Filter, Explicit Fields, PUT & DELETE
+
+### Fixed
+- Changed `Event.id == event_id` → `Event.event_id == event_id` in `GET /{event_id}` — the model PK is `event_id`; the old filter never matched any row and always returned 404.
+- Replaced `Event(**payload.model_dump())` with explicit field assignment — maps all seven writable columns (`match_id`, `player_id`, `event_type`, `timestamp_sec`, `clip_url`, `transcript_snippet`, `confidence`) individually; prevents phantom schema fields from reaching the ORM.
+- Added `EventUpdate` import.
+
+### Added
+- `PUT /{event_id}` endpoint using `payload.model_dump(exclude_unset=True)` — partial updates; supports patching player, event type, timestamp, clip URL, transcript snippet, and confidence independently.
+- `DELETE /{event_id}` endpoint returning `204 No Content` on success.
+
+### Files Changed
+- `backend/app/routes/events.py`
+
+## [2026-06-09T14:16:11-04:00] - Fix routes/analytics.py — Replace Hardcoded Zeros with Real DB Queries
+
+### Fixed
+- `tournaments_count`: was `0`; now counts `Tournament` rows filtered by `Tournament.user_id == current_user.id`.
+- `teams_count`: was `0`; now counts `Team` rows joined to `Tournament` filtered by `Tournament.user_id`.
+- `matches_count`: was `0`; now counts `Match` rows joined to `Tournament` filtered by `Tournament.user_id`.
+- `events_count`: was `0`; now counts `Event` rows joined through `Match → Tournament` filtered by `Tournament.user_id`.
+
+### Added
+- Imported `Tournament`, `Team`, `Match`, `Event` models.
+- Added `db: Session = Depends(get_db)` parameter to `get_analytics_summary`.
+- Imported `Session` from `sqlalchemy.orm` and `get_db` from `app.database`.
+
+### Files Changed
+- `backend/app/routes/analytics.py`
+
+## [2026-06-09T14:19:35-04:00] - Fix models/user.py — Add role & created_at Columns
+
+### Added
+- `role = Column(String, default="coach", nullable=False)` — enables backend RBAC; allowed values are `"coach"`, `"admin"`, `"viewer"`.
+- `created_at = Column(DateTime(timezone=True), server_default=func.now())` — audit timestamp set by the database on insert.
+- Imported `DateTime` from `sqlalchemy` and `func` from `sqlalchemy.sql`.
+
+### Files Changed
+- `backend/app/models/user.py`
+
+## [2026-06-14T18:33:22-04:00] - Harden secret_key Default in config.py
+
+### Changed
+- Replaced the hardcoded `secret_key = "change-me"` default with `secrets.token_hex(32)`, generating a cryptographically secure 64-character hex string at import time.
+- Added `import secrets` to the module header.
+- Production deployments should still set `SECRET_KEY` via environment variable or `.env` to ensure a stable, consistent secret across restarts.
+
+### Files Changed
+- `backend/app/config.py`
+
+## [2026-06-14T18:40:59-04:00] - Remove JWT Token Leak in AuthContext.jsx
+
+### Changed
+- Removed `console.log("LOGIN DATA:", userData)` from the `login` function in `AuthContext.jsx`.
+- This log printed the full user object — including the JWT access token — to the browser DevTools console on every successful login, exposing credentials to anyone with DevTools access.
+
+### Files Changed
+- `frontend/src/contexts/AuthContext.jsx`
+
+## [2026-06-14T18:43:11-04:00] - Fix apiClient.js: Env-Variable Base URL & Correct Token Field
+
+### Changed
+- Replaced hardcoded `baseURL: "http://127.0.0.1:8000/api"` with `import.meta.env.VITE_API_URL || "http://localhost:8000/api"`, so the API host is configurable per environment without rebuilding.
+- Fixed the request interceptor token property from `user?.token` to `user?.access_token`, matching the FastAPI OAuth2 response shape (`{ access_token, token_type }`). Previously all authenticated API calls were silently sending no token, causing 401 errors.
+
+### Files Changed
+- `frontend/src/services/apiClient.js`
