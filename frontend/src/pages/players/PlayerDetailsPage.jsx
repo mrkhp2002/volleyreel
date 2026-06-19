@@ -6,14 +6,9 @@ import { initialPlayers } from "./playersData";
 import "../../styles/management.css";
 import "../../styles/players.css";
 
-const teamRoutesMap = {
-  "Thunder Strikers": "TM-2026-001",
-  "Ocean Waves": "TM-2026-002",
-  "Sky Hawks": "TM-2026-003",
-  "Net Ninjas": "TM-2026-004",
-  "Beach Blazers": "TM-2026-005",
-  "Court Kings": "TM-2026-001"
-};
+import API from "../../services/apiClient";
+
+
 
 // Unique background colors for avatars (purple shades for mock coherence)
 const avatarBgColors = [
@@ -68,7 +63,7 @@ function calculateAge(dobString) {
   const diffMs = Date.now() - dob.getTime();
   const ageDate = new Date(diffMs);
   const years = Math.abs(ageDate.getUTCFullYear() - 1970);
-  
+
   // Format Date of Birth to 'Month DD, YYYY'
   const formattedDOB = dob.toLocaleDateString("en-US", {
     month: "long",
@@ -98,15 +93,7 @@ function formatWeight(weightKg) {
   return `${lbs} lbs (${kg} kg)`;
 }
 
-// Available Options for Form Dropdowns
-const teamOptions = [
-  { value: "Thunder Strikers", label: "Thunder Strikers" },
-  { value: "Ocean Waves", label: "Ocean Waves" },
-  { value: "Sky Hawks", label: "Sky Hawks" },
-  { value: "Net Ninjas", label: "Net Ninjas" },
-  { value: "Beach Blazers", label: "Beach Blazers" },
-  { value: "Court Kings", label: "Court Kings" }
-];
+
 
 const positionOptions = [
   { value: "Spiker", label: "Spiker" },
@@ -126,33 +113,63 @@ const genderOptions = [
   { value: "Other", label: "Other" }
 ];
 
+
+
+
+
+
 export default function PlayerDetailsPage() {
   const { playerId } = useParams();
   const navigate = useNavigate();
 
-  // Load players list
-  const [players, setPlayers] = useState(() => {
-    const saved = localStorage.getItem("volleyreel_players");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return initialPlayers;
-  });
+  const [player, setPlayer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [teamOptions, setTeamOptions] = useState([]);
 
-  // Find player
-  const player = useMemo(() => {
-    return players.find((p) => p.id === playerId);
-  }, [players, playerId]);
-
-  // Sync back to local storage on players list modification
+  // Fetch Player and Teams data from Backend
   useEffect(() => {
-    localStorage.setItem("volleyreel_players", JSON.stringify(players));
-  }, [players]);
+    const fetchDetails = async () => {
+      try {
+        // 1. Fetch Teams for Dropdown and Name mapping
+        const teamsRes = await API.get("/teams/");
+        if (Array.isArray(teamsRes.data)) {
+          const formattedTeams = teamsRes.data.map((t) => ({
+            value: String(t.team_id || t.id),
+            label: t.name || t.team_name || "Unknown Team"
+          }));
+          setTeamOptions(formattedTeams);
+        }
+
+        // 2. Fetch Specific Player Details
+        const playerRes = await API.get(`/players/${playerId}`);
+        const p = playerRes.data;
+
+        setPlayer({
+          id: String(p.player_id || p.id),
+          name: p.name,
+          team: p.team_id ? String(p.team_id) : "N/A",
+          position: p.position || "N/A",
+          jerseyNumber: p.jersey_number || "",
+          height: p.height || "",
+          weight: p.weight || "",
+          dateOfBirth: p.date_of_birth || "",
+          gender: p.gender || "-",
+          contactNumber: p.contact_number || "",
+          email: p.email || "",
+          address: p.address || "",
+          status: p.status || "Active",
+          photoUrl: p.photo_url || null
+        });
+
+      } catch (err) {
+        console.error("Error fetching player details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+  }, [playerId]);
 
   // Modals state
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -206,45 +223,50 @@ export default function PlayerDetailsPage() {
   };
 
   // Submit edits
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!formName.trim() || !formTeam || !formPosition) {
-      alert("Please complete required fields.");
+
+    const teamIdNumber = parseInt(formTeam, 10);
+    if (isNaN(teamIdNumber)) {
+      alert("Please select a valid Team!");
       return;
     }
 
-    const updated = players.map((p) => {
-      if (p.id === playerId) {
-        return {
-          ...p,
-          name: formName.trim(),
-          team: formTeam,
-          position: formPosition,
-          jerseyNumber: formJersey,
-          contactNumber: formContact,
-          status: formStatus,
-          email: formEmail,
-          dateOfBirth: formDOB,
-          gender: formGender,
-          height: formHeight,
-          weight: formWeight,
-          address: formAddress,
-          photoUrl: photoPreview
-        };
-      }
-      return p;
-    });
+    try {
+      const payload = {
+        name: formName.trim(),
+        team_id: teamIdNumber,
+        position: formPosition || null,
+        jersey_number: formJersey ? parseInt(formJersey, 10) : null,
+        height: formHeight ? parseFloat(formHeight) : null,
+        weight: formWeight ? parseFloat(formWeight) : null,
+        date_of_birth: formDOB || null,
+        gender: formGender || null,
+        contact_number: formContact || null,
+        email: formEmail || null,
+        address: formAddress || null,
+        status: formStatus || "Active"
+      };
 
-    setPlayers(updated);
-    setIsEditOpen(false);
+      await API.put(`/players/${player.id}`, payload);
+      alert("Player details updated successfully!");
+      window.location.reload(); // Refresh to get updated data
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update player details.");
+    }
   };
 
   // Submit deletion
-  const handleDeleteConfirm = () => {
-    const updated = players.filter((p) => p.id !== playerId);
-    setPlayers(updated);
-    setIsDeleteOpen(false);
-    navigate("/players");
+  const handleDeleteConfirm = async () => {
+    try {
+      await API.delete(`/players/${player.id}`);
+      setIsDeleteOpen(false);
+      navigate("/players"); // Go back to players list
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete player profile.");
+    }
   };
 
   // Stable Mock stats calculation
@@ -304,7 +326,7 @@ export default function PlayerDetailsPage() {
       <div className="mgmt-details-grid" style={{ gridTemplateColumns: "1fr 300px" }}>
         {/* Left Columns Cards */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          
+
           {/* Summary Card */}
           <div className="mgmt-card" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
@@ -392,6 +414,7 @@ export default function PlayerDetailsPage() {
                 <span className="players-info-value">
                   <Link to={`/teams/${teamRoutesMap[player.team] || "TM-2026-001"}`} className="mgmt-table-link">
                     {player.team}
+                    {/* {teamOptions.find(t => t.value === player.team)?.label || player.team} */}
                   </Link>
                 </span>
               </div>

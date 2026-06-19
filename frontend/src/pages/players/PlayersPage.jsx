@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
@@ -6,6 +6,9 @@ import { ViewIcon, EditIcon, TrashIcon, PlusIcon } from "../../components/common
 import { initialPlayers, baseStats } from "./playersData";
 import "../../styles/management.css";
 import "../../styles/players.css";
+
+// import React, { useState, useEffect } from "react";
+import API from "../../services/apiClient";
 
 // Unique background colors for avatars (purple shades for mock coherence)
 const avatarBgColors = [
@@ -16,6 +19,8 @@ const avatarBgColors = [
   "#4f46e5", // Indigo dark
   "#c084fc"  // Orchid
 ];
+
+
 
 // Helper to get initials
 function getInitials(name) {
@@ -36,15 +41,8 @@ function getAvatarBg(name) {
   return avatarBgColors[index];
 }
 
-// Available Options for Dropdowns
-const teamOptions = [
-  { value: "Thunder Strikers", label: "Thunder Strikers" },
-  { value: "Ocean Waves", label: "Ocean Waves" },
-  { value: "Sky Hawks", label: "Sky Hawks" },
-  { value: "Net Ninjas", label: "Net Ninjas" },
-  { value: "Beach Blazers", label: "Beach Blazers" },
-  { value: "Court Kings", label: "Court Kings" }
-];
+
+
 
 const positionOptions = [
   { value: "Spiker", label: "Spiker" },
@@ -65,32 +63,74 @@ const genderOptions = [
 ];
 
 export default function PlayersPage() {
-  // Persistence state
-  const [players, setPlayers] = useState(() => {
-    const saved = localStorage.getItem("volleyreel_players");
-    if (saved) {
+  const [players, setPlayers] = useState([]); // instead Mock data 
+  const [loading, setLoading] = useState(true);
+
+  const [teamOptions, setTeamOptions] = useState([]);
+
+  // Fetch Teams for the Dropdown
+  useEffect(() => {
+    const fetchTeamsForDropdown = async () => {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
+        const response = await API.get("/teams/");
+        if (Array.isArray(response.data)) {
+          const formattedTeams = response.data.map((t) => ({
+            value: String(t.team_id || t.id),
+            label: t.name || t.team_name || "Unknown Team"
+          }));
+          setTeamOptions(formattedTeams);
+        }
+      } catch (error) {
+        console.error("Error fetching teams for dropdown:", error);
       }
-    }
-    return initialPlayers;
-  });
+    };
+    fetchTeamsForDropdown();
+  }, []);
 
+
+
+  // 1. Fetch Players Data
   useEffect(() => {
-    localStorage.setItem("volleyreel_players", JSON.stringify(players));
-  }, [players]);
+    const fetchPlayers = async () => {
+      try {
+        // Verify the path is exactly correct (/players/)
+        const response = await API.get("/players/");
+        console.log("Data received from Backend:", response.data);
 
-  const location = useLocation();
+        // Set data only if the response is a valid array
+        if (Array.isArray(response.data)) {
+          const formatted = response.data.map((p) => ({
+            id: String(p.player_id || p.id), // Ensure DB field name matches exactly
+            name: p.name,
+            team: p.team_id ? String(p.team_id) : "N/A",
+            position: p.position || "N/A",
+            jerseyNumber: p.jersey_number || "-",
+            height: p.height || "-",
+            weight: p.weight || "-",
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("add") === "true") {
-      setIsAddOpen(true);
-    }
-  }, [location]);
+            dateOfBirth: p.date_of_birth || "-",
+            gender: p.gender || "-",
+            contactNumber: p.contact_number || "-",
+            email: p.email || "-",
+            address: p.address || "-",
+            status: p.status || "Active",
+            photoUrl: p.photo_url || null
+          }));
+          setPlayers(formatted);
+        } else {
+          console.error("Response data is not an array:", response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching players data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlayers();
+  }, []);
+
+
+
 
   // Search & filter states
   const [search, setSearch] = useState("");
@@ -213,100 +253,144 @@ export default function PlayersPage() {
     setCurrentPage(1);
   }, [search, teamFilter, positionFilter, statusFilter]);
 
-  // Compute dynamic stats by offsetting base stats
+
   const stats = useMemo(() => {
-    const diffCount = players.length - initialPlayers.length;
 
-    // Active diff
-    const activeInitialsCount = initialPlayers.filter((p) => p.status === "Active").length;
-    const activeCurrentCount = players.filter((p) => p.status === "Active").length;
-    const diffActive = activeCurrentCount - activeInitialsCount;
+    const totalPlayers = players.length;
 
-    // Teams diff
-    const uniqueTeamsInitial = new Set(initialPlayers.map((p) => p.team));
-    const uniqueTeamsCurrent = new Set(players.map((p) => p.team));
-    const diffTeams = uniqueTeamsCurrent.size - uniqueTeamsInitial.size;
+    const activePlayers = players.filter((p) => p.status === "Active").length;
+
+    const uniqueTeams = new Set(players.map((p) => p.team).filter(team => team !== "N/A"));
+    const teamsCovered = uniqueTeams.size;
+
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.setDate(today.getDate() - 5));
+
+    const recentlyAdded = players.length > 5 ? 5 : players.length;
 
     return {
-      totalPlayers: baseStats.totalPlayers + diffCount,
-      activePlayers: baseStats.activePlayers + diffActive,
-      teamsCovered: baseStats.teamsCovered + diffTeams,
-      recentlyAdded: baseStats.recentlyAdded + (diffCount > 0 ? diffCount : 0)
+      totalPlayers,
+      activePlayers,
+      teamsCovered,
+      recentlyAdded
     };
   }, [players]);
 
-  // Actions: Add Player submit
-  const handleAddSubmit = (e) => {
+
+
+  // 2. Add New Player
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (!formName.trim() || !formTeam || !formPosition) {
-      alert("Please complete the required fields.");
+
+    if (!formTeam) {
+      alert("Please select a Team!");
       return;
     }
 
-    const newPlayer = {
-      id: `PL-2026-0${Date.now().toString().slice(-3)}`,
+    const teamIdNumber = parseInt(formTeam, 10);
+
+    // Validate if the selected team ID is actually a number
+    if (isNaN(teamIdNumber)) {
+      alert(`Error! Team ID is not a valid number. Current value: "${formTeam}" \n\nPlease ensure the value in teamOptions is a number (e.g., "1").`);
+      return;
+    }
+
+    // Create payload to strictly match the Backend schema
+    const payload = {
       name: formName.trim(),
-      team: formTeam,
-      position: formPosition,
-      jerseyNumber: formJersey,
-      contactNumber: formContact,
-      status: formStatus,
-      email: formEmail,
-      dateOfBirth: formDOB,
-      gender: formGender,
-      height: formHeight,
-      weight: formWeight,
-      address: formAddress,
-      photoUrl: photoPreview
+      team_id: teamIdNumber,
+      position: formPosition || null,
+      jersey_number: formJersey ? parseInt(formJersey, 10) : null,
+      height: formHeight ? parseFloat(formHeight) : null,
+      weight: formWeight ? parseFloat(formWeight) : null,
+      date_of_birth: formDOB || null,
+      gender: formGender || null,
+      contact_number: formContact || null,
+      email: formEmail || null,
+      address: formAddress || null,
+      status: formStatus || "Active"
+
     };
 
-    setPlayers([newPlayer, ...players]);
-    setIsAddOpen(false);
-    resetForm();
+    console.log("Payload sending to API:", payload);
+
+    try {
+      const res = await API.post("/players/", payload);
+      alert("Player added successfully!");
+      window.location.reload(); // Refresh the page to load new data
+    } catch (err) {
+      console.error("API Error Response:", err.response?.data);
+      alert("Failed to add player: " + JSON.stringify(err.response?.data?.detail));
+    }
   };
 
-  // Actions: Edit Player submit
-  const handleEditSubmit = (e) => {
+
+
+
+
+
+  // Actions: Edit Player submit 
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!formName.trim() || !formTeam || !formPosition || !activePlayer) {
-      alert("Please complete the required fields.");
+    if (!activePlayer) return;
+
+
+    const teamIdNumber = parseInt(formTeam, 10);
+
+    if (isNaN(teamIdNumber)) {
+      alert("Please select a valid Team!");
       return;
     }
 
-    const updated = players.map((p) => {
-      if (p.id === activePlayer.id) {
-        return {
-          ...p,
-          name: formName.trim(),
-          team: formTeam,
-          position: formPosition,
-          jerseyNumber: formJersey,
-          contactNumber: formContact,
-          status: formStatus,
-          email: formEmail,
-          dateOfBirth: formDOB,
-          gender: formGender,
-          height: formHeight,
-          weight: formWeight,
-          address: formAddress,
-          photoUrl: photoPreview
-        };
-      }
-      return p;
-    });
+    try {
+      const payload = {
+        name: formName.trim(),
+        team_id: teamIdNumber,
+        position: formPosition || null,
+        jersey_number: formJersey ? parseInt(formJersey, 10) : null,
+        height: formHeight ? parseFloat(formHeight) : null,
+        weight: formWeight ? parseFloat(formWeight) : null,
+        date_of_birth: formDOB || null,
+        gender: formGender || null,
+        contact_number: formContact || null,
+        email: formEmail || null,
+        address: formAddress || null,
+        status: formStatus || "Active"
+      };
 
-    setPlayers(updated);
-    setIsEditOpen(false);
-    resetForm();
-    setActivePlayer(null);
+      console.log("Updating Player Data:", payload);
+
+      await API.put(`/players/${activePlayer.id}`, payload);
+
+      setPlayers(
+        players.map((p) =>
+          p.id === activePlayer.id ? { ...p, ...payload, id: activePlayer.id } : p
+        )
+      );
+
+      setIsEditOpen(false);
+      resetForm();
+      setActivePlayer(null);
+      alert("Player updated successfully!");
+
+    } catch (err) {
+      console.error("Update error:", err.response?.data || err);
+      alert("Failed to update player: " + JSON.stringify(err.response?.data?.detail || err.message));
+    }
   };
 
+
+
   // Actions: Delete Confirm
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-    const updated = players.filter((p) => p.id !== deleteTarget.id);
-    setPlayers(updated);
-    setDeleteTarget(null);
+    try {
+      await API.delete(`/players/${deleteTarget.id}`);
+      setPlayers(players.filter(p => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      alert("Failed to delete player");
+    }
   };
 
   return (
@@ -422,11 +506,12 @@ export default function PlayersPage() {
                     </div>
                   </td>
                   <td>
-                    <Link to={`/players/${player.id}`} className="mgmt-table-link">
+                    <Link onClick={() => openViewModal(player)} className="mgmt-table-link">
                       {player.name}
                     </Link>
                   </td>
-                  <td>{player.team}</td>
+                  {/* <td>{player.team}</td> */}
+                  <td>{teamOptions.find(t => t.value === player.team)?.label || player.team}</td>
                   <td>{player.position}</td>
                   <td>
                     <span style={{ fontWeight: 600 }}>#{player.jerseyNumber || "-"}</span>
@@ -434,9 +519,8 @@ export default function PlayersPage() {
                   <td>{player.contactNumber || "-"}</td>
                   <td>
                     <span
-                      className={`mgmt-badge ${
-                        player.status === "Active" ? "mgmt-badge--active" : "mgmt-badge--inactive"
-                      }`}
+                      className={`mgmt-badge ${player.status === "Active" ? "mgmt-badge--active" : "mgmt-badge--inactive"
+                        }`}
                     >
                       {player.status}
                     </span>
@@ -967,9 +1051,8 @@ export default function PlayersPage() {
                     )}
                   </div>
                   <span
-                    className={`mgmt-badge ${
-                      activePlayer.status === "Active" ? "mgmt-badge--active" : "mgmt-badge--inactive"
-                    }`}
+                    className={`mgmt-badge ${activePlayer.status === "Active" ? "mgmt-badge--active" : "mgmt-badge--inactive"
+                      }`}
                   >
                     {activePlayer.status}
                   </span>
@@ -990,7 +1073,9 @@ export default function PlayersPage() {
 
                   <div className="players-details-item">
                     <span className="players-details-label">Team Assignment</span>
-                    <span className="players-details-value">{activePlayer.team}</span>
+                    <span className="players-details-value">
+                      {teamOptions.find(t => t.value === activePlayer.team)?.label || activePlayer.team}
+                    </span>
                   </div>
 
                   <div className="players-details-item">

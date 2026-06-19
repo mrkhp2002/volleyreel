@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../../components/common/TableActionIcons";
-import { teamSummaryStats, teamsList } from "./teamsData";
+import { teamSummaryStats } from "./teamsData"; // teamsList එක අයින් කළා
+import API from "../../services/apiClient"; // API එක import කළා
 import "../../styles/management.css";
 
 const statusClass = {
@@ -13,15 +14,48 @@ const statusClass = {
 };
 
 export default function TeamsPage() {
+  const [teams, setTeams] = useState([]); // අලුත් Teams state එක
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [divisionFilter, setDivisionFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [activeSubtab, setActiveSubtab] = useState("list"); // "list" or "stats"
+  const [activeSubtab, setActiveSubtab] = useState("list");
 
+  // 1. Database eken data Load kireema
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await API.get("/teams/");
+
+        // Backend data Frontend galapena widihata map karanawa
+        const formattedTeams = response.data.map(t => ({
+          id: String(t.team_id),
+          name: t.name,
+          coach: t.coach || "-",
+          city: t.club_name || "-",
+          players: 0,
+          division: t.division || "Premier",
+          status: t.status || "Active",
+          tournament_id: t.tournament_id
+        }));
+
+        setTeams(formattedTeams);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeams();
+  }, []);
+
+  // 2. Search & Filters 
   const filtered = useMemo(() => {
-    return teamsList.filter((team) => {
+    return teams.filter((team) => {
       const q = search.toLowerCase();
       const matchesSearch =
         !q ||
@@ -33,23 +67,43 @@ export default function TeamsPage() {
       const matchesDivision = !divisionFilter || team.division === divisionFilter;
       return matchesSearch && matchesStatus && matchesDivision;
     });
-  }, [search, statusFilter, divisionFilter]);
+  }, [teams, search, statusFilter, divisionFilter]);
 
   const pageSize = 5;
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pageItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Compute analytics for Stats subtab
+  // 3. Stats Calculation 
   const divisionCounts = useMemo(() => {
     const counts = { Premier: 0, "Division 1": 0, "Division 2": 0 };
-    teamsList.forEach((t) => {
+    teams.forEach((t) => {
       if (counts[t.division] !== undefined) counts[t.division]++;
     });
     return counts;
-  }, []);
+  }, [teams]);
 
-  const totalListTeams = teamsList.length;
+  const totalListTeams = teams.length;
+
+  // 4. Delete Team Function eka Database sambanda karanwa
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await API.delete(`/teams/${deleteTarget.id}`);
+
+      setTeams(teams.filter(t => t.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      setPage(1);
+      alert("Team deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      alert("Failed to delete team.");
+    }
+  };
+
+  if (loading) {
+    return <div className="management-page" style={{ padding: "40px", color: "white", textAlign: "center" }}>Loading teams...</div>;
+  }
 
   return (
     <div className="management-page">
@@ -149,8 +203,8 @@ export default function TeamsPage() {
                   <th>Team ID</th>
                   <th>Team Name</th>
                   <th>Coach</th>
-                  <th>City</th>
-                  <th>Players</th>
+                  <th>Club</th>
+                  <th>Tournament ID</th>
                   <th>Division</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -162,17 +216,21 @@ export default function TeamsPage() {
                     <tr key={team.id}>
                       <td>
                         <Link to={`/teams/${team.id}`} className="mgmt-table-link">
-                          {team.id}
+                          TM-{team.id}
                         </Link>
                       </td>
                       <td>
-                        <Link to={`/teams/${team.id}`} className="mgmt-table-link">
+                        <Link to={`/teams/${team.id}`} className="mgmt-table-link" style={{ fontWeight: "bold" }}>
                           {team.name}
                         </Link>
                       </td>
                       <td>{team.coach}</td>
                       <td>{team.city}</td>
-                      <td>{team.players}</td>
+                      <td>
+                        <Link to={`/tournaments/${team.tournament_id}`} className="mgmt-table-link" style={{ color: "var(--secondary, #3b82f6)" }}>
+                          TN-{team.tournament_id}
+                        </Link>
+                      </td>
                       <td>{team.division}</td>
                       <td>
                         <span className={statusClass[team.status]}>{team.status}</span>
@@ -282,7 +340,7 @@ export default function TeamsPage() {
                   <div className="mgmt-progress-bar-bg">
                     <div
                       className="mgmt-progress-bar-fill"
-                      style={{ width: `${(divisionCounts.Premier / totalListTeams) * 100}%` }}
+                      style={{ width: `${totalListTeams === 0 ? 0 : (divisionCounts.Premier / totalListTeams) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -295,7 +353,7 @@ export default function TeamsPage() {
                   <div className="mgmt-progress-bar-bg">
                     <div
                       className="mgmt-progress-bar-fill mgmt-progress-bar-fill--blue"
-                      style={{ width: `${(divisionCounts["Division 1"] / totalListTeams) * 100}%` }}
+                      style={{ width: `${totalListTeams === 0 ? 0 : (divisionCounts["Division 1"] / totalListTeams) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -308,7 +366,7 @@ export default function TeamsPage() {
                   <div className="mgmt-progress-bar-bg">
                     <div
                       className="mgmt-progress-bar-fill mgmt-progress-bar-fill--purple"
-                      style={{ width: `${(divisionCounts["Division 2"] / totalListTeams) * 100}%` }}
+                      style={{ width: `${totalListTeams === 0 ? 0 : (divisionCounts["Division 2"] / totalListTeams) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -361,7 +419,7 @@ export default function TeamsPage() {
         itemName={deleteTarget?.name || ""}
         confirmLabel="Delete Team"
         onCancel={() => setDeleteTarget(null)}
-        onConfirm={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

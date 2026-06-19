@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
-import { getTeamByRouteId } from "./teamsData";
+import API from "../../services/apiClient"; // API එක Import කළා
 import "../../styles/management.css";
 
 // SVG Icons
@@ -41,7 +41,41 @@ export default function TeamDetailsPage() {
   const { teamId } = useParams();
   const navigate = useNavigate();
   const [showDelete, setShowDelete] = useState(false);
-  const team = getTeamByRouteId(teamId);
+
+  // Database එකෙන් එන දත්ත තියාගන්න States
+  const [team, setTeam] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 1. Database එකෙන් Team විස්තර ගෙන ඒම
+  useEffect(() => {
+    const fetchTeamDetails = async () => {
+      try {
+        const response = await API.get(`/teams/${teamId}`);
+        const t = response.data;
+
+
+        setTeam({
+          id: String(t.team_id),
+          name: t.name,
+          tournamentId: t.tournament_id,
+          coach: t.coach || "Not Assigned",
+          clubName: t.club_name || "-",
+          city: t.city || "Colombo",
+          status: t.status || "Active",
+          description: t.description || "No description provided.",
+          players: [],
+          matchesPlayed: 0,
+          wins: 0
+        });
+      } catch (error) {
+        console.error("Error fetching team details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamDetails();
+  }, [teamId]);
 
   // Generate stable mock coach information
   const coachInfo = useMemo(() => {
@@ -55,6 +89,23 @@ export default function TeamDetailsPage() {
       email: `coach.${coachSlug}@${teamSlug}.com`
     };
   }, [team]);
+
+  // 2. Database eken delete Team 
+  const handleDelete = async () => {
+    try {
+      await API.delete(`/teams/${teamId}`);
+      setShowDelete(false);
+      alert("Team deleted successfully!");
+      navigate("/teams");
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      alert("Failed to delete team.");
+    }
+  };
+
+  if (loading) {
+    return <div className="management-page" style={{ padding: "40px", color: "white", textAlign: "center" }}>Loading team details...</div>;
+  }
 
   if (!team) {
     return (
@@ -72,14 +123,9 @@ export default function TeamDetailsPage() {
     );
   }
 
-  const handleDelete = () => {
-    setShowDelete(false);
-    navigate("/teams");
-  };
-
-  const winRate = team.matchesPlayed > 0 
-    ? Math.round((team.wins / team.matchesPlayed) * 100) 
-    : 75;
+  const winRate = team.matchesPlayed > 0
+    ? Math.round((team.wins / team.matchesPlayed) * 100)
+    : 0;
 
   return (
     <div className="management-page">
@@ -118,10 +164,10 @@ export default function TeamDetailsPage() {
 
       {/* Grid structure (2 columns on desktop) */}
       <div className="mgmt-details-grid" style={{ gridTemplateColumns: "1fr 300px" }}>
-        
+
         {/* Left column panels */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          
+
           {/* Summary Card */}
           <div className="mgmt-card" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
@@ -131,7 +177,9 @@ export default function TeamDetailsPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <h2 style={{ fontSize: "1.42rem", margin: 0, fontWeight: 800 }}>{team.name}</h2>
                 <span style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
-                  Spring Championship 2026
+                  <Link to={`/tournaments/${team.tournamentId}`} style={{ color: "var(--text-muted)", textDecoration: "none" }}>
+                    Tournament ID: TN-{team.tournamentId}
+                  </Link>
                 </span>
                 <div style={{ display: "flex" }}>
                   <span className={badgeClass[team.status] || "mgmt-badge"}>
@@ -144,7 +192,7 @@ export default function TeamDetailsPage() {
             {/* Performance Stats Cards */}
             <div className="mgmt-details-stats-row">
               <div className="mgmt-card-stat-box mgmt-card-stat-box--blue">
-                <strong>{team.registeredPlayers || team.players.length}</strong>
+                <strong>{team.players?.length || 0}</strong>
                 <span>Total Players</span>
               </div>
               <div className="mgmt-card-stat-box mgmt-card-stat-box--purple">
@@ -168,15 +216,19 @@ export default function TeamDetailsPage() {
             <div className="mgmt-info-grid">
               <div className="mgmt-info-item">
                 <span className="mgmt-info-label">Team ID</span>
-                <span className="mgmt-info-value">{team.id}</span>
+                <span className="mgmt-info-value">TM-{team.id}</span>
               </div>
               <div className="mgmt-info-item">
-                <span className="mgmt-info-label">Home City</span>
-                <span className="mgmt-info-value">{team.city}, CA</span>
+                <span className="mgmt-info-label">Club Name</span>
+                <span className="mgmt-info-value">{team.clubName}</span>
               </div>
               <div className="mgmt-info-item">
                 <span className="mgmt-info-label">Tournament</span>
-                <span className="mgmt-info-value">Spring Championship 2026</span>
+                <span className="mgmt-info-value">
+                  <Link to={`/tournaments/${team.tournamentId}`} style={{ color: "var(--secondary)", textDecoration: "none" }}>
+                    View Tournament (TN-{team.tournamentId})
+                  </Link>
+                </span>
               </div>
               <div className="mgmt-info-item">
                 <span className="mgmt-info-label">Status</span>
@@ -191,7 +243,7 @@ export default function TeamDetailsPage() {
             <div className="mgmt-info-grid">
               <div className="mgmt-info-item">
                 <span className="mgmt-info-label">Coach Name</span>
-                <span className="mgmt-info-value">{team.coach || "John Anderson"}</span>
+                <span className="mgmt-info-value">{team.coach || "Not Assigned"}</span>
               </div>
               <div className="mgmt-info-item">
                 <span className="mgmt-info-label">Contact Number</span>
@@ -208,52 +260,59 @@ export default function TeamDetailsPage() {
           <div className="mgmt-card">
             <h3 className="mgmt-card-title">Team Description</h3>
             <p style={{ color: "#cbd5e1", lineHeight: 1.6, margin: 0, fontSize: "0.92rem" }}>
-              {team.description || "Premier volleyball team with a strong focus on technique and teamwork. Competing at the highest level for over 5 years."}
+              {team.description}
             </p>
           </div>
 
           {/* Players in Team Roster */}
           <div className="mgmt-card">
-            <div className="mgmt-section-header" style={{ marginBottom: "14px" }}>
+            <div className="mgmt-section-header" style={{ marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 style={{ fontSize: "1.05rem", margin: 0, fontWeight: 700 }}>Players in Team</h3>
               <Link to="/players" className="mgmt-section-link">
                 View All Players
               </Link>
             </div>
-            <table className="mgmt-table">
-              <thead>
-                <tr>
-                  <th>Player Name</th>
-                  <th>Position</th>
-                  <th>Jersey #</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {team.players.map((player) => (
-                  <tr key={player.name}>
-                    <td>
-                      <Link
-                        to={`/players/${playerRoutesMap[player.name] || "PL-2026-001"}`}
-                        className="mgmt-table-link"
-                      >
-                        {player.name}
-                      </Link>
-                    </td>
-                    <td>{player.position}</td>
-                    <td>{player.number}</td>
-                    <td>
-                      <span className="mgmt-badge mgmt-badge--active">
-                        {player.status}
-                      </span>
-                    </td>
+
+            {team.players && team.players.length > 0 ? (
+              <table className="mgmt-table">
+                <thead>
+                  <tr>
+                    <th>Player Name</th>
+                    <th>Position</th>
+                    <th>Jersey #</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {team.players.map((player) => (
+                    <tr key={player.name}>
+                      <td>
+                        <Link
+                          to={`/players/${playerRoutesMap[player.name] || "PL-2026-001"}`}
+                          className="mgmt-table-link"
+                        >
+                          {player.name}
+                        </Link>
+                      </td>
+                      <td>{player.position}</td>
+                      <td>{player.number}</td>
+                      <td>
+                        <span className="mgmt-badge mgmt-badge--active">
+                          {player.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", fontStyle: "italic", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "8px" }}>
+                No players added to this team yet.
+              </div>
+            )}
           </div>
 
-          {/* Recent Performance Matches */}
+          {/* Recent Performance Matches - Hardcoded for UI visual purposes */}
           <div className="mgmt-card">
             <div className="mgmt-section-header" style={{ marginBottom: "14px" }}>
               <h3 style={{ fontSize: "1.05rem", margin: 0, fontWeight: 700 }}>Recent Matches</h3>
@@ -282,36 +341,6 @@ export default function TeamDetailsPage() {
                   <td>
                     <span style={{ fontWeight: 700, color: "#10b981" }}>Won 3-1</span>
                     <span className="mgmt-recent-matches-score">25-20, 22-25, 25-18, 25-22</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
-                      vs{" "}
-                      <Link to="/teams/TM-2026-003" className="mgmt-table-link">
-                        Sky Hawks
-                      </Link>
-                    </span>
-                    <span className="mgmt-recent-matches-score">Mar 10, 2026</span>
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: "#10b981" }}>Won 3-0</span>
-                    <span className="mgmt-recent-matches-score">25-18, 25-20, 25-15</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span style={{ fontWeight: 600, color: "#ffffff" }}>
-                      vs{" "}
-                      <Link to="/teams/TM-2026-004" className="mgmt-table-link">
-                        Net Ninjas
-                      </Link>
-                    </span>
-                    <span className="mgmt-recent-matches-score">Mar 05, 2026</span>
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: "#ef4444" }}>Lost 2-3</span>
-                    <span className="mgmt-recent-matches-score">25-23, 20-25, 25-27, 25-20, 13-15</span>
                   </td>
                 </tr>
               </tbody>
