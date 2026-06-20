@@ -807,3 +807,22 @@
 ### Files Changed
 - `frontend/vite.config.js`
 - `AI_CHANGELOG.md`
+
+## [2026-06-20T22:06:00+05:30] - Correct User Token Key on UI Registration
+
+### Changed
+- Corrected the logged-in session object key from `token` to `access_token` inside `RegisterForm.jsx` to match the query checks in `apiClient.js` and allow authenticated request calls after creating an account.
+
+### Files Changed
+- `frontend/src/components/layout/auth/RegisterForm.jsx`
+- `AI_CHANGELOG.md`
+
+## [2026-06-20T22:10:00+05:30] - Add Coach Mock Login Credentials & Standardise Token Keys
+
+### Added
+- Injected mock login credentials bypass for a Coach role (`coach@volleyreel.com` / `coach123`) inside `LoginForm.jsx`.
+- Standardised login payloads in the sign-in form to include both `token` and `access_token` properties to prevent authentication issues on API calls.
+
+### Files Changed
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `AI_CHANGELOG.md`
