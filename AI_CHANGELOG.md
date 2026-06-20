@@ -798,3 +798,12 @@
 - `volleyreel_error_analysis.md`
 - `AI_CHANGELOG.md`
 
+## [2026-06-20T21:48:00+05:30] - Local Dev Server Configuration and Run Setup
+
+### Changed
+- Configured Vite port to `5173` and host to `127.0.0.1` in `vite.config.js` to avoid `EACCES` permission errors on default port 3000.
+- Created `backend/.env` (ignored by git) to configure a local SQLite database (`sqlite:///./volleyreel.db`), bypassing database connection failures with postgres settings.
+
+### Files Changed
+- `frontend/vite.config.js`
+- `AI_CHANGELOG.md`
