@@ -4,6 +4,8 @@ import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { initialTournaments } from "./tournamentsData";
 import "../../styles/management.css";
 
+import API from "../../services/apiClient";
+
 // SVG Trophy Icon
 function TrophyIcon() {
   return (
@@ -35,6 +37,8 @@ function formatDate(dateStr) {
   });
 }
 
+
+/*
 export default function TournamentDetailsPage() {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
@@ -62,6 +66,75 @@ export default function TournamentDetailsPage() {
     setShowDelete(false);
     navigate("/tournaments");
   };
+  */
+export default function TournamentDetailsPage() {
+  const { tournamentId } = useParams();
+  const navigate = useNavigate();
+  const [showDelete, setShowDelete] = useState(false);
+
+  const [tournament, setTournament] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [teams, setTeams] = useState([]);
+
+  useEffect(() => {
+    const fetchTournamentDetails = async () => {
+      try {
+        const response = await API.get(`/tournaments/${tournamentId}`);
+        const t = response.data;
+
+        setTournament({
+          id: String(t.tournament_id),
+          name: t.name,
+          category: t.category || "General",
+          type: t.type || "Standard",
+          status: t.status || "Upcoming",
+          teamsCount: 0,
+          teamLimit: t.team_limit || 16,
+          groupsCount: t.groups_count || 4,
+          matchFormat: t.match_format || "Best of 3 Sets",
+          setRules: t.set_rules || "25 Point Rally",
+          location: t.location || "-",
+          organizerName: t.organizer_name || "-",
+          startDate: t.start_date || "",
+          endDate: t.end_date || "",
+          registrationDeadline: t.registration_deadline || "",
+          description: t.description || "",
+          publicVisibility: t.public_visibility !== false,
+          enableLeaderboard: t.enable_leaderboard !== false,
+          notes: t.notes || ""
+        });
+
+        const teamsResponse = await API.get(`/teams/${tournamentId}`);
+        setTeams(teamsResponse.data);
+
+
+      } catch (error) {
+        console.error("Error fetching tournament details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTournamentDetails();
+  }, [tournamentId]);
+
+  const handleDelete = async () => {
+    try {
+      await API.delete(`/tournaments/${tournamentId}`);
+      setShowDelete(false);
+      alert("Tournament deleted successfully!");
+      navigate("/tournaments");
+    } catch (error) {
+      console.error("Error deleting tournament:", error);
+      alert("Failed to delete tournament.");
+    }
+  };
+
+  if (loading) {
+    return <div className="management-page" style={{ padding: "40px", textAlign: "center", color: "white" }}>Loading details...</div>;
+  }
+
+
 
   if (!tournament) {
     return (
@@ -116,10 +189,10 @@ export default function TournamentDetailsPage() {
 
       {/* Grid structure (2 columns on desktop) */}
       <div className="mgmt-details-grid" style={{ gridTemplateColumns: "1fr 300px" }}>
-        
+
         {/* Left column panels */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          
+
           {/* Summary Card */}
           <div className="mgmt-card" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
@@ -231,7 +304,7 @@ export default function TournamentDetailsPage() {
                 <span className="mgmt-info-value">{tournament.enableLeaderboard !== false ? "Enabled" : "Disabled"}</span>
               </div>
             </div>
-            
+
             {tournament.notes && (
               <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", paddingTop: "14px" }}>
                 <span className="mgmt-info-label" style={{ display: "block", marginBottom: "6px" }}>Additional Organizer Notes</span>

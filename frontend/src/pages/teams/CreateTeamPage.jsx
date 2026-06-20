@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import API from "../../services/apiClient";
 import CustomSelect from "../../components/common/CustomSelect";
 import { PlusIcon } from "../../components/common/TableActionIcons";
@@ -8,6 +8,7 @@ import "../../styles/management.css";
 const initialForm = {
   teamId: "TM-2026-006",
   name: "",
+  tournament_id: "",
   division: "",
   category: "",
   description: "",
@@ -23,28 +24,51 @@ const initialForm = {
 
 export default function CreateTeamPage({ mode = "create", initialTeam = null }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+
+  const urlTournamentId = searchParams.get("tournament");
+
   const isEdit = mode === "edit";
+
   const [form, setForm] = useState(() =>
     initialTeam
       ? {
-          ...initialForm,
-          teamId: initialTeam.id,
-          name: initialTeam.name,
-          division: initialTeam.division || "",
-          category: initialTeam.category || "",
-          coach: initialTeam.coach || "",
-          clubName: initialTeam.clubName || "",
-          city: initialTeam.city || "",
-          homeVenue: initialTeam.homeVenue || "",
-          foundedYear: initialTeam.foundedYear || "",
-          rosterLimit: String(initialTeam.rosterLimit || "15"),
-          status: initialTeam.status || "Active",
-          description: initialTeam.description || "",
-        }
-      : initialForm
+        ...initialForm,
+        teamId: initialTeam.id,
+        name: initialTeam.name,
+        tournament_id: initialTeam.tournament_id || "",
+        division: initialTeam.division || "",
+        category: initialTeam.category || "",
+        coach: initialTeam.coach || "",
+        clubName: initialTeam.clubName || "",
+        city: initialTeam.city || "",
+        homeVenue: initialTeam.homeVenue || "",
+        foundedYear: initialTeam.foundedYear || "",
+        rosterLimit: String(initialTeam.rosterLimit || "15"),
+        status: initialTeam.status || "Active",
+        description: initialTeam.description || "",
+        notes: initialTeam.notes || "",
+      }
+      : { ...initialForm, tournament_id: urlTournamentId || "" }
   );
+
+  const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Database eken Tournaments (Dropdown ekata daanawa)
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const response = await API.get("/tournaments/");
+        setTournaments(response.data);
+      } catch (err) {
+        console.error("Error fetching tournaments:", err);
+      }
+    };
+    fetchTournaments();
+  }, []);
 
   const setField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -59,17 +83,44 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
       return;
     }
 
+    if (!form.tournament_id) {
+      setError("Please select a Tournament for this team.");
+      return;
+    }
+
     try {
       setLoading(true);
+
+      // Backend ekata yawana data geenna (Payload)
+      const payload = {
+        name: form.name.trim(),
+        tournament_id: Number(form.tournament_id),
+        coach: form.coach.trim() || null,
+        club_name: form.clubName.trim() || null,
+        division: form.division.trim() || null,
+        category: form.category.trim() || null,
+        description: form.description.trim() || null,
+        city: form.city.trim() || null,
+        home_venue: form.homeVenue.trim() || null,
+        founded_year: form.foundedYear.trim() || null,
+        roster_limit: Number(form.rosterLimit) || 15,
+        status: form.status || "Active",
+        notes: form.notes.trim() || null,
+      };
+
       if (!isEdit) {
-        await API.post("/teams/", {
-          name: form.name.trim(),
-          coach: form.coach || null,
-          club_name: form.clubName || null,
-        });
+        // Create (POST)
+        await API.post("/teams/", payload);
+        alert("Team created successfully!");
+        navigate("/teams");
+      } else {
+        // Update (PUT)
+        await API.put(`/teams/${initialTeam.id}`, payload);
+        alert("Team updated successfully!");
+        navigate(`/teams/${initialTeam.id}`);
       }
-      navigate(isEdit ? `/teams/${form.teamId}` : "/teams");
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.detail || "Failed to save team. Please try again.");
     } finally {
       setLoading(false);
@@ -90,7 +141,7 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
       </header>
 
       {error && (
-        <div className="mgmt-card" style={{ color: "#b91c1c", marginBottom: 16 }}>
+        <div className="mgmt-card" style={{ color: "#ef4444", marginBottom: 16, border: "1px solid #ef4444" }}>
           {error}
         </div>
       )}
@@ -99,16 +150,39 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
         <section className="mgmt-card">
           <h2 className="mgmt-card-title">Team Details</h2>
           <div className="mgmt-form-grid">
-            <div className="mgmt-field">
-              <label htmlFor="teamId">
-                Team ID <span className="required">*</span>
+
+            {/* Tournament Dropdown */}
+            <div className="mgmt-field mgmt-form-grid--full">
+              <label htmlFor="tournament_id">
+                Assign to Tournament <span className="required">*</span>
               </label>
+              <select
+                id="tournament_id"
+                value={form.tournament_id}
+                onChange={(e) => setField("tournament_id", e.target.value)}
+                required
+                className="mgmt-filter-select"
+                style={{ width: "100%", padding: "10px", backgroundColor: "var(--surface)", color: "white", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px" }}
+              >
+                <option value="">-- Choose a Tournament --</option>
+                {tournaments.map((t) => (
+                  <option key={t.tournament_id} value={t.tournament_id}>
+                    TN-{t.tournament_id} : {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mgmt-field">
+              <label htmlFor="teamId">Team ID</label>
               <input
                 id="teamId"
                 value={form.teamId}
                 onChange={(e) => setField("teamId", e.target.value)}
+                disabled={isEdit} // Edit කරද්දී ID එක වෙනස් කරන්න බැරි වෙන්න දාලා තියෙන්නේ
               />
             </div>
+
             <div className="mgmt-field">
               <label htmlFor="name">
                 Team Name <span className="required">*</span>
@@ -121,6 +195,7 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
                 required
               />
             </div>
+
             <div className="mgmt-field">
               <label htmlFor="division">Division</label>
               <input
@@ -130,6 +205,7 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
                 onChange={(e) => setField("division", e.target.value)}
               />
             </div>
+
             <div className="mgmt-field">
               <label htmlFor="category">Category</label>
               <input
@@ -139,6 +215,7 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
                 onChange={(e) => setField("category", e.target.value)}
               />
             </div>
+
             <div className="mgmt-field mgmt-form-grid--full">
               <label htmlFor="description">Description</label>
               <textarea
@@ -209,6 +286,7 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
               <label htmlFor="rosterLimit">Roster Limit</label>
               <input
                 id="rosterLimit"
+                type="number"
                 value={form.rosterLimit}
                 onChange={(e) => setField("rosterLimit", e.target.value)}
               />

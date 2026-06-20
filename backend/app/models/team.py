@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -9,6 +9,20 @@ class Team(Base):
 
     team_id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    coach = Column(String, nullable=True)
+    club_name = Column(String, nullable=True)
+    logo_url = Column(String, nullable=True)
+
+    division = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    city = Column(String, nullable=True)
+    home_venue = Column(String, nullable=True)
+    founded_year = Column(String, nullable=True)
+    roster_limit = Column(Integer, default=15)
+    status = Column(String, default="Active")
+    notes = Column(Text, nullable=True)
+
     tournament_id = Column(
         Integer,
         ForeignKey("tournaments.tournament_id", ondelete="CASCADE"),

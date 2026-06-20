@@ -1,15 +1,17 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: BASE_URL,
 });
 
 API.interceptors.request.use((config) => {
   try {
     const user = JSON.parse(localStorage.getItem("user") || "null");
 
-    if (user?.token) {
-      config.headers.Authorization = `Bearer ${user.token}`;
+    if (user?.access_token) {
+      config.headers.Authorization = `Bearer ${user.access_token}`;
     }
   } catch (err) {
     console.error("Token parse error:", err);

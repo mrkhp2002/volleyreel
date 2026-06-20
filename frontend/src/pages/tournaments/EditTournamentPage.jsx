@@ -4,6 +4,8 @@ import CustomSelect from "../../components/common/CustomSelect";
 import { initialTournaments } from "./tournamentsData";
 import "../../styles/management.css";
 
+import API from "../../services/apiClient";
+
 // SVG Upload Icon
 function UploadCloudIcon() {
   return (
@@ -48,81 +50,117 @@ const statusOptions = [
   { value: "Completed", label: "Completed" }
 ];
 
+
 export default function EditTournamentPage() {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-
-  // Load existing tournaments
-  const [tournaments, setTournaments] = useState(() => {
-    const saved = localStorage.getItem("volleyreel_tournaments");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return initialTournaments;
-  });
-
-  const tournament = tournaments.find((t) => t.id === tournamentId);
 
   // Form states
   const [name, setName] = useState("");
   const [type, setType] = useState("Round Robin");
   const [category, setCategory] = useState("Men's Senior");
   const [description, setDescription] = useState("");
-  
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [regDeadline, setRegDeadline] = useState("");
   const [venue, setVenue] = useState("");
   const [city, setCity] = useState("");
   const [organizer, setOrganizer] = useState("");
-
   const [teamLimit, setTeamLimit] = useState(16);
   const [groupsCount, setGroupsCount] = useState(4);
   const [matchFormat, setMatchFormat] = useState("Best of 5 Sets");
   const [setRules, setSetRules] = useState("25 Point Rally Score");
   const [status, setStatus] = useState("Upcoming");
-
   const [bannerPreview, setBannerPreview] = useState(null);
   const [notes, setNotes] = useState("");
-
-  // Checkbox settings
   const [publicVis, setPublicVis] = useState(true);
   const [reportSharing, setReportSharing] = useState(true);
   const [leaderboard, setLeaderboard] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // Populate data
+  // 1. Database data Load (GET)
   useEffect(() => {
-    if (tournament) {
-      setName(tournament.name || "");
-      setType(tournament.type || "Round Robin");
-      setCategory(tournament.category || "Men's Senior");
-      setDescription(tournament.description || "");
-      setStartDate(tournament.startDate || "");
-      setEndDate(tournament.endDate || "");
-      setRegDeadline(tournament.registrationDeadline || "");
-      setVenue(tournament.location || "");
-      setCity(tournament.city || "");
-      setOrganizer(tournament.organizerName || "");
-      setTeamLimit(tournament.teamLimit || 16);
-      setGroupsCount(tournament.groupsCount || 4);
-      setMatchFormat(tournament.matchFormat || "Best of 5 Sets");
-      setSetRules(tournament.setRules || "25 Point Rally Score");
-      setStatus(tournament.status || "Upcoming");
-      setBannerPreview(tournament.bannerUrl || null);
-      setNotes(tournament.notes || "");
-      setPublicVis(tournament.publicVisibility !== false);
-      setReportSharing(tournament.allowReportSharing !== false);
-      setLeaderboard(tournament.enableLeaderboard !== false);
-    }
-  }, [tournament]);
+    const fetchTournament = async () => {
+      try {
+        const response = await API.get(`/tournaments/${tournamentId}`);
+        const t = response.data;
 
-  if (!tournament) {
+        setName(t.name || "");
+        setType(t.type || "Round Robin");
+        setCategory(t.category || "Men's Senior");
+        setDescription(t.description || "");
+        setStartDate(t.start_date || "");
+        setEndDate(t.end_date || "");
+        setRegDeadline(t.registration_deadline || "");
+        setVenue(t.location || "");
+        setCity(t.city || "");
+        setOrganizer(t.organizer_name || "");
+        setTeamLimit(t.team_limit || 16);
+        setGroupsCount(t.groups_count || 4);
+        setMatchFormat(t.match_format || "Best of 5 Sets");
+        setSetRules(t.set_rules || "25 Point Rally Score");
+        setStatus(t.status || "Upcoming");
+        setBannerPreview(t.banner_url || null);
+        setNotes(t.notes || "");
+        setPublicVis(t.public_visibility !== false);
+        setReportSharing(t.allow_report_sharing !== false);
+        setLeaderboard(t.enable_leaderboard !== false);
+      } catch (error) {
+        console.error("Error loading tournament:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTournament();
+  }, [tournamentId]);
+
+  // 2. Database එකට Update දත්ත යැවීම (PUT)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+
+      const updatedData = {
+        tournament_id: Number(tournamentId),
+        name: name.trim(),
+        type, category, description: description.trim(),
+
+        start_date: startDate || null,
+        end_date: endDate || null,
+        registration_deadline: regDeadline || null,
+        location: venue.trim(),
+        city: city.trim(),
+        organizer_name: organizer.trim(),
+        team_limit: teamLimit ? Number(teamLimit) : 0,
+        groups_count: groupsCount ? Number(groupsCount) : 0,
+        match_format: matchFormat,
+        set_rules: setRules,
+        status,
+        banner_url: bannerPreview,
+        notes: notes.trim(),
+        public_visibility: publicVis,
+        allow_report_sharing: reportSharing,
+        enable_leaderboard: leaderboard
+      };
+
+      console.log("Sending data:", updatedData); // මේකෙන් Console එකේ දත්ත ටික පේයි
+      await API.put(`/tournaments/${tournamentId}`, updatedData);
+      alert("Tournament updated successfully!");
+      // navigate(`/tournaments/${tournamentId}`);
+      navigate(0);
+    } catch (error) {
+      console.error("Error details:", error.response?.data); // මේකෙන් දෝෂය මොකක්ද කියලා හරියටම පේයි
+      alert("Failed to update tournament: " + (error.response?.data?.detail || "Check console"));
+    }
+  };
+
+
+  if (loading) {
+    return <div className="management-page" style={{ padding: "40px", textAlign: "center", color: "white" }}>Loading tournament details...</div>;
+  }
+
+
+  if (!name) {
     return (
       <div className="management-page" style={{ padding: "40px 20px", textAlign: "center" }}>
         <div className="mgmt-card" style={{ maxWidth: "500px", margin: "0 auto" }}>
@@ -166,49 +204,49 @@ export default function EditTournamentPage() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      alert("Tournament Name is required.");
-      return;
-    }
-    if (!startDate || !endDate) {
-      alert("Start Date and End Date are required.");
-      return;
-    }
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (!name.trim()) {
+  //     alert("Tournament Name is required.");
+  //     return;
+  //   }
+  //   if (!startDate || !endDate) {
+  //     alert("Start Date and End Date are required.");
+  //     return;
+  //   }
 
-    const updatedTournaments = tournaments.map((t) => {
-      if (t.id === tournamentId) {
-        return {
-          ...t,
-          name: name.trim(),
-          type,
-          category,
-          description: description.trim(),
-          startDate,
-          endDate,
-          registrationDeadline: regDeadline,
-          location: venue.trim(),
-          city: city.trim(),
-          organizerName: organizer.trim(),
-          teamLimit: Number(teamLimit),
-          groupsCount: Number(groupsCount),
-          matchFormat,
-          setRules,
-          status,
-          bannerUrl: bannerPreview,
-          notes: notes.trim(),
-          publicVisibility: publicVis,
-          allowReportSharing: reportSharing,
-          enableLeaderboard: leaderboard
-        };
-      }
-      return t;
-    });
+  //   const updatedTournaments = tournaments.map((t) => {
+  //     if (t.id === tournamentId) {
+  //       return {
+  //         ...t,
+  //         name: name.trim(),
+  //         type,
+  //         category,
+  //         description: description.trim(),
+  //         startDate,
+  //         endDate,
+  //         registrationDeadline: regDeadline,
+  //         location: venue.trim(),
+  //         city: city.trim(),
+  //         organizerName: organizer.trim(),
+  //         teamLimit: Number(teamLimit),
+  //         groupsCount: Number(groupsCount),
+  //         matchFormat,
+  //         setRules,
+  //         status,
+  //         bannerUrl: bannerPreview,
+  //         notes: notes.trim(),
+  //         publicVisibility: publicVis,
+  //         allowReportSharing: reportSharing,
+  //         enableLeaderboard: leaderboard
+  //       };
+  //     }
+  //     return t;
+  //   });
 
-    localStorage.setItem("volleyreel_tournaments", JSON.stringify(updatedTournaments));
-    navigate("/tournaments");
-  };
+  //   localStorage.setItem("volleyreel_tournaments", JSON.stringify(updatedTournaments));
+  //   navigate("/tournaments");
+  // };
 
   return (
     <div className="management-page">
@@ -235,13 +273,13 @@ export default function EditTournamentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="mgmt-form" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        
+
         {/* Section 1: Tournament Details */}
         <fieldset className="mgmt-card" style={{ border: "none", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <legend className="mgmt-card-title" style={{ fontSize: "1.05rem", fontWeight: 700, paddingBottom: "10px", width: "100%" }}>
             Tournament Details
           </legend>
-          
+
           <div className="mgmt-form-grid">
             <div className="mgmt-field">
               <label>Tournament ID</label>
