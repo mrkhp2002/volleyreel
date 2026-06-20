@@ -16,12 +16,11 @@ def list_tournaments(db: Session = Depends(get_db), current_user=Depends(get_cur
 
 @router.post("/", response_model=TournamentRead, status_code=status.HTTP_201_CREATED)
 def create_tournament(payload: TournamentCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # Build the ORM object with explicit fields so that user_id (NOT NULL FK)
-    # is always injected from the token, never trusted from the request body.
+
+    tournament_data = payload.model_dump()
+
     tournament = Tournament(
-        name=payload.name,
-        start_date=payload.start_date,
-        end_date=payload.end_date,
+        **tournament_data,
         user_id=current_user.id,
     )
     db.add(tournament)
@@ -32,14 +31,11 @@ def create_tournament(payload: TournamentCreate, db: Session = Depends(get_db), 
 
 @router.get("/{tournament_id}", response_model=TournamentRead)
 def get_tournament(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    tournament = (
-        db.query(Tournament)
-        .filter(
-            Tournament.tournament_id == tournament_id,
-            Tournament.user_id == current_user.id,
-        )
-        .first()
-    )
+    tournament = db.query(Tournament).filter(
+        Tournament.tournament_id == tournament_id,
+        Tournament.user_id == current_user.id
+    ).first()
+
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
     return tournament
@@ -52,14 +48,11 @@ def update_tournament(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    tournament = (
-        db.query(Tournament)
-        .filter(
-            Tournament.tournament_id == tournament_id,
-            Tournament.user_id == current_user.id,
-        )
-        .first()
-    )
+    tournament = db.query(Tournament).filter(
+        Tournament.tournament_id == tournament_id,
+        Tournament.user_id == current_user.id
+    ).first()
+
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
 
@@ -74,14 +67,11 @@ def update_tournament(
 
 @router.delete("/{tournament_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    tournament = (
-        db.query(Tournament)
-        .filter(
-            Tournament.tournament_id == tournament_id,
-            Tournament.user_id == current_user.id,
-        )
-        .first()
-    )
+    tournament = db.query(Tournament).filter(
+        Tournament.tournament_id == tournament_id,
+        Tournament.user_id == current_user.id
+    ).first()
+
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
     db.delete(tournament)

@@ -15,12 +15,19 @@ def list_players(db: Session = Depends(get_db), current_user=Depends(get_current
 
 @router.post("/", response_model=PlayerRead, status_code=status.HTTP_201_CREATED)
 def create_player(payload: PlayerCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # Explicit field assignment avoids passing unknown schema fields to the ORM.
-    player = Player(
-        name=payload.name,
-        number=payload.number,
-        team_id=payload.team_id,
-    )
+
+    print(f"DEBUG: Received payload: {payload}")
+    if not payload.name or not payload.name.strip():
+        raise HTTPException(
+            status_code=400, detail="Player name cannot be empty or just whitespace.")
+
+    player_count = db.query(Player).filter(
+        Player.team_id == payload.team_id).count()
+    if player_count >= 14:
+        raise HTTPException(
+            status_code=400, detail="Team roster is full (Maximum 14 players allowed).")
+
+    player = Player(**payload.model_dump())
     db.add(player)
     db.commit()
     db.refresh(player)
