@@ -4,6 +4,8 @@ import CustomSelect from "../../components/common/CustomSelect";
 import { initialTournaments } from "./tournamentsData";
 import "../../styles/management.css";
 
+import API from "../../services/apiClient";
+
 // SVG Upload Icon
 function UploadCloudIcon() {
   return (
@@ -78,7 +80,7 @@ export default function CreateTournamentPage() {
   const [type, setType] = useState("Round Robin");
   const [category, setCategory] = useState("Men's Senior");
   const [description, setDescription] = useState("");
-  
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [regDeadline, setRegDeadline] = useState("");
@@ -128,46 +130,62 @@ export default function CreateTournamentPage() {
     }
   };
 
-  const handleSubmit = (e, isDraft = false) => {
+
+
+
+  const handleSubmit = async (e, isDraft = false) => {
     e.preventDefault();
+
     if (!name.trim()) {
       alert("Tournament Name is required.");
       return;
     }
-    if (!startDate || !endDate) {
-      alert("Start Date and End Date are required.");
-      return;
+
+    try {
+
+      const tournamentData = {
+        name: name.trim(),
+        description: description.trim(),
+        location: venue.trim(),
+        start_date: startDate || null,
+        end_date: endDate || null,
+        type: type,
+        category: category,
+        registration_deadline: regDeadline || null,
+        city: city.trim(),
+        organizer_name: organizer.trim(),
+        team_limit: Number(teamLimit),
+        groups_count: Number(groupsCount),
+        match_format: matchFormat,
+        set_rules: setRules,
+        status: isDraft ? "Upcoming" : status,
+        banner_url: bannerPreview,
+        notes: notes.trim(),
+        public_visibility: publicVis,
+        allow_report_sharing: reportSharing,
+        enable_leaderboard: leaderboard
+      };
+
+
+      const response = await API.post("/tournaments/", tournamentData);
+
+      if (response.data) {
+        alert("Tournament created successfully!");
+
+        navigate("/tournaments");
+      }
+
+    } catch (error) {
+      console.error("Error creating tournament:", error);
+      alert(
+        "Error: " +
+        (error.response?.data?.detail || "Failed to create the tournament.")
+      );
     }
-
-    const newTournament = {
-      id: nextId,
-      name: name.trim(),
-      type,
-      category,
-      description: description.trim(),
-      startDate,
-      endDate,
-      registrationDeadline: regDeadline,
-      location: venue.trim(),
-      city: city.trim() || "Colombo",
-      organizerName: organizer.trim(),
-      teamLimit: Number(teamLimit),
-      groupsCount: Number(groupsCount),
-      matchFormat,
-      setRules,
-      status: isDraft ? "Upcoming" : status,
-      bannerUrl: bannerPreview,
-      notes: notes.trim(),
-      publicVisibility: publicVis,
-      allowReportSharing: reportSharing,
-      enableLeaderboard: leaderboard,
-      teamsCount: 0 // newly created starts with 0
-    };
-
-    const savedList = [...tournaments, newTournament];
-    localStorage.setItem("volleyreel_tournaments", JSON.stringify(savedList));
-    navigate("/tournaments");
   };
+
+
+
 
   return (
     <div className="management-page">
@@ -194,13 +212,13 @@ export default function CreateTournamentPage() {
       </div>
 
       <form onSubmit={(e) => handleSubmit(e, false)} className="mgmt-form" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        
+
         {/* Section 1: Tournament Details */}
         <fieldset className="mgmt-card" style={{ border: "none", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <legend className="mgmt-card-title" style={{ fontSize: "1.05rem", fontWeight: 700, paddingBottom: "10px", width: "100%" }}>
             Tournament Details
           </legend>
-          
+
           <div className="mgmt-form-grid">
             <div className="mgmt-field">
               <label htmlFor="t-id">Tournament ID <span className="required">*</span></label>

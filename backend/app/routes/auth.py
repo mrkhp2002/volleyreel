@@ -6,6 +6,8 @@ from app.schemas.user import UserCreate, UserRead, UserLogin, Token
 from app.services.auth_service import create_user, authenticate_user
 from app.utils.security import create_access_token
 
+from fastapi.security import OAuth2PasswordRequestForm
+
 router = APIRouter()
 
 
@@ -33,3 +35,21 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
         full_name=user.full_name,
     )
 
+
+@router.post("/swagger-login", response_model=Token, include_in_schema=False)
+def swagger_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    login_payload = UserLogin(email=form_data.username,
+                              password=form_data.password)
+    user = authenticate_user(db=db, payload=login_payload)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    access_token = create_access_token(data={"sub": user.email})
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        email=user.email,
+        full_name=user.full_name,
+    )
