@@ -1,8 +1,157 @@
+import StatCard from "../../components/dashboard/StatCard";
+import QuickActionButton from "../../components/dashboard/QuickActionButton";
+import RecentMatchesPanel from "../../components/dashboard/RecentMatchesPanel";
+import ActiveTournamentsPanel from "../../components/dashboard/ActiveTournamentsPanel";
+import MetricPanel from "../../components/dashboard/MetricPanel";
+import useAuth from "../../hooks/useAuth";
+import {
+  TrophyIcon,
+  UsersIcon,
+  UserIcon,
+  CalendarIcon,
+  ClockIcon,
+  VideoIcon,
+  PlusCircleIcon,
+  UploadIcon,
+  FileIcon,
+} from "../../components/dashboard/icons";
+import {
+  statCards,
+  recentMatches,
+  activeTournaments,
+  bottomMetrics,
+} from "./dashboardData";
+import "../../styles/dashboard.css";
+
+const statIcons = [
+  <TrophyIcon />,
+  <UsersIcon />,
+  <UserIcon />,
+  <CalendarIcon />,
+  <ClockIcon />,
+  <VideoIcon />,
+];
+
 export default function DashboardPage() {
+  const { user } = useAuth();
   return (
-    <section>
-      <h1>Dashboard</h1>
-      <p>Dashboard page scaffold.</p>
-    </section>
+    <div className="dashboard-page">
+      {/* Ambient background glows */}
+      <div className="dashboard-glow dashboard-glow--1" />
+      <div className="dashboard-glow dashboard-glow--2" />
+      <div className="dashboard-glow dashboard-glow--3" />
+
+      <header className="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back! Here&apos;s your volleyball analytics overview</p>
+      </header>
+
+      <section className="dashboard-stats-grid" aria-label="Key metrics">
+        {statCards.map((stat, index) => (
+          <StatCard key={stat.label} {...stat} icon={statIcons[index]} />
+        ))}
+      </section>
+
+      <section className="dashboard-section">
+        <h2 className="dashboard-section-title">Quick Actions</h2>
+        <div className="dashboard-quick-actions">
+          {user?.role === "public_user" ? (
+            <>
+              <QuickActionButton
+                to="/reports/tournament"
+                tone="blue"
+                title="Tournament Reports"
+                subtitle="View tournament recap reports"
+                icon={<TrophyIcon />}
+              />
+              <QuickActionButton
+                to="/reports/public"
+                tone="teal"
+                title="Public Match Reports"
+                subtitle="View shared match reports"
+                icon={<FileIcon />}
+              />
+              <QuickActionButton
+                to="/matches/videos"
+                tone="purple"
+                title="Highlight Reels"
+                subtitle="Watch processed highlight videos"
+                icon={<VideoIcon />}
+              />
+              <QuickActionButton
+                to="/tournament-analytics"
+                tone="orange"
+                title="Tournament Analytics"
+                subtitle="Analyze game statistics"
+                icon={<PlusCircleIcon />}
+              />
+              <QuickActionButton
+                to="/leaderboards"
+                tone="royal"
+                title="Leaderboards"
+                subtitle="Check standings and ranks"
+                icon={<UploadIcon />}
+              />
+            </>
+          ) : (
+            <>
+              <QuickActionButton
+                to="/tournaments/create"
+                tone="blue"
+                title="Create Tournament"
+                subtitle="Set up a new tournament"
+                icon={<TrophyIcon />}
+              />
+              <QuickActionButton
+                to="/teams/create"
+                tone="teal"
+                title="Add Team"
+                subtitle="Register a new team"
+                icon={<UsersIcon />}
+              />
+              <QuickActionButton
+                to="/players?add=true"
+                tone="purple"
+                title="Add Player"
+                subtitle="Add player to roster"
+                icon={<UserIcon />}
+              />
+              <QuickActionButton
+                to="/matches/create"
+                tone="orange"
+                title="Create Match"
+                subtitle="Set up a new match"
+                icon={<PlusCircleIcon />}
+              />
+              <QuickActionButton
+                to="/matches/upload"
+                tone="royal"
+                title="Upload & Review"
+                subtitle="Upload match videos"
+                icon={<UploadIcon />}
+              />
+              <QuickActionButton
+                to="/reports/tournament"
+                tone="dark-teal"
+                title="View Reports"
+                subtitle="Access analytics reports"
+                icon={<FileIcon />}
+              />
+            </>
+          )}
+        </div>
+      </section>
+
+      <section className="dashboard-row dashboard-row--split">
+        <RecentMatchesPanel matches={recentMatches} />
+        <ActiveTournamentsPanel tournaments={activeTournaments} />
+      </section>
+
+      <section className="dashboard-row dashboard-row--metrics">
+        {bottomMetrics.map((panel) => (
+          <MetricPanel key={panel.title} title={panel.title} rows={panel.rows} />
+        ))}
+      </section>
+    </div>
   );
 }
