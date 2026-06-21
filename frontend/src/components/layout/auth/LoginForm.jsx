@@ -33,7 +33,7 @@ export default function LoginForm() {
     }
 
     if (
-      (form.email === "user@volleyreel.com" || form.email === "public@volleyreel.com") && 
+      (form.email === "user@volleyreel.com" || form.email === "public@volleyreel.com") &&
       (form.password === "user123" || form.password === "public123")
     ) {
       login({
@@ -55,12 +55,13 @@ export default function LoginForm() {
         email: form.email,
         password: form.password,
       });
-      
+
       if (res.data && res.data.access_token) {
         login({
           email: res.data.email || form.email,
           fullName: res.data.full_name || "",
-          token: res.data.access_token,
+          // token: res.data.access_token,
+          access_token: res.data.access_token,
         });
         navigate("/dashboard");
       } else {
@@ -69,7 +70,7 @@ export default function LoginForm() {
     } catch (err) {
       console.error("Login error:", err);
       setError(
-        err.response?.data?.detail || 
+        err.response?.data?.detail ||
         "Failed to sign in. Please verify your email and password."
       );
     } finally {

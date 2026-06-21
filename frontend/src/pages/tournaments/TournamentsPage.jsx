@@ -6,6 +6,9 @@ import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../../components/common
 import { initialTournaments } from "./tournamentsData";
 import "../../styles/management.css";
 
+
+import API from "../../services/apiClient";
+
 const statusClass = {
   Ongoing: "mgmt-badge mgmt-badge--ongoing",
   Upcoming: "mgmt-badge mgmt-badge--upcoming",
@@ -25,6 +28,7 @@ function formatDate(dateStr) {
 }
 
 export default function TournamentsPage() {
+  /*
   const [tournaments, setTournaments] = useState(() => {
     const saved = localStorage.getItem("volleyreel_tournaments");
     if (saved) {
@@ -42,6 +46,39 @@ export default function TournamentsPage() {
   useEffect(() => {
     localStorage.setItem("volleyreel_tournaments", JSON.stringify(tournaments));
   }, [tournaments]);
+*/
+
+
+  const [tournaments, setTournaments] = useState([]);
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const response = await API.get("/tournaments/");
+
+        const formattedData = response.data.map((t) => ({
+          id: String(t.tournament_id),
+          name: t.name,
+          location: t.location,
+          city: t.location,
+          startDate: t.start_date || "",
+          endDate: t.end_date || "",
+          status: t.status || "Upcoming",
+          teamsCount: 0,
+        }));
+
+        setTournaments(formattedData);
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+      }
+    };
+
+    fetchTournaments();
+  }, []);
+
+
+
+
+
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
