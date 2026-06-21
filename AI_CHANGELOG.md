@@ -826,3 +826,12 @@
 ### Files Changed
 - `frontend/src/components/layout/auth/LoginForm.jsx`
 - `AI_CHANGELOG.md`
+
+## [2026-06-21T19:07:12+05:30] - Pull and Merge dev Branch Upstream Changes
+
+### Changed
+- Merged upstream updates from the `dev` branch into `dev_tournament_reporting`.
+
+### Files Changed
+- `.gitignore`
+- `AI_CHANGELOG.md`
