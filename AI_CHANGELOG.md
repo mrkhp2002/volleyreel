@@ -835,3 +835,45 @@
 ### Files Changed
 - `.gitignore`
 - `AI_CHANGELOG.md`
+
+## [2026-06-21T21:42:57+05:30] - Pull and Merge dev Branch Upstream Changes
+
+### Added
+- Integrated video processing, transcription, event detection, highlight generation, and pipeline services in the backend.
+- Created api routes for the backend pipeline.
+
+### Changed
+- Merged upstream updates from the `dev` branch into `dev_tournament_reporting`.
+- Updated security utilities and general API routing in the backend.
+
+### Files Changed
+- `backend/app/routes/api.py`
+- `backend/app/routes/pipeline.py`
+- `backend/app/services/event_detector.py`
+- `backend/app/services/highlight_generator.py`
+- `backend/app/services/transcription.py`
+- `backend/app/services/video_processor.py`
+- `backend/app/utils/security.py`
+- `AI_CHANGELOG.md`
+
+## [2026-06-21T21:52:00+05:30] - Install Missing Pipeline Dependencies & Launch Backend Server
+
+### Added
+- Added `openai-whisper` and `librosa` to the backend Python dependencies.
+
+### Changed
+- Installed missing pip packages (`openai-whisper`, `librosa`, and their sub-dependencies) to resolve import errors in the audio processing/transcription services.
+- Started the FastAPI backend server running on uvicorn.
+
+### Files Changed
+- `backend/requirements.txt`
+- `AI_CHANGELOG.md`
+
+## [2026-06-22T14:28:44+05:30] - Clean Up Test Files and Local FFmpeg Installation
+
+### Removed
+- Removed temporary test video (`test_clip.mp4`) and automation test script (`test_pipeline_run.py`) from the project root.
+- Removed downloaded FFmpeg zip file (`ffmpeg.zip`) and extracted folder (`ffmpeg/`) from the project workspace.
+
+### Files Changed
+- `AI_CHANGELOG.md`
