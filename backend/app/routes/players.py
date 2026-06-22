@@ -10,7 +10,6 @@ router = APIRouter()
 
 @router.get("/", response_model=list[PlayerRead])
 def list_players(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # 1. ලොග් වෙලා ඉන්න කෙනාගේ ප්ලේයර්ස්ලා විතරක් යවනවා
     return db.query(Player).filter(Player.user_id == current_user.id).all()
 
 
@@ -27,7 +26,6 @@ def create_player(payload: PlayerCreate, db: Session = Depends(get_db), current_
         raise HTTPException(
             status_code=400, detail="Team roster is full (Maximum 14 players allowed).")
 
-    # 2. නිවැරදිව player විචල්‍යයට දත්ත සහ user_id එක දානවා
     player = Player(**payload.model_dump(), user_id=current_user.id)
     db.add(player)
     db.commit()
@@ -37,7 +35,6 @@ def create_player(payload: PlayerCreate, db: Session = Depends(get_db), current_
 
 @router.get("/{player_id}", response_model=PlayerRead)
 def get_player(player_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # 3. ලොකු අකුරෙන් Player පාවිච්චි කරලා, අදාළ user ගේ දත්තය විතරක් ගන්නවා
     player = db.query(Player).filter(
         Player.player_id == player_id,
         Player.user_id == current_user.id
@@ -54,7 +51,7 @@ def update_player(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    # 4. වෙන කෙනෙක්ගේ දත්ත Update කරන එක වළක්වන්න user_id එකත් චෙක් කරනවා
+
     player = db.query(Player).filter(
         Player.player_id == player_id,
         Player.user_id == current_user.id
@@ -73,7 +70,6 @@ def update_player(
 
 @router.delete("/{player_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_player(player_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # 5. වෙන කෙනෙක්ගේ දත්ත මකා දමන එක වළක්වන්න user_id එකත් චෙක් කරනවා
     player = db.query(Player).filter(
         Player.player_id == player_id,
         Player.user_id == current_user.id
