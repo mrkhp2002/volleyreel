@@ -46,3 +46,9 @@ class Team(Base):
         foreign_keys="Match.away_team_id",
         back_populates="away_team"
     )
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
