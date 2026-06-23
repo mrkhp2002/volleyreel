@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
-from app.database import Base
-
-class Event(Base):
-    __tablename__ = "events"
-
-    id = Column(String, primary_key=True, index=True) 
-    match_id = Column(String, ForeignKey("matches.id"), nullable=False)
-    time = Column(String, nullable=False) 
-    type = Column(String, nullable=False) 
-    player = Column(String, nullable=True) 
-    confidence = Column(String, default="90%")
-    status = Column(String, default="Pending") 
-=======
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -62,4 +47,3 @@ class Event(Base):
 
     match = relationship("Match", back_populates="events")
     player = relationship("Player", back_populates="events")
->>>>>>> dev

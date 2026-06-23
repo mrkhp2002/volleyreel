@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from app.database import Base
-
-class Tournament(Base):
-    __tablename__ = "tournaments"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    division = Column(String, default="Premier Division")  
-    start_date = Column(DateTime, nullable=True)
-    end_date = Column(DateTime, nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-=======
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -65,4 +51,3 @@ class Tournament(Base):
         back_populates="tournament",
         cascade="all, delete-orphan"
     )
->>>>>>> dev
