@@ -10,7 +10,8 @@ router = APIRouter()
 
 @router.get("/", response_model=list[TeamRead])
 def list_teams(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return db.query(Team).all()
+
+    return db.query(Team).filter(Team.user_id == current_user.id).all()
 
 
 @router.post("/", response_model=TeamRead, status_code=status.HTTP_201_CREATED)
@@ -18,12 +19,13 @@ def create_team(payload: TeamCreate, db: Session = Depends(get_db), current_user
     existing = db.query(Team).filter(
         Team.name == payload.name,
         Team.tournament_id == payload.tournament_id,
+        Team.user_id == current_user.id
     ).first()
     if existing:
         raise HTTPException(
             status_code=400, detail="Team name already exists in this tournament")
 
-    team = Team(**payload.model_dump())
+    team = Team(**payload.model_dump(), user_id=current_user.id)
     db.add(team)
     db.commit()
     db.refresh(team)
@@ -33,7 +35,10 @@ def create_team(payload: TeamCreate, db: Session = Depends(get_db), current_user
 @router.get("/{team_id}", response_model=TeamRead)
 def get_team(team_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
 
-    team = db.query(Team).filter(Team.team_id == team_id).first()
+    team = db.query(Team).filter(
+        Team.team_id == team_id,
+        Team.user_id == current_user.id
+    ).first()
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     return team
@@ -46,7 +51,11 @@ def update_team(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    team = db.query(Team).filter(Team.team_id == team_id).first()
+
+    team = db.query(Team).filter(
+        Team.team_id == team_id,
+        Team.user_id == current_user.id
+    ).first()
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
 
@@ -61,7 +70,11 @@ def update_team(
 
 @router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_team(team_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    team = db.query(Team).filter(Team.team_id == team_id).first()
+
+    team = db.query(Team).filter(
+        Team.team_id == team_id,
+        Team.user_id == current_user.id
+    ).first()
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     db.delete(team)
