@@ -34,3 +34,9 @@ class Player(Base):
 
     # All events attributed to this player by Whisper pipeline
     events = relationship("Event", back_populates="player")
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )

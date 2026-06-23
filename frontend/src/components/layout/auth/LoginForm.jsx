@@ -27,8 +27,21 @@ export default function LoginForm() {
         fullName: "System Admin",
         role: "admin",
         token: "mock-admin-token-12345",
+        access_token: "mock-admin-token-12345",
       });
       navigate("/admin/dashboard");
+      return;
+    }
+
+    if (form.email === "coach@volleyreel.com" && form.password === "coach123") {
+      login({
+        email: "coach@volleyreel.com",
+        fullName: "Coach Admin",
+        role: "coach",
+        token: "mock-coach-token-12345",
+        access_token: "mock-coach-token-12345",
+      });
+      navigate("/dashboard");
       return;
     }
 
@@ -41,6 +54,7 @@ export default function LoginForm() {
         fullName: "Public User",
         role: "public_user",
         token: "mock-user-token-12345",
+        access_token: "mock-user-token-12345",
       });
       navigate("/dashboard");
       return;
