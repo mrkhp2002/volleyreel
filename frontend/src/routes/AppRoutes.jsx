@@ -21,6 +21,7 @@ import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
 import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
 import MatchesVideosPage from "../pages/matches/MatchesVideosPage";
 import MatchDetailsPage from "../pages/matches/MatchDetailsPage";
+import MatchDashboardPage from "../pages/matches/MatchDashboardPage";
 import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
 import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
 import PublicReportsPage from "../pages/reports/PublicReportsPage";
@@ -65,6 +66,7 @@ export default function AppRoutes() {
             <Route path="upload" element={<MatchesUploadPage />} />
             <Route path="videos" element={<MatchesVideosPage />} />
             <Route path=":matchId" element={<MatchDetailsPage />} />
+            <Route path=":matchId/dashboard" element={<MatchDashboardPage />} />
           </Route>
           <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
           <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />
