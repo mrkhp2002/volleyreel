@@ -1,6 +1,49 @@
 # AI Changelog
 
+## [2026-08-11T18:39:55+05:30] - MatchesPage API Migration & MatchDashboardPage
+
+### Added
+- **`frontend/src/pages/matches/MatchesPage.jsx`** (fully rewritten): Replaced all localStorage mock data with real backend API calls:
+  - Fetches matches, teams, tournaments, and events from `GET /api/matches`, `/api/teams`, `/api/tournaments`, `/api/events` on mount using `Promise.all`
+  - Creates matches via `POST /api/matches` with integer IDs (`home_team_id`, `away_team_id`, `tournament_id`) from real dropdown data
+  - Sets video URL via `PUT /api/matches/{id}` with `video_url` field
+  - Shows real pipeline status (`pending/processing/complete/failed`) via animated PipelineBadge component
+  - **⚡ Analyze Video** button calls `POST /api/pipeline/{match_id}/process`
+  - Polls `GET /api/pipeline/{match_id}/status` every **10 seconds** when status is `processing`; stops automatically when terminal state is reached
+  - Displays real event counts from `GET /api/events` filtered per match ID
+  - Dynamic tournament filter options populated from real API data
+  - Dashboard (grid) action button navigates to `/matches/:id/dashboard`
+  - Full loading skeleton, error state with retry button, success/error toast notifications
+- **`frontend/src/pages/matches/MatchDashboardPage.jsx`** (new file): Full analytics dashboard for a match:
+  - Fetches match details, events, teams, and tournaments from the real backend API
+  - Match hero header with score display, status badge, and metadata
+  - HTML5 `<video>` player (`videoRef`) that seeks to event timestamps on click
+  - **Timeline tab**: Scrollable, clickable event list with timestamps, type badges, confidence scores, and snippet preview; clicking seeks the video player
+  - **Player Stats tab**: Aggregated kills/aces/blocks/digs/spikes/errors table per player; event type breakdown pills
+  - **Highlights tab**: Plays `highlight_url` from the match when available
+  - Quick actions sidebar for navigation and first-event playback
+  - Recent Events mini-list in sidebar linking back to timeline
+- **`frontend/src/routes/AppRoutes.jsx`**: Added `MatchDashboardPage` import and registered route `matches/:matchId/dashboard`
+- **`frontend/src/styles/matches.css`**: Added `.matches-btn-blue` button style, dashboard grid responsive breakpoint, and `@keyframes matchesSlideUp` toast animation
+
+### Changed
+- Removed all `localStorage.getItem/setItem("volleyreel_matches")` usage from `MatchesPage.jsx`
+- Removed static `initialMatches` mock data array from `MatchesPage.jsx`
+- Table columns updated: Upload Status → Pipeline Status (real backend field), added Score column, Events count column
+- Create Match modal: replaced free-text ID/team/tournament inputs with ID-based dropdowns populated from API
+- Upload modal: changed from simulated file upload to real video URL/path field (`PUT /api/matches/:id { video_url }`)
+- Edit modal: changed from text fields to score inputs + pipeline status dropdown
+
+### Files Changed
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/matches/MatchDashboardPage.jsx` *(new)*
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/matches.css`
+
+---
+
 ## [2026-05-26T12:48:00+05:30] - Complete Base Project & Database Foundation
+
 
 ### Added
 - Created missing React/Vite configurations (`frontend/package.json`, `frontend/vite.config.js`, `frontend/index.html`).
