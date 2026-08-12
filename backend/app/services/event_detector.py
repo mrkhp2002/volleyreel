@@ -34,17 +34,17 @@ POINT_KEYWORDS = ["point", "score", "scores", "scored"]
 def detect_whistle_timestamps(audio_path: str) -> list[float]:
     """
     Use Librosa to detect referee whistle sounds in audio.
-    
+
     Why whistles?
     The referee blows the whistle to signal the END of each rally.
     A whistle = a point was just scored = potential key event.
-    
+
     How it works:
     1. Load audio with Librosa
     2. Compute Short-Time Fourier Transform (STFT)
     3. Look for strong energy in 2000-4000 Hz range (whistle frequency)
     4. Find timestamps where whistle energy peaks
-    
+
     Returns:
         List of timestamps (in seconds) where whistles were detected
     """
@@ -103,12 +103,12 @@ def detect_events_from_transcript(
 ) -> list[dict]:
     """
     Analyze transcript segments to find key volleyball events.
-    
+
     Args:
         segments: Transcript segments from transcription.py
         whistle_times: Whistle timestamps from detect_whistle_timestamps()
         players: List of player dicts with name and number
-        
+
     Returns:
         List of detected events:
         [
@@ -160,10 +160,12 @@ def detect_events_from_transcript(
 
         detected_events.append({
             "event_type": event_type,
-            "timestamp_sec": timestamp,
+            # "timestamp_sec": timestamp,
+            "timestamp_sec": float(timestamp),
             "player_id": player_id,
             "transcript_snippet": segment["text"],
-            "confidence": confidence
+            # "confidence": confidence
+            "confidence": float(confidence)
         })
 
     return detected_events
@@ -175,13 +177,13 @@ def identify_player(
 ) -> Optional[int]:
     """
     Try to identify which player is mentioned in the transcript.
-    
+
     Why:
     Whisper may transcribe "number seven kasun with a kill"
     We search the player roster for:
     - Player with number 7
     - Player named "kasun"
-    
+
     Returns player_id if found, None if not identified.
     """
     text_lower = text.lower()
