@@ -1,5 +1,16 @@
 # AI Changelog
 
+## [2026-08-12T14:20:01+05:30] - Executed Backend and Frontend Dev Servers
+
+### Added
+- Started the FastAPI backend server using Python Uvicorn on `http://127.0.0.1:8000`.
+- Started the React frontend dev server using Vite on `http://127.0.0.1:5173`.
+
+### Files Changed
+- None (launched background processes)
+
+---
+
 ## [2026-08-11T18:39:55+05:30] - MatchesPage API Migration & MatchDashboardPage
 
 ### Added
@@ -920,3 +931,46 @@
 
 ### Files Changed
 - `AI_CHANGELOG.md`
+
+## [2026-08-12T12:24:56+05:30] - Pull and Merge dev Branch Upstream Changes
+
+### Added
+- Created `frontend/src/pages/matches/MatchDashboardPage.jsx` for match dashboard UI.
+
+### Changed
+- Merged upstream updates from the `dev` branch into `dev_tournament_reporting`. This includes match dashboard UI and styling, updates to team and player models, and route refactoring for teams, players, tournaments, and analytics.
+
+### Files Changed
+- `backend/app/models/player.py`
+- `backend/app/models/team.py`
+- `backend/app/routes/analytics.py`
+- `backend/app/routes/players.py`
+- `backend/app/routes/teams.py`
+- `frontend/package-lock.json`
+- `frontend/src/pages/matches/MatchDashboardPage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/tournaments/TournamentsPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/matches.css`
+- `AI_CHANGELOG.md`
+
+## [2026-08-12T18:50:45+05:30] - Pull and Merge Upstream Changes from dev Branch
+
+### Added
+- `backend/app/routes/dashboard.py` - Added new dashboard routes.
+
+### Changed
+- Merged latest updates from `origin/dev` into local branch `dev_tournament_reporting`.
+- Updated `DashboardPage.jsx` and `apiClient.js` on the frontend.
+- Refactored `main.py`, `pipeline.py`, `tournaments.py`, and `event_detector.py` on the backend.
+
+### Files Changed
+- `backend/app/main.py`
+- `backend/app/routes/dashboard.py`
+- `backend/app/routes/pipeline.py`
+- `backend/app/routes/tournaments.py`
+- `backend/app/services/event_detector.py`
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/services/apiClient.js`
+- `AI_CHANGELOG.md`
+
