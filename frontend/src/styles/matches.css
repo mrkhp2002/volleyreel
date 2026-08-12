@@ -2038,4 +2038,43 @@
   }
 }
 
+/* ── MatchDashboardPage additions ── */
+
+/* Blue action button (used in match view modal & dashboard) */
+.matches-btn-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 10px;
+  padding: 10px 18px;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+.matches-btn-blue:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+.matches-btn-blue:active { transform: translateY(0); }
+
+/* Dashboard 2-col layout responsive */
+@media (max-width: 1100px) {
+  .matches-page > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Slide-up toast animation (if not already defined) */
+@keyframes matchesSlideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
 
