@@ -1,5 +1,16 @@
 # AI Changelog
 
+## [2026-08-12T14:20:01+05:30] - Executed Backend and Frontend Dev Servers
+
+### Added
+- Started the FastAPI backend server using Python Uvicorn on `http://127.0.0.1:8000`.
+- Started the React frontend dev server using Vite on `http://127.0.0.1:5173`.
+
+### Files Changed
+- None (launched background processes)
+
+---
+
 ## [2026-08-11T18:39:55+05:30] - MatchesPage API Migration & MatchDashboardPage
 
 ### Added
