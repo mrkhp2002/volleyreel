@@ -920,3 +920,25 @@
 
 ### Files Changed
 - `AI_CHANGELOG.md`
+
+## [2026-08-12T12:24:56+05:30] - Pull and Merge dev Branch Upstream Changes
+
+### Added
+- Created `frontend/src/pages/matches/MatchDashboardPage.jsx` for match dashboard UI.
+
+### Changed
+- Merged upstream updates from the `dev` branch into `dev_tournament_reporting`. This includes match dashboard UI and styling, updates to team and player models, and route refactoring for teams, players, tournaments, and analytics.
+
+### Files Changed
+- `backend/app/models/player.py`
+- `backend/app/models/team.py`
+- `backend/app/routes/analytics.py`
+- `backend/app/routes/players.py`
+- `backend/app/routes/teams.py`
+- `frontend/package-lock.json`
+- `frontend/src/pages/matches/MatchDashboardPage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `frontend/src/pages/tournaments/TournamentsPage.jsx`
+- `frontend/src/routes/AppRoutes.jsx`
+- `frontend/src/styles/matches.css`
+- `AI_CHANGELOG.md`
