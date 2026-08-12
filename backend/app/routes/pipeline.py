@@ -12,7 +12,10 @@
 # 7. Updates match status to "complete"
 
 import os
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -23,7 +26,11 @@ from app.routes.dependencies import get_current_user
 from app.services.video_processor import split_video_into_chunks, cleanup_chunks
 from app.services.transcription import transcribe_all_chunks, segments_to_full_text
 from app.services.event_detector import detect_whistle_timestamps, detect_events_from_transcript
-from app.services.highlight_generator import process_match_highlights
+from app.services.highlight_generator import (
+    generate_event_clip,
+    generate_highlight_reel,
+    process_match_highlights,
+)
 
 router = APIRouter()
 
@@ -32,10 +39,12 @@ TEMP_DIR = "temp_processing"
 OUTPUT_DIR = "media/highlights"
 
 
+# ── Full AI pipeline (background) ────────────────────────────────────────────
+
 def run_pipeline(match_id: int, video_path: str, db: Session):
     """
     Main pipeline function — runs in background.
-    
+
     Why background?
     Processing a 1-hour video takes 10-30 minutes.
     We can't make the user wait — so we run it in the background
@@ -145,6 +154,8 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
             db.commit()
 
 
+# ── Trigger full pipeline ─────────────────────────────────────────────────────
+
 @router.post("/{match_id}/process")
 def trigger_pipeline(
     match_id: int,
@@ -154,7 +165,7 @@ def trigger_pipeline(
 ):
     """
     Trigger the AI pipeline for a match.
-    
+
     Why BackgroundTasks?
     Processing takes a long time. BackgroundTasks lets FastAPI
     return a response immediately while processing continues
@@ -184,6 +195,8 @@ def trigger_pipeline(
     }
 
 
+# ── Poll pipeline status ──────────────────────────────────────────────────────
+
 @router.get("/{match_id}/status")
 def get_pipeline_status(
     match_id: int,
@@ -192,8 +205,8 @@ def get_pipeline_status(
 ):
     """
     Check the current processing status of a match.
-    
-    Frontend polls this endpoint every 30 seconds to check
+
+    Frontend polls this endpoint every 10 seconds to check
     if processing is complete.
     """
     match = db.query(Match).filter(Match.match_id == match_id).first()
@@ -210,4 +223,162 @@ def get_pipeline_status(
         "events_detected": events_count,
         "highlight_url": match.highlight_url,
         "has_transcript": match.transcript is not None
+    }
+
+
+# ── New: Generate highlight reel from selected events ─────────────────────────
+
+class GenerateHighlightRequest(BaseModel):
+    event_ids: List[int]
+
+
+@router.post("/{match_id}/generate-highlight")
+def generate_highlight_from_events(
+    match_id: int,
+    payload: GenerateHighlightRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    Generate (or regenerate) a highlight reel from a hand-picked list of events.
+
+    WHY THIS ENDPOINT EXISTS:
+    The full pipeline auto-selects ALL detected events for the reel.
+    Coaches often want a curated highlight — only the best 5-10 plays.
+    This endpoint lets the frontend pass an explicit list of event_ids
+    and produces a new highlight MP4 from just those clips.
+
+    Request body:
+        { "event_ids": [1, 2, 3, 5] }
+
+    Flow:
+    1. Validate match exists and has a source video.
+    2. Load the requested events from the database (scoped to this match).
+    3. Verify every event already has a pre-generated clip (clip_url).
+       If a clip is missing, generate it on the fly from the source video.
+    4. Concatenate clips in timestamp order → highlight reel MP4.
+    5. Persist the new highlight_url on the match row.
+    6. Return {"highlight_url": "..."}.
+
+    Returns:
+        {"highlight_url": "media/highlights/match_N/match_N_custom_highlight.mp4"}
+    """
+    # Step 1 — Validate match & video.
+    match = db.query(Match).filter(Match.match_id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    if not match.video_url:
+        raise HTTPException(
+            status_code=400,
+            detail="Match has no source video. Upload a video first."
+        )
+
+    if not payload.event_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="event_ids list cannot be empty."
+        )
+
+    # Step 2 — Load the requested events, scoped to this match.
+    events = (
+        db.query(Event)
+        .filter(
+            Event.match_id == match_id,
+            Event.event_id.in_(payload.event_ids),
+        )
+        .order_by(Event.timestamp_sec)   # chronological order in the reel
+        .all()
+    )
+
+    if not events:
+        raise HTTPException(
+            status_code=404,
+            detail="None of the provided event_ids were found for this match."
+        )
+
+    # Warn (but don't fail) if some requested IDs were missing.
+    found_ids = {ev.event_id for ev in events}
+    missing_ids = set(payload.event_ids) - found_ids
+    if missing_ids:
+        print(
+            f"Match {match_id} generate-highlight: "
+            f"event_ids {sorted(missing_ids)} not found — skipping."
+        )
+
+    # Step 3 — Ensure each selected event has a clip on disk.
+    output_dir = os.path.join(OUTPUT_DIR, f"match_{match_id}")
+    os.makedirs(output_dir, exist_ok=True)
+
+    clip_paths: list[str] = []
+
+    for event in events:
+        # Use the existing clip if the file is already present.
+        if event.clip_url and os.path.isfile(event.clip_url):
+            clip_paths.append(event.clip_url)
+            continue
+
+        # Otherwise generate the clip on the fly.
+        clip_filename = (
+            f"match_{match_id}_event_{event.event_id}_{event.event_type}.mp4"
+        )
+        clip_path = os.path.join(output_dir, clip_filename)
+
+        print(
+            f"Match {match_id}: Generating missing clip for event "
+            f"{event.event_id} ({event.event_type}) at {event.timestamp_sec:.1f}s..."
+        )
+
+        success = generate_event_clip(
+            video_path=match.video_url,
+            timestamp_sec=event.timestamp_sec,
+            output_path=clip_path,
+        )
+
+        if success:
+            # Persist the newly generated clip path so future calls can reuse it.
+            event.clip_url = clip_path
+            clip_paths.append(clip_path)
+        else:
+            print(
+                f"Match {match_id}: Warning — could not generate clip for "
+                f"event {event.event_id}. Skipping."
+            )
+
+    db.commit()  # flush any clip_url updates
+
+    if not clip_paths:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "No clips could be generated for the selected events. "
+                "Check that the source video file is accessible."
+            )
+        )
+
+    # Step 4 — Concatenate clips into the custom highlight reel.
+    highlight_filename = f"match_{match_id}_custom_highlight.mp4"
+    highlight_path = os.path.join(output_dir, highlight_filename)
+
+    print(f"Match {match_id}: Concatenating {len(clip_paths)} clips → {highlight_path}")
+
+    success = generate_highlight_reel(clip_paths, highlight_path)
+
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail="FFmpeg failed to concatenate clips into a highlight reel."
+        )
+
+    # Step 5 — Persist the new highlight URL on the match.
+    match.highlight_url = highlight_path
+    db.commit()
+    db.refresh(match)
+
+    # Step 6 — Return the result.
+    return {
+        "highlight_url": highlight_path,
+        "clips_used": len(clip_paths),
+        "events_requested": len(payload.event_ids),
+        "events_included": len(events),
     }
