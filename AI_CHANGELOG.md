@@ -953,3 +953,24 @@
 - `frontend/src/routes/AppRoutes.jsx`
 - `frontend/src/styles/matches.css`
 - `AI_CHANGELOG.md`
+
+## [2026-08-12T18:50:45+05:30] - Pull and Merge Upstream Changes from dev Branch
+
+### Added
+- `backend/app/routes/dashboard.py` - Added new dashboard routes.
+
+### Changed
+- Merged latest updates from `origin/dev` into local branch `dev_tournament_reporting`.
+- Updated `DashboardPage.jsx` and `apiClient.js` on the frontend.
+- Refactored `main.py`, `pipeline.py`, `tournaments.py`, and `event_detector.py` on the backend.
+
+### Files Changed
+- `backend/app/main.py`
+- `backend/app/routes/dashboard.py`
+- `backend/app/routes/pipeline.py`
+- `backend/app/routes/tournaments.py`
+- `backend/app/services/event_detector.py`
+- `frontend/src/pages/dashboard/DashboardPage.jsx`
+- `frontend/src/services/apiClient.js`
+- `AI_CHANGELOG.md`
+
