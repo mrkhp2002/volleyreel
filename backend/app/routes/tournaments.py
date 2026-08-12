@@ -9,20 +9,23 @@ router = APIRouter()
 
 
 @router.get("/", response_model=list[TournamentRead])
-def list_tournaments(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # Scoped to the authenticated user — each user only sees their own tournaments.
+def list_tournaments(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)  # ලොග් වෙලා ඉන්න කෙනාව ගන්නවා
+):
+    # වෙනස් කළා: .all() වෙනුවට .filter(...) දැම්මා
     return db.query(Tournament).filter(Tournament.user_id == current_user.id).all()
 
 
 @router.post("/", response_model=TournamentRead, status_code=status.HTTP_201_CREATED)
-def create_tournament(payload: TournamentCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+def create_tournament(
+    payload: TournamentCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)  # ලොග් වෙලා ඉන්න කෙනාව ගන්නවා
+):
+    # වෙනස් කළා: user_id=1 වෙනුවට user_id=current_user.id දැම්මා!
+    tournament = Tournament(**payload.model_dump(), user_id=current_user.id)
 
-    tournament_data = payload.model_dump()
-
-    tournament = Tournament(
-        **tournament_data,
-        user_id=current_user.id,
-    )
     db.add(tournament)
     db.commit()
     db.refresh(tournament)

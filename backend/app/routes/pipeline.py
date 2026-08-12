@@ -35,7 +35,7 @@ OUTPUT_DIR = "media/highlights"
 def run_pipeline(match_id: int, video_path: str, db: Session):
     """
     Main pipeline function — runs in background.
-    
+
     Why background?
     Processing a 1-hour video takes 10-30 minutes.
     We can't make the user wait — so we run it in the background
@@ -60,7 +60,8 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
             players.extend([{
                 "player_id": p.player_id,
                 "name": p.name,
-                "number": p.number
+                # "number": p.number
+                "number": p.jersey_number
             } for p in home_players])
 
         if match.away_team_id:
@@ -70,7 +71,8 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
             players.extend([{
                 "player_id": p.player_id,
                 "name": p.name,
-                "number": p.number
+                # "number": p.number
+                "number": p.jersey_number
             } for p in away_players])
 
         # Step 3 — Split video into chunks
@@ -154,7 +156,7 @@ def trigger_pipeline(
 ):
     """
     Trigger the AI pipeline for a match.
-    
+
     Why BackgroundTasks?
     Processing takes a long time. BackgroundTasks lets FastAPI
     return a response immediately while processing continues
@@ -165,10 +167,12 @@ def trigger_pipeline(
         raise HTTPException(status_code=404, detail="Match not found")
 
     if not match.video_url:
-        raise HTTPException(status_code=400, detail="Match has no video uploaded")
+        raise HTTPException(
+            status_code=400, detail="Match has no video uploaded")
 
     if match.status == "processing":
-        raise HTTPException(status_code=400, detail="Match is already being processed")
+        raise HTTPException(
+            status_code=400, detail="Match is already being processed")
 
     # Add pipeline to background tasks
     background_tasks.add_task(
@@ -192,7 +196,7 @@ def get_pipeline_status(
 ):
     """
     Check the current processing status of a match.
-    
+
     Frontend polls this endpoint every 30 seconds to check
     if processing is complete.
     """
