@@ -8,24 +8,32 @@ const API = axios.create({
 
 API.interceptors.request.use((config) => {
   try {
-    // 1. කෙලින්ම 'token' හෝ 'access_token' කියලා සේව් වෙලා තියෙනවද කියලා බලනවා
-    const rawToken = localStorage.getItem("token") || localStorage.getItem("access_token");
+    // 1. Check for a bare token stored directly under "token" or "access_token"
+    const rawToken =
+      localStorage.getItem("token") || localStorage.getItem("access_token");
 
-    // 2. නැත්නම් 'user' ඔබ්ජෙක්ට් එක ඇතුළේ තියෙනවද කියලා බලනවා
+    // 2. Fall back to the "user" object that login stores
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const userToken = user?.access_token || user?.token;
 
-    // මේ ක්‍රම දෙකෙන් කොහෙන් හරි ටෝකන් එක හම්බවුණොත් ඒක ගන්නවා
+    // Use whichever source has a token
     const token = rawToken || userToken;
 
-    // ටෝකන් එකක් තියෙනවා නම් ඒක Header එකට දාලා යවනවා
     if (token) {
-      // සමහර ටෝකන් වල අගට/මුලට කැරැක්ටර්ස් (") එකතු වෙලා තියෙන්න පුළුවන් නිසා ඒක සුද්ද කරනවා
-      const cleanToken = token.replace(/^"|"$/g, ''); 
+      // Strip any stray quotes that can appear when tokens are stored incorrectly
+      const cleanToken = token.replace(/^"|"$/g, "");
       config.headers.Authorization = `Bearer ${cleanToken}`;
     }
   } catch (err) {
     console.error("Token parse error:", err);
+  }
+
+  // ── Trailing-slash fix ──────────────────────────────────────────────────────
+  // FastAPI redirects /api/foo → /api/foo/ (307). Axios drops the Authorization
+  // header on redirect, causing 401. Appending the slash here avoids the redirect
+  // so the token is sent on the first (and only) request.
+  if (config.url && !config.url.endsWith("/") && !config.url.includes("?")) {
+    config.url = config.url + "/";
   }
 
   return config;

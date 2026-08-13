@@ -1,5 +1,98 @@
 # AI Changelog
 
+## [2026-08-13T11:46:00+05:30] - Add Event Clip Video Preview to Event Review Page (1 file)
+
+### FIX 1 — `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- Replaced the fake "Calibrated Court Timeline Seeker" with a real HTML5 `<video>` element for previewing event clips.
+- Mapped `clip_url` and `transcript_snippet` from the backend `GET /api/events/` endpoint.
+- Added a `videoRef` and `useEffect` hook to automatically load and play the video when an event is selected.
+- Updated the UI beneath the video player to display real event details: type badge (with conditional colors), player, timestamp, confidence, and transcript snippet.
+- Added clear empty states for when no event is selected, or an event lacks a `clip_url`.
+- Maintained all existing functionality (tables, event statuses, pipeline compiling) untouched.
+
+## [2026-08-13T11:22:00+05:30] - Generated Videos Page & Highlight Generation (4 files)
+
+### FIX 1 & 2 — `frontend/src/pages/matches/MatchesUploadPage.jsx` & `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- **MatchesUploadPage:** Connected "Compile Highlights" button to real `POST /api/pipeline/{match_id}/generate-highlight/` endpoint using confirmed event IDs.
+- **MatchesVideosPage:** Rewrote completely to fetch real matches via `GET /api/matches/`.
+- Filters to show only matches with `highlight_url`.
+- Plays the real generated video in a custom HTML5 video modal instead of mock data.
+- Fixed UI to show correct stats based on real database records.
+
+### FIX 3 & 4 — `backend/app/main.py` & `backend/app/routes/pipeline.py`
+- **main.py:** Added `app.mount("/media", StaticFiles(directory="media"), name="media")` so the frontend can stream generated highlight mp4s.
+- **pipeline.py:** Created `POST /{match_id}/generate-highlight` endpoint.
+- Endpoint queries specific confirmed events and calls `process_match_highlights()` synchronously, then updates the match record.
+
+## [2026-08-13T10:18:00+05:30] - Connect Real Video Upload & AI Pipeline to UI (3 files)
+
+### FIX 1 — `frontend/src/pages/matches/MatchesCreatePage.jsx` (complete rewrite)
+**Choose File button:**
+- Added hidden `<input type="file" ref={fileInputRef} accept=".mp4,.mov,.avi,.mkv,.webm" />` 
+- "Choose File" button calls `fileInputRef.current.click()` → opens real OS file picker
+- `handleRealFileSelect(e)` reads `e.target.files[0]` and stores the real `File` object in `videoFile` state
+- Filename shown from `videoFile.name`
+
+**Save & Upload button:**
+1. Validates tournament, home team, away team, score fields
+2. `POST /api/matches/` → creates match record, stores `match_id`
+3. Uploads video via **XHR** (not axios) for real `xhr.upload.onprogress` tracking
+   - `POST /api/matches/{match_id}/upload/` with `FormData`
+   - `uploadProgress` state updated with real percentages
+4. `POST /api/pipeline/{match_id}/process/` triggers AI pipeline
+5. Polls `GET /api/pipeline/{match_id}/status/` every 10s
+6. UI updates: `isAnalyzing` spinner → `analysisCompleted` with event count → enables "Go to Event Review"
+7. "Go to Event Review" navigates to `/matches/upload?matchId={match_id}`
+
+### FIX 2 — `frontend/src/pages/matches/MatchesPage.jsx` (no changes needed)
+- Score display already correct: `upcoming`→"Not Yet", `live`→"Pending", else real score
+- Lightning bolt (`handleAnalyze`) already fully functional:
+  - Shows spinner (`analyzeLoading[match_id]`)
+  - `POST /api/pipeline/{match_id}/process/`
+  - Toast on success/error
+  - Starts polling via `startPolling(matchId)`
+  - Shows "Already processing" guard
+
+### FIX 3 — `frontend/src/pages/matches/MatchesUploadPage.jsx` (complete rewrite)
+**Match Selector:**
+- Loads matches from `GET /api/matches/` on mount
+- Options show `#1 — Team #1 vs Team #2` using real `match_id`, `home_team_id`, `away_team_id`
+- Removed `initialMatchesCopy` and all `localStorage` reads
+
+**Events Table:**
+- Fetches `GET /api/events/` when match changes; filters by `match_id`
+- Maps backend fields: `timestamp_sec → MM:SS`, `event_type → capitalizeFirst`, `player_id → "Player #N"`, `confidence → XX%`
+- Status-aware empty states: processing / pending / failed / no events messages
+- Removed `mockEvents` completely
+
+**Compile Highlights:**
+- `POST /api/pipeline/{match_id}/generate-highlight/` with `{"event_ids": [...confirmed IDs]}`
+- Shows progress bar while API call is in-flight
+- Toast on success, navigates to `/matches/videos`
+
+## [2026-08-13T09:47:00+05:30] - Fix: 401 Unauthorized — Trailing slash added to apiClient.js
+
+### Root Cause
+FastAPI redirects `/api/foo` → `/api/foo/` (HTTP 307). When axios follows the redirect,
+it drops the `Authorization` header, so the Bearer token never reaches the backend → 401.
+
+### Changed
+- **`frontend/src/services/apiClient.js`**
+  - Added trailing-slash interceptor: if `config.url` does not already end with `/` and
+    has no query string, a `/` is appended before the request is sent.
+  - This prevents the 307 redirect from occurring at all; the token is delivered on the
+    first (and only) outgoing request.
+  - Kept the existing multi-source token lookup (bare `"token"` / `"access_token"` keys
+    AND nested `user.access_token` / `user.token` inside the `"user"` object).
+  - Kept the stray-quote stripping (`replace(/^"|"$/g, "")`).
+
+### No changes needed to page files
+All 4 listed pages already use `import API from "../../services/apiClient"` correctly:
+- `TournamentsPage.jsx` — `API.get("/tournaments/")`
+- `CreateTournamentPage.jsx` — `API.post("/tournaments/", data)`
+- `TeamsPage.jsx` — `API.get("/teams/")`, `API.delete("/teams/:id")`
+- `CreateTeamPage.jsx` — `API.get("/tournaments/")`, `API.post("/teams/", data)`
+
 ## [2026-08-13T09:32:00+05:30] - Executed Backend and Frontend Dev Servers
 
 ### Added

@@ -1,6 +1,8 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
 import app.models
@@ -45,6 +47,13 @@ app.include_router(api_router, prefix="/api",)
 
 app.include_router(
     dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+
+
+# Serve media files (uploaded videos & generated highlights) as static assets.
+# This allows the browser to load video files via:
+#   http://localhost:8000/media/highlights/match_1/match_1_highlight_reel.mp4
+os.makedirs("media", exist_ok=True)
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 
 @app.get("/health")
