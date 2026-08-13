@@ -22,9 +22,12 @@ class Match(Base):
         nullable=True
     )
 
-    # Scores entered manually by coach
-    home_score = Column(Integer, default=0)
-    away_score = Column(Integer, default=0)
+    # Scores entered manually by coach (nullable; only set for completed matches)
+    home_score = Column(Integer, nullable=True)
+    away_score = Column(Integer, nullable=True)
+
+    # Match status: upcoming | live | completed
+    match_status = Column(String, default="upcoming")
 
     # S3 URL of uploaded match video
     # Your Whisper pipeline downloads and processes this

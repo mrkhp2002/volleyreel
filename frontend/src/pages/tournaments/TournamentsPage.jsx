@@ -240,7 +240,8 @@ export default function TournamentsPage() {
                 <tr key={item.id}>
                   <td>
                     <Link to={`/tournaments/${item.id}`} className="mgmt-table-link">
-                      {item.id}
+                      TN-{item.id}
+                      {/* TN-{team.tournament_id} */}
                     </Link>
                   </td>
                   <td>

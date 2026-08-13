@@ -68,7 +68,7 @@ export default function RegisterForm() {
         login({
           email: loginRes.data.email || form.email,
           fullName: loginRes.data.full_name || form.fullName,
-          token: loginRes.data.access_token,
+          access_token: loginRes.data.access_token,
           role: loginRes.data.role || form.role,
         });
         navigate("/dashboard");

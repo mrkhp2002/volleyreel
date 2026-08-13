@@ -6,6 +6,7 @@ from app.database import Base, engine
 import app.models
 
 from app.routes.api import api_router
+from app.routes import dashboard
 
 
 @asynccontextmanager
@@ -40,7 +41,10 @@ app.add_middleware(
 )
 
 # Centralized API routes
-app.include_router(api_router, prefix="/api")
+app.include_router(api_router, prefix="/api",)
+
+app.include_router(
+    dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 
 Base.metadata.create_all(bind=engine)
 

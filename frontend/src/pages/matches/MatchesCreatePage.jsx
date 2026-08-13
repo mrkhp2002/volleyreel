@@ -1,412 +1,609 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../styles/matches.css";
+import API from "../../services/apiClient";
 
-const initialMatchesCopy = [
-  { id: "VM-2026-001", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Ocean Waves", date: "Mar 15, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-002", tournament: "Regional Cup", teams: "Sky Hawks vs Net Ninjas", date: "Mar 14, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
-  { id: "VM-2026-003", tournament: "Spring Championship 2026", teams: "Beach Blazers vs Court Kings", date: "Mar 13, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-004", tournament: "Regional Cup", teams: "Thunder Strikers vs Sky Hawks", date: "Mar 12, 2026", upload: "Completed", review: "Completed", video: "Generating" },
-  { id: "VM-2026-005", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Beach Blazers", date: "Mar 11, 2026", upload: "Not Uploaded", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-006", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Court Kings", date: "Mar 10, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-007", tournament: "Regional Cup", teams: "Ocean Waves vs Beach Blazers", date: "Mar 09, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-008", tournament: "Regional Cup", teams: "Sky Hawks vs Court Kings", date: "Mar 08, 2026", upload: "Completed", review: "Completed", video: "Ready" },
-  { id: "VM-2026-009", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Thunder Strikers", date: "Mar 07, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
-  { id: "VM-2026-010", tournament: "Regional Cup", teams: "Ocean Waves vs Net Ninjas", date: "Mar 06, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-011", tournament: "Regional Cup", teams: "Beach Blazers vs Sky Hawks", date: "Mar 05, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-012", tournament: "Spring Championship 2026", teams: "Court Kings vs Ocean Waves", date: "Mar 04, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-];
+const SEL = {
+  width: "100%",
+  background: "rgba(2,6,17,0.8)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 8,
+  color: "#fff",
+  padding: "10px 14px",
+  fontSize: "0.9rem",
+  cursor: "pointer",
+  appearance: "none",
+  WebkitAppearance: "none",
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 14px center",
+  paddingRight: 36,
+};
+const SEL_OFF = { ...SEL, opacity: 0.4, cursor: "not-allowed" };
 
 export default function MatchesCreatePage() {
   const navigate = useNavigate();
 
-  // Toast notifications
-  const [toast, setToast] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const triggerToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 4000);
+  };
 
-  // Section 1: Match Details
-  const [matchId, setMatchId] = useState("VM-2026-013");
-  const [tournamentName, setTournamentName] = useState("Spring Championship 2026");
-  const [teamA, setTeamA] = useState("");
-  const [teamB, setTeamB] = useState("");
-  const [matchDate, setMatchDate] = useState("2026-03-15");
-  const [matchTime, setMatchTime] = useState("18:30");
+  // ── Remote data ─────────────────────────────────────────────────────────────
+  const [tournaments, setTournaments] = useState([]);
+  const [allTeams, setAllTeams] = useState([]);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [dataError, setDataError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setDataLoading(true);
+        setDataError("");
+        const [tRes, tmRes] = await Promise.all([
+          API.get("/tournaments/"),
+          API.get("/teams/"),
+        ]);
+        setTournaments(tRes.data || []);
+        setAllTeams(tmRes.data || []);
+      } catch (err) {
+        setDataError(
+          err?.response?.data?.detail || "Failed to load tournaments / teams."
+        );
+      } finally {
+        setDataLoading(false);
+      }
+    })();
+  }, []);
+
+  // ── Match core fields ────────────────────────────────────────────────────────
+  const [tournamentId, setTournamentId] = useState("");
+  const [homeTeamId, setHomeTeamId] = useState("");
+  const [awayTeamId, setAwayTeamId] = useState("");
+  const [matchStatus, setMatchStatus] = useState("upcoming");
+  const [homeScore, setHomeScore] = useState("");
+  const [awayScore, setAwayScore] = useState("");
+  const [matchDate, setMatchDate] = useState("");
+  const [matchTime, setMatchTime] = useState("");
   const [venue, setVenue] = useState("");
-  const [stage, setStage] = useState("Group Stage");
+  const [stage, setStage] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Section 2 & 3: File Upload & Upload Details
+  // ── Upload / AI flow state ────────────────────────────────────────────────
   const [fileName, setFileName] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [cameraAngle, setCameraAngle] = useState("");
   const [duration, setDuration] = useState("");
-  const [scoreA, setScoreA] = useState("3");
-  const [scoreB, setScoreB] = useState("1");
   const [uploadNotes, setUploadNotes] = useState("");
-
-  // Interactive flow states
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
-  
-  // AI event detection states
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisCompleted, setAnalysisCompleted] = useState(false);
   const [detectedCount, setDetectedCount] = useState("--");
   const [confidenceScore, setConfidenceScore] = useState("--");
   const [reviewStatus, setReviewStatus] = useState("Not Started");
-
-  // Video generation states
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [videoGenerated, setVideoGenerated] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [videoType, setVideoType] = useState("Condensed Highlights");
   const [confirmedOnly, setConfirmedOnly] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
-  // Trigger simulated file selection
+  // ── Derived ──────────────────────────────────────────────────────────────────
+  const tournamentTeams = useMemo(
+    () =>
+      tournamentId
+        ? allTeams.filter(
+            (t) => String(t.tournament_id) === String(tournamentId)
+          )
+        : allTeams,
+    [allTeams, tournamentId]
+  );
+  const awayTeamOptions = useMemo(
+    () =>
+      tournamentTeams.filter(
+        (t) => String(t.team_id) !== String(homeTeamId)
+      ),
+    [tournamentTeams, homeTeamId]
+  );
+
+  const handleTournamentChange = (e) => {
+    setTournamentId(e.target.value);
+    setHomeTeamId("");
+    setAwayTeamId("");
+  };
+  const handleHomeTeamChange = (e) => {
+    setHomeTeamId(e.target.value);
+    if (e.target.value && e.target.value === awayTeamId) setAwayTeamId("");
+  };
+
+  // ── File selection simulation ─────────────────────────────────────────────
   const handleSelectFile = () => {
-    const defaultTitle = `${teamA || "Thunder Strikers"} vs ${teamB || "Ocean Waves"} - Match Video`;
+    const h =
+      allTeams.find((t) => String(t.team_id) === String(homeTeamId))?.name ||
+      "Home";
+    const a =
+      allTeams.find((t) => String(t.team_id) === String(awayTeamId))?.name ||
+      "Away";
     setFileName("match_feed.mp4");
-    setVideoTitle(defaultTitle);
+    setVideoTitle(`${h} vs ${a} - Match Video`);
     setCameraAngle("Court-side High");
     setDuration("1:32:15");
-    setScoreA("3");
-    setScoreB("1");
     triggerToast("Match video file selected. Details pre-filled!");
   };
 
-  // Trigger simulated file dragover
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    handleSelectFile();
-  };
-
-  // Simulated upload & AI execution sequence
-  const startUploadAndAI = () => {
-    if (!fileName) {
-      triggerToast("Please choose a match video file to upload.");
+  // ── API submit ────────────────────────────────────────────────────────────
+  const handleApiSubmit = async () => {
+    if (!tournamentId) {
+      triggerToast("Please select a tournament.", "error");
       return;
     }
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    const uploadInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(uploadInterval);
-          setIsUploading(false);
-          setUploadCompleted(true);
-          triggerToast("Upload completed! Running AI event detection...");
-          startAIDetection();
-          return 100;
-        }
-        return prev + 10;
+    if (!homeTeamId) {
+      triggerToast("Please select a home team.", "error");
+      return;
+    }
+    if (!awayTeamId) {
+      triggerToast("Please select an away team.", "error");
+      return;
+    }
+    if (String(homeTeamId) === String(awayTeamId)) {
+      triggerToast("Home and away teams must be different.", "error");
+      return;
+    }
+    if (
+      matchStatus === "completed" &&
+      (homeScore === "" || awayScore === "")
+    ) {
+      triggerToast("Scores are required for completed matches.", "error");
+      return;
+    }
+    try {
+      setSubmitLoading(true);
+      await API.post("/matches/", {
+        tournament_id: Number(tournamentId),
+        home_team_id: Number(homeTeamId),
+        away_team_id: Number(awayTeamId),
+        match_status: matchStatus,
+        status: "pending",
+        home_score: matchStatus === "completed" ? Number(homeScore) : null,
+        away_score: matchStatus === "completed" ? Number(awayScore) : null,
       });
-    }, 150);
-  };
-
-  const startAIDetection = () => {
-    setIsAnalyzing(true);
-    setDetectedCount("--");
-    setConfidenceScore("--");
-    setReviewStatus("Processing");
-
-    let count = 0;
-    const aiInterval = setInterval(() => {
-      count += 1;
-      if (count >= 10) {
-        clearInterval(aiInterval);
-        setIsAnalyzing(false);
-        setAnalysisCompleted(true);
-        setDetectedCount("48");
-        setConfidenceScore("94%");
-        setReviewStatus("Completed");
-        triggerToast("AI analysis complete: 48 events detected!");
-      }
-    }, 200);
-  };
-
-  const startVideoGeneration = () => {
-    setIsGeneratingVideo(true);
-    setVideoProgress(0);
-
-    const videoInterval = setInterval(() => {
-      setVideoProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(videoInterval);
-          setIsGeneratingVideo(false);
-          setVideoGenerated(true);
-          triggerToast("Highlights compiled successfully!");
-          return 100;
-        }
-        return prev + 25;
-      });
-    }, 250);
-  };
-
-  const saveMatch = (isDraft) => {
-    let formattedDate = "TBD";
-    if (matchDate) {
-      formattedDate = new Date(matchDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-      });
+      triggerToast("Match created successfully!");
+      setTimeout(() => navigate("/matches"), 1200);
+    } catch (err) {
+      triggerToast(
+        err?.response?.data?.detail || "Failed to create match.",
+        "error"
+      );
+    } finally {
+      setSubmitLoading(false);
     }
-
-    let uploadStatus = "Not Uploaded";
-    if (uploadCompleted) {
-      uploadStatus = "Completed";
-    } else if (isUploading) {
-      uploadStatus = "Processing";
-    } else if (fileName) {
-      uploadStatus = "Not Uploaded";
-    }
-
-    let reviewStatusVal = "Not Started";
-    if (analysisCompleted) {
-      reviewStatusVal = "In Review";
-    } else if (isAnalyzing) {
-      reviewStatusVal = "Processing";
-    }
-
-    let videoStatus = "Not Generated";
-    if (videoGenerated) {
-      videoStatus = "Ready";
-    } else if (isGeneratingVideo) {
-      videoStatus = "Generating";
-    }
-
-    const newMatch = {
-      id: matchId.trim().toUpperCase() || `VM-${Date.now().toString().slice(-3)}`,
-      tournament: tournamentName || "General Tournament",
-      teams: `${teamA.trim() || "Thunder Strikers"} vs ${teamB.trim() || "Ocean Waves"}`,
-      date: formattedDate,
-      upload: uploadStatus,
-      review: reviewStatusVal,
-      video: videoStatus,
-      venue: venue,
-      stage: stage,
-      notes: notes,
-      fileName: fileName,
-      videoTitle: videoTitle,
-      cameraAngle: cameraAngle,
-      duration: duration,
-      scoreA: scoreA,
-      scoreB: scoreB,
-      uploadNotes: uploadNotes
-    };
-
-    const saved = localStorage.getItem("volleyreel_matches");
-    let list = initialMatchesCopy;
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          list = parsed;
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    const existsIndex = list.findIndex((m) => m.id === newMatch.id);
-    let updatedList = [...list];
-    if (existsIndex >= 0) {
-      updatedList[existsIndex] = { ...updatedList[existsIndex], ...newMatch };
-    } else {
-      updatedList = [newMatch, ...updatedList];
-    }
-
-    localStorage.setItem("volleyreel_matches", JSON.stringify(updatedList));
-  };
-
-  const handleSaveMatchDraft = () => {
-    triggerToast("Saving match as draft...");
-    saveMatch(true);
-    setTimeout(() => {
-      navigate("/matches");
-    }, 1000);
-  };
-
-  const handleSaveAndExit = () => {
-    triggerToast("Saving match analytics...");
-    saveMatch(false);
-    setTimeout(() => {
-      navigate("/matches");
-    }, 1000);
-  };
-
-  const triggerToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => {
-      setToast("");
-    }, 4000);
   };
 
   return (
     <div className="matches-page">
-      {/* Glow effects */}
       <div className="matches-glow matches-glow--1" />
       <div className="matches-glow matches-glow--2" />
+      <style>{`@keyframes vr-spin{to{transform:rotate(360deg)}}`}</style>
 
-      {/* Toast Alert Banner */}
-      {toast && (
-        <div 
+      {/* Toast */}
+      {toast.msg && (
+        <div
           style={{
             position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            background: "rgba(15, 23, 42, 0.9)",
-            border: "1px solid #10b981",
-            color: "#ffffff",
-            padding: "12px 24px",
-            borderRadius: "10px",
+            bottom: 24,
+            right: 24,
+            background: "rgba(15,23,42,0.96)",
+            border: `1px solid ${
+              toast.type === "error" ? "#ef4444" : "#10b981"
+            }`,
+            color: "#fff",
+            padding: "12px 22px",
+            borderRadius: 10,
             zIndex: 2000,
-            boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-            backdropFilter: "blur(5px)",
+            boxShadow: "0 10px 25px rgba(0,0,0,.5)",
+            backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: 8,
             fontSize: "0.88rem",
-            fontWeight: "600",
-            animation: "matchesSlideUp 0.2s ease-out"
+            fontWeight: 600,
+            animation: "matchesSlideUp .2s ease-out",
+            maxWidth: 380,
           }}
         >
-          <span style={{ color: "#10b981" }}>✓</span> {toast}
+          <span
+            style={{
+              color: toast.type === "error" ? "#ef4444" : "#10b981",
+            }}
+          >
+            {toast.type === "error" ? "✗" : "✓"}
+          </span>{" "}
+          {toast.msg}
         </div>
       )}
 
-      {/* Page Header */}
+      {/* Header */}
       <header className="analytics-header">
         <h1>Create Match</h1>
         <p>Set up a new volleyball match for analysis and video generation</p>
       </header>
 
-      {/* Section 1: Match Details */}
+      {/* Loading banner */}
+      {dataLoading && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "14px 18px",
+            marginBottom: 16,
+            background: "rgba(99,102,241,0.08)",
+            border: "1px solid rgba(99,102,241,0.2)",
+            borderRadius: 10,
+            color: "#a5b4fc",
+            fontSize: "0.88rem",
+            fontWeight: 600,
+          }}
+        >
+          <svg
+            style={{
+              animation: "vr-spin 1s linear infinite",
+              flexShrink: 0,
+            }}
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              strokeDasharray="30"
+              strokeDashoffset="10"
+            />
+          </svg>
+          Loading tournaments &amp; teams…
+        </div>
+      )}
+
+      {/* Error banner */}
+      {dataError && !dataLoading && (
+        <div
+          style={{
+            padding: "14px 18px",
+            marginBottom: 16,
+            background: "rgba(239,68,68,0.08)",
+            border: "1px solid rgba(239,68,68,0.25)",
+            borderRadius: 10,
+            color: "#fca5a5",
+            fontSize: "0.88rem",
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+          }}
+        >
+          <span>⚠️</span> {dataError}
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            style={{
+              marginLeft: "auto",
+              background: "rgba(239,68,68,0.15)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              borderRadius: 6,
+              color: "#fca5a5",
+              padding: "4px 12px",
+              cursor: "pointer",
+              fontSize: "0.82rem",
+              fontWeight: 600,
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* ── Section 1: Match Details ── */}
       <section className="matches-form-card">
         <h2 className="matches-form-card-title">Match Details</h2>
         <div className="matches-form-grid">
+
+          {/* Match Status */}
           <div className="matches-field">
-            <label htmlFor="form-match-id">Match ID</label>
-            <input 
-              id="form-match-id"
-              type="text" 
-              value={matchId} 
-              onChange={(e) => setMatchId(e.target.value)} 
-            />
+            <label htmlFor="form-match-status">Match Status *</label>
+            <select
+              id="form-match-status"
+              value={matchStatus}
+              onChange={(e) => setMatchStatus(e.target.value)}
+              style={SEL}
+            >
+              <option value="upcoming">Upcoming — match has not happened yet</option>
+              <option value="live">Live — match is currently in progress</option>
+              <option value="completed">Completed — match has finished</option>
+            </select>
           </div>
+
+          {/* Tournament dropdown */}
           <div className="matches-field">
-            <label htmlFor="form-tournament">Tournament Name</label>
-            <input 
+            <label htmlFor="form-tournament">
+              Tournament *
+              {dataLoading && (
+                <span
+                  style={{
+                    marginLeft: 8,
+                    color: "#6366f1",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  loading…
+                </span>
+              )}
+            </label>
+            <select
               id="form-tournament"
-              type="text" 
-              placeholder="e.g., Spring Championship 2026"
-              value={tournamentName} 
-              onChange={(e) => setTournamentName(e.target.value)} 
-            />
+              value={tournamentId}
+              onChange={handleTournamentChange}
+              disabled={dataLoading}
+              style={dataLoading ? SEL_OFF : SEL}
+            >
+              <option value="">— Select Tournament —</option>
+              {tournaments.map((t) => (
+                <option
+                  key={t.tournament_id}
+                  value={String(t.tournament_id)}
+                >
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            {!dataLoading && tournaments.length === 0 && !dataError && (
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  color: "#f59e0b",
+                  marginTop: 4,
+                  display: "block",
+                }}
+              >
+                No tournaments found. Create one first.
+              </span>
+            )}
           </div>
+
+          {/* Home Team dropdown */}
           <div className="matches-field">
-            <label htmlFor="form-teama">Team A</label>
-            <input 
-              id="form-teama"
-              type="text" 
-              placeholder="e.g., Thunder Strikers"
-              value={teamA} 
-              onChange={(e) => setTeamA(e.target.value)} 
-            />
+            <label htmlFor="form-home-team">Home Team *</label>
+            <select
+              id="form-home-team"
+              value={homeTeamId}
+              onChange={handleHomeTeamChange}
+              disabled={dataLoading || !tournamentId}
+              style={dataLoading || !tournamentId ? SEL_OFF : SEL}
+            >
+              <option value="">
+                {!tournamentId
+                  ? "Select a tournament first"
+                  : "— Select Home Team —"}
+              </option>
+              {tournamentTeams.map((t) => (
+                <option key={t.team_id} value={String(t.team_id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            {tournamentId && !dataLoading && tournamentTeams.length === 0 && (
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  color: "#f59e0b",
+                  marginTop: 4,
+                  display: "block",
+                }}
+              >
+                No teams in this tournament yet.
+              </span>
+            )}
           </div>
+
+          {/* Away Team dropdown */}
           <div className="matches-field">
-            <label htmlFor="form-teamb">Team B</label>
-            <input 
-              id="form-teamb"
-              type="text" 
-              placeholder="e.g., Ocean Waves"
-              value={teamB} 
-              onChange={(e) => setTeamB(e.target.value)} 
-            />
+            <label htmlFor="form-away-team">Away Team *</label>
+            <select
+              id="form-away-team"
+              value={awayTeamId}
+              onChange={(e) => setAwayTeamId(e.target.value)}
+              disabled={dataLoading || !tournamentId || !homeTeamId}
+              style={
+                dataLoading || !tournamentId || !homeTeamId
+                  ? SEL_OFF
+                  : SEL
+              }
+            >
+              <option value="">
+                {!homeTeamId
+                  ? "Select home team first"
+                  : "— Select Away Team —"}
+              </option>
+              {awayTeamOptions.map((t) => (
+                <option key={t.team_id} value={String(t.team_id)}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
           </div>
+
+          {/* Score fields — completed only */}
+          {matchStatus === "completed" && (
+            <>
+              <div className="matches-field">
+                <label htmlFor="form-home-score">Home Score *</label>
+                <input
+                  id="form-home-score"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 25"
+                  value={homeScore}
+                  onChange={(e) => setHomeScore(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="matches-field">
+                <label htmlFor="form-away-score">Away Score *</label>
+                <input
+                  id="form-away-score"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 20"
+                  value={awayScore}
+                  onChange={(e) => setAwayScore(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {/* Info banner for non-completed */}
+          {matchStatus !== "completed" && (
+            <div className="matches-field matches-form-grid--full">
+              <div
+                style={{
+                  background:
+                    matchStatus === "live"
+                      ? "rgba(245,158,11,0.08)"
+                      : "rgba(99,102,241,0.08)",
+                  border: `1px solid ${
+                    matchStatus === "live"
+                      ? "rgba(245,158,11,0.25)"
+                      : "rgba(99,102,241,0.25)"
+                  }`,
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  fontSize: "0.83rem",
+                  color:
+                    matchStatus === "live" ? "#fbbf24" : "#a5b4fc",
+                  lineHeight: 1.5,
+                }}
+              >
+                {matchStatus === "upcoming"
+                  ? "📅 Scores will be entered after the match is completed."
+                  : "⚡ Match is live — scores will be set when the match finishes."}
+              </div>
+            </div>
+          )}
+
+          {/* Optional metadata */}
           <div className="matches-field">
             <label htmlFor="form-date">Match Date</label>
-            <input 
+            <input
               id="form-date"
-              type="date" 
-              value={matchDate} 
-              onChange={(e) => setMatchDate(e.target.value)} 
+              type="date"
+              value={matchDate}
+              onChange={(e) => setMatchDate(e.target.value)}
             />
           </div>
           <div className="matches-field">
             <label htmlFor="form-time">Match Time</label>
-            <input 
+            <input
               id="form-time"
-              type="time" 
-              value={matchTime} 
-              onChange={(e) => setMatchTime(e.target.value)} 
+              type="time"
+              value={matchTime}
+              onChange={(e) => setMatchTime(e.target.value)}
             />
           </div>
           <div className="matches-field">
             <label htmlFor="form-venue">Venue</label>
-            <input 
+            <input
               id="form-venue"
-              type="text" 
+              type="text"
               placeholder="e.g., Central Sports Arena"
-              value={venue} 
-              onChange={(e) => setVenue(e.target.value)} 
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
             />
           </div>
           <div className="matches-field">
             <label htmlFor="form-stage">Match Stage / Round</label>
-            <input 
+            <input
               id="form-stage"
-              type="text" 
+              type="text"
               placeholder="e.g., Finals"
-              value={stage} 
-              onChange={(e) => setStage(e.target.value)} 
+              value={stage}
+              onChange={(e) => setStage(e.target.value)}
             />
           </div>
           <div className="matches-field matches-form-grid--full">
             <label htmlFor="form-notes">Notes</label>
-            <textarea 
+            <textarea
               id="form-notes"
-              rows="3" 
+              rows="3"
               placeholder="Additional match notes..."
-              value={notes} 
+              value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
         </div>
       </section>
 
-      {/* Section 2: Match Upload */}
+      {/* ── Section 2: Match Upload ── */}
       <section className="matches-form-card">
         <h2 className="matches-form-card-title">Match Upload</h2>
-        
         {isUploading ? (
           <div style={{ textAlign: "center", padding: "30px 0" }}>
-            <span style={{ fontWeight: 600, display: "block", marginBottom: "8px" }}>Uploading {fileName}...</span>
-            <div className="matches-progress-bar-bg" style={{ maxWidth: "400px", margin: "0 auto" }}>
-              <div className="matches-progress-bar-fill" style={{ width: `${uploadProgress}%` }}></div>
+            <span
+              style={{
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              Uploading {fileName}...
+            </span>
+            <div
+              className="matches-progress-bar-bg"
+              style={{ maxWidth: 400, margin: "0 auto" }}
+            >
+              <div
+                className="matches-progress-bar-fill"
+                style={{ width: `${uploadProgress}%` }}
+              />
             </div>
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginTop: "8px" }}>
+            <span
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--text-muted)",
+                display: "block",
+                marginTop: 8,
+              }}
+            >
               {uploadProgress}% Uploaded
             </span>
           </div>
         ) : (
-          <div 
+          <div
             className="matches-upload-zone"
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleSelectFile();
+            }}
             style={{ padding: "40px 20px" }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            
             {fileName ? (
               <>
                 <strong>Selected file: {fileName}</strong>
@@ -418,32 +615,37 @@ export default function MatchesCreatePage() {
                 <p>or</p>
               </>
             )}
-            
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleSelectFile}
               className="matches-btn-view"
-              style={{ padding: "8px 18px", marginTop: "8px" }}
+              style={{ padding: "8px 18px", marginTop: 8 }}
             >
               Choose File
             </button>
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "6px" }}>
+            <span
+              style={{
+                fontSize: "0.78rem",
+                color: "var(--text-muted)",
+                marginTop: 6,
+              }}
+            >
               Supported formats: MP4, MOV, AVI (Max 2GB)
             </span>
           </div>
         )}
       </section>
 
-      {/* Section 3: Upload Details */}
+      {/* ── Section 3: Upload Details ── */}
       <section className="matches-form-card">
         <h2 className="matches-form-card-title">Upload Details</h2>
         <div className="matches-form-grid">
           <div className="matches-field">
             <label htmlFor="up-title">Video Title</label>
-            <input 
+            <input
               id="up-title"
-              type="text" 
-              placeholder="e.g., Thunder Strikers vs Ocean Waves - Finals"
+              type="text"
+              placeholder="e.g., Home Team vs Away Team - Finals"
               value={videoTitle}
               onChange={(e) => setVideoTitle(e.target.value)}
               disabled={!fileName}
@@ -451,9 +653,9 @@ export default function MatchesCreatePage() {
           </div>
           <div className="matches-field">
             <label htmlFor="up-camera">Camera Angle</label>
-            <input 
+            <input
               id="up-camera"
-              type="text" 
+              type="text"
               placeholder="e.g., High Court"
               value={cameraAngle}
               onChange={(e) => setCameraAngle(e.target.value)}
@@ -462,44 +664,20 @@ export default function MatchesCreatePage() {
           </div>
           <div className="matches-field">
             <label htmlFor="up-duration">Duration</label>
-            <input 
+            <input
               id="up-duration"
-              type="text" 
+              type="text"
               placeholder="e.g., 1:45:30"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               disabled={!fileName}
             />
           </div>
-          <div className="matches-field">
-            <div style={{ display: "flex", gap: "10px" }}>
-              <div style={{ flex: 1 }} className="matches-field">
-                <label htmlFor="up-scorea">Final Score - Team A</label>
-                <input 
-                  id="up-scorea"
-                  type="number" 
-                  value={scoreA}
-                  onChange={(e) => setScoreA(e.target.value)}
-                  disabled={!fileName}
-                />
-              </div>
-              <div style={{ flex: 1 }} className="matches-field">
-                <label htmlFor="up-scoreb">Final Score - Team B</label>
-                <input 
-                  id="up-scoreb"
-                  type="number" 
-                  value={scoreB}
-                  onChange={(e) => setScoreB(e.target.value)}
-                  disabled={!fileName}
-                />
-              </div>
-            </div>
-          </div>
           <div className="matches-field matches-form-grid--full">
             <label htmlFor="up-notes">Upload Notes</label>
-            <textarea 
+            <textarea
               id="up-notes"
-              rows="3" 
+              rows="3"
               placeholder="Additional notes about the video upload..."
               value={uploadNotes}
               onChange={(e) => setUploadNotes(e.target.value)}
@@ -509,33 +687,56 @@ export default function MatchesCreatePage() {
         </div>
       </section>
 
-      {/* Section 4: Event Review Setup */}
+      {/* ── Section 4: Event Review Setup ── */}
       <section className="matches-form-card">
         <h2 className="matches-form-card-title">Event Review Setup</h2>
-        
         {isAnalyzing ? (
           <div className="matches-alert-card matches-alert-card--info">
-            <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" strokeDasharray="30" strokeDashoffset="10"/>
+            <svg
+              className="animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                strokeDasharray="30"
+                strokeDashoffset="10"
+              />
             </svg>
             <div>
               <strong>Running AI volleyball event detection...</strong>
-              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>Analyzing feed patterns to trace spikes, passes, serves, and court lines...</p>
+              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+                Analyzing feed patterns to trace spikes, passes, serves, and
+                court lines...
+              </p>
             </div>
           </div>
         ) : (
           <div className="matches-alert-card matches-alert-card--info">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
             <div>
               <strong>Event detection will begin after upload</strong>
-              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>AI will analyze the video and detect volleyball events automatically</p>
+              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+                AI will analyze the video and detect volleyball events
+                automatically
+              </p>
             </div>
           </div>
         )}
-
         <div className="matches-setup-stats-row">
           <div className="matches-setup-stat-box">
             <span className="matches-setup-stat-val">{detectedCount}</span>
@@ -546,17 +747,32 @@ export default function MatchesCreatePage() {
             <span className="matches-setup-stat-lbl">Confidence Score</span>
           </div>
           <div className="matches-setup-stat-box">
-            <span className={`matches-badge ${analysisCompleted ? "matches-badge--green" : isAnalyzing ? "matches-badge--blue" : "matches-badge--muted"}`} style={{ padding: "6px 14px", fontSize: "0.82rem" }}>
+            <span
+              className={`matches-badge ${
+                analysisCompleted
+                  ? "matches-badge--green"
+                  : isAnalyzing
+                  ? "matches-badge--blue"
+                  : "matches-badge--muted"
+              }`}
+              style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+            >
               {reviewStatus}
             </span>
-            <span className="matches-setup-stat-lbl" style={{ marginTop: "4px" }}>Review Status</span>
+            <span
+              className="matches-setup-stat-lbl"
+              style={{ marginTop: 4 }}
+            >
+              Review Status
+            </span>
           </div>
         </div>
-
-        <button 
-          type="button" 
+        <button
+          type="button"
           disabled={!analysisCompleted}
-          onClick={() => triggerToast("Navigating to Event Review editor...")}
+          onClick={() =>
+            triggerToast("Navigating to Event Review editor...")
+          }
           className="matches-btn-blue"
           id="btn-go-event-review"
         >
@@ -564,65 +780,121 @@ export default function MatchesCreatePage() {
         </button>
       </section>
 
-      {/* Section 5: Generate Video */}
+      {/* ── Section 5: Generate Video ── */}
       <section className="matches-form-card">
         <h2 className="matches-form-card-title">Generate Video</h2>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <input 
-            type="checkbox" 
-            id="confirmed-events" 
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input
+            type="checkbox"
+            id="confirmed-events"
             checked={confirmedOnly}
             onChange={(e) => setConfirmedOnly(e.target.checked)}
             disabled={!analysisCompleted}
           />
-          <label htmlFor="confirmed-events" style={{ fontSize: "0.88rem", fontWeight: "600", cursor: "pointer" }}>
+          <label
+            htmlFor="confirmed-events"
+            style={{
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
             Include confirmed events only
           </label>
         </div>
-
-        <div className="matches-field" style={{ maxWidth: "300px" }}>
+        <div className="matches-field" style={{ maxWidth: 300 }}>
           <label htmlFor="video-type">Video Type</label>
-          <input 
+          <input
             id="video-type"
-            type="text" 
+            type="text"
             value={videoType}
             onChange={(e) => setVideoType(e.target.value)}
             disabled={!analysisCompleted}
           />
         </div>
-
         {isGeneratingVideo ? (
           <div style={{ padding: "10px 0" }}>
-            <span style={{ fontWeight: 600, display: "block", marginBottom: "6px", fontSize: "0.85rem" }}>Generating highlights compilation...</span>
-            <div className="matches-progress-bar-bg" style={{ maxWidth: "300px" }}>
-              <div className="matches-progress-bar-fill" style={{ width: `${videoProgress}%`, background: "linear-gradient(90deg, #8b5cf6, #c084fc)" }}></div>
+            <span
+              style={{
+                fontWeight: 600,
+                display: "block",
+                marginBottom: 6,
+                fontSize: "0.85rem",
+              }}
+            >
+              Generating highlights compilation...
+            </span>
+            <div
+              className="matches-progress-bar-bg"
+              style={{ maxWidth: 300 }}
+            >
+              <div
+                className="matches-progress-bar-fill"
+                style={{
+                  width: `${videoProgress}%`,
+                  background: "linear-gradient(90deg,#8b5cf6,#c084fc)",
+                }}
+              />
             </div>
           </div>
         ) : videoGenerated ? (
-          <div className="matches-alert-card matches-alert-card--info" style={{ background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.2)", color: "#34d399" }}>
+          <div
+            className="matches-alert-card matches-alert-card--info"
+            style={{
+              background: "rgba(16,185,129,0.08)",
+              borderColor: "rgba(16,185,129,0.2)",
+              color: "#34d399",
+            }}
+          >
             <span style={{ fontSize: "1.2rem" }}>✓</span>
             <div>
               <strong>Video highlights compilation generated!</strong>
-              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>The highlights reel has been successfully compiled and is ready for playback.</p>
+              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+                The highlights reel has been successfully compiled and is ready
+                for playback.
+              </p>
             </div>
           </div>
         ) : (
           <div className="matches-alert-card matches-alert-card--gray">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
             <div>
               <strong>Video generation not started</strong>
-              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>Upload and confirm events before generating video</p>
+              <p style={{ fontSize: "0.8rem", opacity: 0.85 }}>
+                Upload and confirm events before generating video
+              </p>
             </div>
           </div>
         )}
-
-        <button 
-          type="button" 
+        <button
+          type="button"
           disabled={!analysisCompleted || isGeneratingVideo || videoGenerated}
-          onClick={startVideoGeneration}
+          onClick={() => {
+            setIsGeneratingVideo(true);
+            setVideoProgress(0);
+            const iv = setInterval(() => {
+              setVideoProgress((prev) => {
+                if (prev >= 100) {
+                  clearInterval(iv);
+                  setIsGeneratingVideo(false);
+                  setVideoGenerated(true);
+                  triggerToast("Highlights compiled successfully!");
+                  return 100;
+                }
+                return prev + 25;
+              });
+            }, 250);
+          }}
           className="matches-btn-purple"
           id="btn-generate-video-action"
         >
@@ -630,38 +902,98 @@ export default function MatchesCreatePage() {
         </button>
       </section>
 
-      {/* Page Form Actions Footer */}
+      {/* ── Footer ── */}
       <footer className="matches-form-footer">
-        <Link to="/matches" className="matches-modal-btn-cancel" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+        <Link
+          to="/matches"
+          className="matches-modal-btn-cancel"
+          style={{
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
           Cancel
         </Link>
         <div className="matches-form-footer-right">
-          <button 
-            type="button" 
-            onClick={handleSaveMatchDraft}
-            className="matches-modal-btn-cancel"
-            id="btn-save-match-draft"
+          <button
+            type="button"
+            onClick={handleApiSubmit}
+            className="matches-btn-orange"
+            id="btn-create-match-submit"
+            disabled={
+              submitLoading ||
+              dataLoading ||
+              !tournamentId ||
+              !homeTeamId ||
+              !awayTeamId
+            }
           >
-            Save Match
+            {submitLoading ? "Creating…" : "Create Match"}
           </button>
-          
           {uploadCompleted ? (
-            <button 
-              type="button" 
-              onClick={handleSaveAndExit}
-              className="matches-btn-orange"
+            <button
+              type="button"
+              onClick={() => {
+                triggerToast("Saving match analytics...");
+                setTimeout(() => navigate("/matches"), 1000);
+              }}
+              className="matches-btn-outline"
               id="btn-save-upload-complete"
             >
-              Save & Complete
+              Save &amp; Complete
             </button>
           ) : (
-            <button 
-              type="button" 
-              onClick={startUploadAndAI}
-              className="matches-btn-orange"
+            <button
+              type="button"
+              onClick={() => {
+                if (!fileName) {
+                  triggerToast(
+                    "Please choose a match video file to upload.",
+                    "error"
+                  );
+                  return;
+                }
+                setIsUploading(true);
+                setUploadProgress(0);
+                const iv = setInterval(() => {
+                  setUploadProgress((prev) => {
+                    if (prev >= 100) {
+                      clearInterval(iv);
+                      setIsUploading(false);
+                      setUploadCompleted(true);
+                      triggerToast(
+                        "Upload completed! Running AI event detection..."
+                      );
+                      setIsAnalyzing(true);
+                      setDetectedCount("--");
+                      setConfidenceScore("--");
+                      setReviewStatus("Processing");
+                      let c = 0;
+                      const ai = setInterval(() => {
+                        c++;
+                        if (c >= 10) {
+                          clearInterval(ai);
+                          setIsAnalyzing(false);
+                          setAnalysisCompleted(true);
+                          setDetectedCount("48");
+                          setConfidenceScore("94%");
+                          setReviewStatus("Completed");
+                          triggerToast(
+                            "AI analysis complete: 48 events detected!"
+                          );
+                        }
+                      }, 200);
+                      return 100;
+                    }
+                    return prev + 10;
+                  });
+                }, 150);
+              }}
+              className="matches-btn-outline"
               id="btn-save-and-upload"
             >
-              Save & Upload
+              Save &amp; Upload
             </button>
           )}
         </div>
