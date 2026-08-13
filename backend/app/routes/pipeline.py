@@ -215,3 +215,97 @@ def get_pipeline_status(
         "highlight_url": match.highlight_url,
         "has_transcript": match.transcript is not None
     }
+
+
+# ── Generate highlight from selected confirmed events ─────────────────────────
+
+from pydantic import BaseModel
+from typing import List
+
+
+class GenerateHighlightRequest(BaseModel):
+    event_ids: List[int]
+
+
+@router.post("/{match_id}/generate-highlight")
+def generate_selected_highlight(
+    match_id: int,
+    payload: GenerateHighlightRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """
+    Generate a highlight reel from a specific set of confirmed events.
+
+    Why this endpoint?
+    The full pipeline generates highlights from ALL detected events.
+    This endpoint lets coaches pick only the events they confirmed and
+    compile a custom highlight reel from those specific moments.
+    """
+    # Validate match exists
+    match = db.query(Match).filter(Match.match_id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    if not match.video_url:
+        raise HTTPException(
+            status_code=400,
+            detail="No video uploaded for this match. Upload a video first."
+        )
+
+    if not payload.event_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="No event IDs provided. Confirm at least one event."
+        )
+
+    # Fetch the selected events from the database
+    events = db.query(Event).filter(
+        Event.match_id == match_id,
+        Event.event_id.in_(payload.event_ids)
+    ).all()
+
+    if not events:
+        raise HTTPException(
+            status_code=400,
+            detail="None of the provided event IDs were found for this match."
+        )
+
+    # Convert ORM objects to the dict format expected by process_match_highlights
+    event_dicts = [
+        {
+            "event_type": e.event_type,
+            "timestamp_sec": e.timestamp_sec,
+            "player_id": e.player_id,
+            "transcript_snippet": e.transcript_snippet or "",
+            "confidence": e.confidence or 0.0,
+        }
+        for e in events
+    ]
+
+    # Run highlight generation synchronously (it's fast for selected clips)
+    output_dir = os.path.join(OUTPUT_DIR, f"match_{match_id}")
+    try:
+        result = process_match_highlights(
+            video_path=match.video_url,
+            events=event_dicts,
+            output_dir=output_dir,
+            match_id=match_id,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Highlight generation failed: {exc}"
+        )
+
+    # Persist the highlight URL back to the match record
+    if result.get("highlight_url"):
+        match.highlight_url = result["highlight_url"]
+        db.commit()
+        db.refresh(match)
+
+    return {
+        "highlight_url": result.get("highlight_url"),
+        "clips_generated": len(result.get("clips", {})),
+    }
+
