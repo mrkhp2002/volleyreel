@@ -1,6 +1,164 @@
 # AI Changelog
 
+## [2026-08-13T03:19:00+05:30] - Create Match: Real API Dropdowns for Tournament & Teams
+
+### Changed
+- **`frontend/src/pages/matches/MatchesCreatePage.jsx`** — Full rewrite
+  - Added `useEffect` to fetch both `GET /tournaments/` and `GET /teams/` in parallel on mount
+  - **Tournament dropdown**: shows all user tournaments by name; stores `tournament_id`
+  - **Home Team dropdown**: locked until tournament selected; shows teams filtered to that tournament by `tournament_id`
+  - **Away Team dropdown**: locked until home team selected; excludes whichever team is the home team
+  - When tournament changes, home/away team selections are reset to prevent stale state
+  - **Loading state**: spinner banner while fetching; all three selects show "loading…" hint and are disabled
+  - **Error state**: red error banner with a Retry button if the fetch fails
+  - **Empty state hints**: "No tournaments found. Create one first." / "No teams in this tournament yet."
+  - **Match Status** dropdown: `upcoming | live | completed`; score fields visible only when `completed`
+  - **Submit payload** now correctly sends `null` scores for `upcoming`/`live` and actual scores for `completed`
+  - `handleSelectFile` now resolves home/away team names from the loaded `allTeams` array instead of raw IDs
+  - `startVideoGeneration` undefined crash — replaced inline (kept from previous fix)
+  - Toast now supports `type: "success" | "error"` with matching border color (green / red)
+
+- **`frontend/src/pages/matches/MatchesPage.jsx`** — Score display already correct
+  - Score column reads `match_status` from each match row:
+    - `upcoming` → "Not Yet" (muted)
+    - `live` → "Pending" (amber)
+    - `completed` → `home_score – away_score`
+
+
+
+### Bug Fixes
+
+- **`frontend/src/pages/matches/MatchesCreatePage.jsx`**
+  - **CRASH FIX**: `startVideoGeneration` function was removed in a previous edit but still referenced on the "Generate Video" button `onClick`. Replaced with an inline handler identical to the deleted function — page now loads without crashing.
+
+- **`frontend/src/components/layout/auth/LoginForm.jsx`**
+  - **401 FIX**: Removed three hardcoded mock-credential shortcut blocks (admin/coach/public user). These bypassed the real API and stored fake tokens (`mock-admin-token-12345` etc.) in localStorage. Since the backend validates real JWTs, every subsequent API call with a mock token returned 401. All logins now go through `POST /api/auth/login` and receive a real JWT, which the `apiClient` interceptor attaches as `Authorization: Bearer <token>` on every request.
+
+
+
+### Changed
+- **`frontend/src/pages/matches/MatchesPage.jsx`**
+  - Removed the inline "Create Match" modal (all its state and the `handleCreateSubmit` handler)
+  - "Create Match" orange button now navigates to `/matches/create` via `useNavigate`
+  - Score column in the match table now shows context-aware text based on `match_status`:
+    - `upcoming` → "Not Yet" (muted text)
+    - `live` → "Pending" (amber text)
+    - `completed` → actual score e.g. "10 – 15"
+  - `formatMatch` helper now passes `match_status` through from the API response
+
+- **`frontend/src/pages/matches/MatchesCreatePage.jsx`**
+  - Removed legacy `initialMatchesCopy` array and all localStorage logic
+  - Replaced static text fields (Match ID, Tournament Name, Team A/B) with real API-backed fields (Tournament ID, Home Team ID, Away Team ID)
+  - Added **Match Status** dropdown with options: `upcoming`, `live`, `completed` (default: `upcoming`)
+  - Home Score / Away Score fields are **hidden** when status is `upcoming` or `live`
+  - Home Score / Away Score fields are **visible and required** when status is `completed`
+  - Informational banner shown below the status dropdown for non-completed statuses
+  - "Create Match" button now calls `POST /matches` API via `apiClient`; navigates back to `/matches` on success
+  - Imported `API` from `../../services/apiClient`
+
+- **`backend/app/models/match.py`**
+  - `home_score` and `away_score` changed from `default=0` to `nullable=True` (no default)
+  - Added `match_status` column: `String`, `default="upcoming"` (upcoming | live | completed)
+
+- **`backend/app/schemas/match.py`**
+  - `MatchBase`: `home_score` and `away_score` changed to `int | None = None`; added `match_status: str = "upcoming"`
+  - `MatchUpdate`: added `match_status: str | None = None`
+  - `MatchRead`: `home_score` and `away_score` changed to `int | None = None`; added `match_status: str = "upcoming"`
+
+- **`backend/app/routes/matches.py`**
+  - `create_match` route now passes `match_status=payload.match_status` to the `Match` ORM object
+
+### Database
+- `migrate_match_status.py` (one-off script) — ran `ALTER TABLE matches ADD COLUMN match_status VARCHAR DEFAULT 'upcoming'` against the SQLite database
+
+
+
+### Rewritten
+- **`frontend/src/pages/matches/MatchDashboardPage.jsx`** — Full rewrite with five integrated workflow sections:
+
+  **① Video Upload Section**
+  - File input hidden behind a styled drag-and-drop zone (`onDrop`, `onClick`) — accepts `.mp4,.mov,.avi,.mkv,.webm`
+  - Shows selected filename and file size; allows re-selection before upload
+  - Real upload progress bar using raw `XMLHttpRequest` with `xhr.upload.addEventListener("progress")` (not Axios — XHR gives accurate progress events for multipart uploads)
+  - Shows animated progress bar (0–100%) with orange fill during upload
+  - Calls `POST /api/matches/{id}/upload` with `FormData` + Bearer token from `localStorage`
+  - Success/error state messages with green/red styling; clears file selection after success
+
+  **② AI Analysis Pipeline Section**
+  - Status indicator card (`pending / processing / complete / failed`) with color-coded badge
+  - Five-step animated progress stepper during processing: Splitting → Transcribing → Detecting → Highlights → Complete
+  - Steps show ✓ (done), spinner (active), or muted (pending) — estimated from poll count
+  - Calls `POST /api/pipeline/{id}/process` — disabled if no video or already processing
+  - Starts `setInterval` polling `GET /api/pipeline/{id}/status` every **10 seconds** via `startPolling` (called after trigger or on mount if already processing)
+  - Polling auto-stops on `complete` or `failed`; on complete, re-fetches full events list and auto-selects all
+
+  **③ Events Display Section** (shown when pipeline complete or events exist)
+  - Scrollable list (max 480px) of all detected events filtered by `match_id`
+  - Per-event: colored type badge, `MM:SS` timestamp, player name (from `playersMap`), confidence % (green ≥80%, yellow ≥50%, red <50%), italic transcript snippet
+  - Click row = toggle checkbox selection; click **▶** button = seek video to timestamp
+  - Highlighted active-event row (orange border) and selected row (blue tint)
+  - **Select All** / **Deselect All** controls; live `N of M selected` count
+
+  **④ Highlight Generation Section** (shown with events section)
+  - Selected event count pill + **Generate Highlight Reel** button (disabled if 0 selected)
+  - Calls `POST /api/pipeline/{id}/generate-highlight` with `{"event_ids": [...selectedEventIds]}`
+  - Inline spinner while generating; success state shows the custom highlight as an `<video>` player
+  - Persists `customHighlightUrl` in component state; also updates `match.highlight_url`
+
+  **⑤ Video Player (right sidebar)**
+  - HTML5 `<video>` player with `useRef(videoRef)` always showing the source match video
+  - Seeking is triggered by event row ▶ clicks via `videoRef.current.currentTime = sec; videoRef.current.play()`
+  - No-video placeholder state with CTA text
+
+  **Supporting UI additions:**
+  - `Spinner` reusable component (CSS border animation) used across all loading states
+  - `SectionCard` wrapper component with title/subtitle for consistent section layout
+  - `EventTypeBadge` with 7 type color mappings (ace/kill/block/spike/dig/serve/error)
+  - `PIPELINE_STEPS` array with `pipelineStepIndex(status, elapsed)` estimator
+  - Toast notifications for all async actions (upload, analyze, generate)
+  - Player stats sidebar card (kills/aces/blocks per player), match details info grid, quick actions
+
+### Files Changed
+- `frontend/src/pages/matches/MatchDashboardPage.jsx`
+
+---
+
+## [2026-08-12T12:35:45+05:30] - Backend: Video Upload & Custom Highlight Generation Endpoints
+
+
+### Added
+- **`backend/app/routes/matches.py`** — New endpoint `POST /api/matches/{match_id}/upload`:
+  - Accepts a real video file via `multipart/form-data` (`UploadFile`, `File`)
+  - Validates MIME type (MP4, MOV, AVI, MKV, WebM, octet-stream)
+  - Creates `media/videos/` directory automatically (`os.makedirs(..., exist_ok=True)`)
+  - Saves file to `media/videos/match_{match_id}.mp4` using `shutil.copyfileobj` (streaming, memory-safe)
+  - Updates `match.video_url` to the saved path and resets `match.status` to `"pending"`
+  - Returns the full updated `MatchRead` object
+  - Includes `import os, shutil` and `from fastapi import UploadFile, File`
+
+- **`backend/app/routes/pipeline.py`** — New endpoint `POST /api/pipeline/{match_id}/generate-highlight`:
+  - Accepts JSON body `{ "event_ids": [1, 2, 3, 5] }` via `GenerateHighlightRequest` Pydantic model
+  - Validates match exists and has a `video_url`
+  - Loads requested events from DB filtered by `match_id` and `event_id IN event_ids`, ordered by `timestamp_sec`
+  - Warns (but doesn't fail) if some requested IDs are not found for this match
+  - For each event: reuses `clip_url` if file exists on disk; otherwise calls `generate_event_clip()` on-the-fly and persists the new `clip_url` back to the Event row
+  - Concatenates all valid clips via `generate_highlight_reel()` → `media/highlights/match_{id}/match_{id}_custom_highlight.mp4`
+  - Persists the new `match.highlight_url` in the database
+  - Returns `{ "highlight_url", "clips_used", "events_requested", "events_included" }`
+  - Imported `generate_event_clip` and `generate_highlight_reel` directly from `highlight_generator.py`
+
+### Changed
+- `backend/app/routes/pipeline.py`: Added `from typing import List`, `from pydantic import BaseModel`, and `GenerateHighlightRequest` schema inline (no separate schema file needed for a single-use request body)
+- Updated pipeline status comment to reflect 10-second polling interval (was 30 seconds, matching the frontend)
+
+### Files Changed
+- `backend/app/routes/matches.py`
+- `backend/app/routes/pipeline.py`
+
+---
+
 ## [2026-08-11T18:39:55+05:30] - MatchesPage API Migration & MatchDashboardPage
+
 
 ### Added
 - **`frontend/src/pages/matches/MatchesPage.jsx`** (fully rewritten): Replaced all localStorage mock data with real backend API calls:

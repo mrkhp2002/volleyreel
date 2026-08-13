@@ -32,6 +32,7 @@ def create_match(payload: MatchCreate, db: Session = Depends(get_db), current_us
         tournament_id=payload.tournament_id,
         video_url=payload.video_url,
         status=payload.status,
+        match_status=payload.match_status,
         home_score=payload.home_score,
         away_score=payload.away_score,
     )

@@ -6,10 +6,11 @@ class MatchBase(BaseModel):
     tournament_id: int
     home_team_id: int
     away_team_id: int
-    home_score: int = 0
-    away_score: int = 0
+    home_score: int | None = None
+    away_score: int | None = None
     video_url: str | None = None
     status: str = "pending"
+    match_status: str = "upcoming"  # upcoming | live | completed
 
 
 class MatchCreate(MatchBase):
@@ -24,6 +25,7 @@ class MatchUpdate(BaseModel):
     away_score: int | None = None
     video_url: str | None = None
     status: str | None = None
+    match_status: str | None = None  # upcoming | live | completed
     highlight_url: str | None = None
     transcript: str | None = None
 
@@ -33,10 +35,11 @@ class MatchRead(BaseModel):
     tournament_id: int
     home_team_id: int
     away_team_id: int
-    home_score: int
-    away_score: int
+    home_score: int | None = None
+    away_score: int | None = None
     video_url: str | None = None
     status: str
+    match_status: str = "upcoming"
     public_id: str | None = None
     highlight_url: str | None = None
     transcript: str | None = None

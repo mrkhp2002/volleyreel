@@ -26,6 +26,7 @@ function formatMatch(m, teamsMap, tournamentsMap) {
     awayTeam,
     tournament,
     date,
+    match_status: m.match_status || "upcoming",
     upload: m.video_url ? "Completed" : "Not Uploaded",
     review:
       m.status === "complete"
@@ -107,19 +108,10 @@ export default function MatchesPage() {
   const pageSize = 5;
 
   // Modals
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [activeMatch, setActiveMatch] = useState(null);
-
-  // Create form
-  const [newTournamentId, setNewTournamentId] = useState("");
-  const [newHomeTeamId, setNewHomeTeamId] = useState("");
-  const [newAwayTeamId, setNewAwayTeamId] = useState("");
-  const [newHomeScore, setNewHomeScore] = useState(0);
-  const [newAwayScore, setNewAwayScore] = useState(0);
-  const [createLoading, setCreateLoading] = useState(false);
 
   // Upload form
   const [videoUrl, setVideoUrl] = useState("");
@@ -252,34 +244,7 @@ export default function MatchesPage() {
 
   // ── CRUD ─────────────────────────────────────────────────────────────────
 
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!newTournamentId || !newHomeTeamId || !newAwayTeamId) return;
-    if (newHomeTeamId === newAwayTeamId) {
-      triggerToast("Home and away teams must be different.", "error");
-      return;
-    }
-    try {
-      setCreateLoading(true);
-      const res = await API.post("/matches", {
-        tournament_id: Number(newTournamentId),
-        home_team_id: Number(newHomeTeamId),
-        away_team_id: Number(newAwayTeamId),
-        home_score: Number(newHomeScore),
-        away_score: Number(newAwayScore),
-      });
-      const nm = formatMatch(res.data, teamsMap, tournamentsMap);
-      setMatches((prev) => [nm, ...prev]);
-      setIsCreateOpen(false);
-      setNewTournamentId(""); setNewHomeTeamId(""); setNewAwayTeamId("");
-      setNewHomeScore(0); setNewAwayScore(0);
-      triggerToast(`Match #${nm.match_id} created!`);
-    } catch (err) {
-      triggerToast(err?.response?.data?.detail || "Failed to create match.", "error");
-    } finally {
-      setCreateLoading(false);
-    }
-  };
+
 
   const handleUploadSubmit = async (e) => {
     e.preventDefault();
@@ -456,7 +421,7 @@ export default function MatchesPage() {
         </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={loadAll} className="matches-btn-outline" title="Refresh" style={{padding:"10px 14px"}}>↺</button>
-          <button onClick={() => setIsCreateOpen(true)} className="matches-btn-orange" id="btn-create-match">
+          <button onClick={() => navigate("/matches/create")} className="matches-btn-orange" id="btn-create-match">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
@@ -530,7 +495,13 @@ export default function MatchesPage() {
                           </div>
                         </Link>
                       </td>
-                      <td style={{fontWeight:700,color:"#fff"}}>{match.home_score??0} – {match.away_score??0}</td>
+                      <td style={{fontWeight:700,color:"#fff"}}>
+                        {match.match_status === "upcoming"
+                          ? <span style={{color:"var(--text-muted)",fontWeight:500}}>Not Yet</span>
+                          : match.match_status === "live"
+                          ? <span style={{color:"#f59e0b",fontWeight:600}}>Pending</span>
+                          : `${match.home_score ?? 0} – ${match.away_score ?? 0}`}
+                      </td>
                       <td><PipelineBadge status={match.pipelineStatus}/></td>
                       <td><VideoBadge status={match.video}/></td>
                       <td style={{textAlign:"center"}}>
@@ -614,50 +585,7 @@ export default function MatchesPage() {
         )}
       </div>
 
-      {/* ── Create Match Modal ── */}
-      {isCreateOpen && (
-        <div className="matches-modal-overlay">
-          <form onSubmit={handleCreateSubmit} className="matches-modal" id="form-create-match">
-            <div className="matches-modal-header">
-              <h2>Create New Match</h2>
-              <button type="button" onClick={()=>setIsCreateOpen(false)} className="matches-modal-close"><CloseIcon/></button>
-            </div>
-            <div className="matches-modal-body">
-              <div className="matches-modal-field">
-                <label htmlFor="m-create-tournament">Tournament *</label>
-                <CustomSelect id="m-create-tournament" value={newTournamentId} onChange={(e)=>setNewTournamentId(e.target.value)} className="matches-modal-select"
-                  options={[{value:"",label:"Select a tournament…"},...Object.values(tournamentsMap).map((t)=>({value:String(t.tournament_id),label:t.name}))]}/>
-              </div>
-              <div className="matches-modal-field">
-                <label htmlFor="m-create-home">Home Team *</label>
-                <CustomSelect id="m-create-home" value={newHomeTeamId} onChange={(e)=>setNewHomeTeamId(e.target.value)} className="matches-modal-select"
-                  options={[{value:"",label:"Select home team…"},...Object.values(teamsMap).map((t)=>({value:String(t.team_id),label:t.name}))]}/>
-              </div>
-              <div className="matches-modal-field">
-                <label htmlFor="m-create-away">Away Team *</label>
-                <CustomSelect id="m-create-away" value={newAwayTeamId} onChange={(e)=>setNewAwayTeamId(e.target.value)} className="matches-modal-select"
-                  options={[{value:"",label:"Select away team…"},...Object.values(teamsMap).map((t)=>({value:String(t.team_id),label:t.name}))]}/>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <div className="matches-modal-field">
-                  <label htmlFor="m-home-sc">Home Score</label>
-                  <input id="m-home-sc" type="number" min="0" value={newHomeScore} onChange={(e)=>setNewHomeScore(e.target.value)}/>
-                </div>
-                <div className="matches-modal-field">
-                  <label htmlFor="m-away-sc">Away Score</label>
-                  <input id="m-away-sc" type="number" min="0" value={newAwayScore} onChange={(e)=>setNewAwayScore(e.target.value)}/>
-                </div>
-              </div>
-            </div>
-            <div className="matches-modal-footer">
-              <button type="button" onClick={()=>setIsCreateOpen(false)} className="matches-modal-btn-cancel">Cancel</button>
-              <button type="submit" className="matches-modal-btn-submit" id="btn-create-submit" disabled={createLoading||!newTournamentId||!newHomeTeamId||!newAwayTeamId}>
-                {createLoading?"Creating…":"Create Match"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+
 
       {/* ── Upload / Set Video URL Modal ── */}
       {isUploadOpen && activeMatch && (
