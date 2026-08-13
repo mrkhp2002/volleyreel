@@ -3,32 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/matches.css";
 
-const initialMatchesCopy = [
-  { id: "VM-2026-001", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Ocean Waves", date: "Mar 15, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-002", tournament: "Regional Cup", teams: "Sky Hawks vs Net Ninjas", date: "Mar 14, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
-  { id: "VM-2026-003", tournament: "Spring Championship 2026", teams: "Beach Blazers vs Court Kings", date: "Mar 13, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-004", tournament: "Regional Cup", teams: "Thunder Strikers vs Sky Hawks", date: "Mar 12, 2026", upload: "Completed", review: "Completed", video: "Generating" },
-  { id: "VM-2026-005", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Beach Blazers", date: "Mar 11, 2026", upload: "Not Uploaded", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-006", tournament: "Spring Championship 2026", teams: "Thunder Strikers vs Court Kings", date: "Mar 10, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-007", tournament: "Regional Cup", teams: "Ocean Waves vs Beach Blazers", date: "Mar 09, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-008", tournament: "Regional Cup", teams: "Sky Hawks vs Court Kings", date: "Mar 08, 2026", upload: "Completed", review: "Completed", video: "Ready" },
-  { id: "VM-2026-009", tournament: "Spring Championship 2026", teams: "Net Ninjas vs Thunder Strikers", date: "Mar 07, 2026", upload: "Processing", review: "In Review", video: "Not Generated" },
-  { id: "VM-2026-010", tournament: "Regional Cup", teams: "Ocean Waves vs Net Ninjas", date: "Mar 06, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-  { id: "VM-2026-011", tournament: "Regional Cup", teams: "Beach Blazers vs Sky Hawks", date: "Mar 05, 2026", upload: "Failed", review: "Not Started", video: "Not Generated" },
-  { id: "VM-2026-012", tournament: "Spring Championship 2026", teams: "Court Kings vs Ocean Waves", date: "Mar 04, 2026", upload: "Completed", review: "Confirmed", video: "Ready" },
-];
-
-const mockEvents = [
-  { id: "e1", time: "00:01:14", type: "Serve", player: "#10 J. Smith", confidence: "96%", status: "Pending", ballCoords: { top: "45%", left: "48%" }, playerBox: { top: "35%", left: "44%", width: "50px", height: "90px", label: "#10 Smith" } },
-  { id: "e2", time: "00:01:18", type: "Dig", player: "#04 T. Davis", confidence: "88%", status: "Pending", ballCoords: { top: "72%", left: "32%" }, playerBox: { top: "60%", left: "28%", width: "52px", height: "88px", label: "#04 Davis" } },
-  { id: "e3", time: "00:01:21", type: "Set", player: "#07 K. Miller", confidence: "94%", status: "Pending", ballCoords: { top: "35%", left: "58%" }, playerBox: { top: "25%", left: "54%", width: "48px", height: "92px", label: "#07 Miller" } },
-  { id: "e4", time: "00:01:23", type: "Spike", player: "#09 M. Jordan", confidence: "97%", status: "Pending", ballCoords: { top: "22%", left: "76%" }, playerBox: { top: "12%", left: "71%", width: "55px", height: "98px", label: "#09 Jordan" } },
-  { id: "e5", time: "00:01:24", type: "Block", player: "#12 D. Howard", confidence: "91%", status: "Pending", ballCoords: { top: "24%", left: "78%" }, playerBox: { top: "14%", left: "74%", width: "54px", height: "98px", label: "#12 Howard" } },
-  { id: "e6", time: "00:02:40", type: "Serve", player: "#02 A. Carter", confidence: "95%", status: "Pending", ballCoords: { top: "44%", left: "51%" }, playerBox: { top: "34%", left: "47%", width: "50px", height: "90px", label: "#02 Carter" } },
-  { id: "e7", time: "00:02:44", type: "Dig", player: "#09 M. Jordan", confidence: "93%", status: "Pending", ballCoords: { top: "68%", left: "65%" }, playerBox: { top: "56%", left: "61%", width: "52px", height: "92px", label: "#09 Jordan" } },
-  { id: "e8", time: "00:02:47", type: "Set", player: "#04 T. Davis", confidence: "90%", status: "Pending", ballCoords: { top: "34%", left: "38%" }, playerBox: { top: "24%", left: "34%", width: "48px", height: "88px", label: "#04 Davis" } },
-  { id: "e9", time: "00:02:50", type: "Spike", player: "#10 J. Smith", confidence: "95%", status: "Pending", ballCoords: { top: "21%", left: "24%" }, playerBox: { top: "10%", left: "20%", width: "52px", height: "94px", label: "#10 Smith" } }
-];
+const initialMatchesCopy = [];
+const mockEvents = [];
 
 export default function MatchesUploadPage() {
   const navigate = useNavigate();
@@ -39,8 +15,8 @@ export default function MatchesUploadPage() {
   const [selectedMatchId, setSelectedMatchId] = useState("");
 
   // Events list & filters
-  const [events, setEvents] = useState(mockEvents);
-  const [activeEvent, setActiveEvent] = useState(mockEvents[0]);
+  const [events, setEvents] = useState([]);
+  const [activeEvent, setActiveEvent] = useState(null);
   const [searchPlayer, setSearchPlayer] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -70,7 +46,7 @@ export default function MatchesUploadPage() {
   // Load data on mount and check query params
   useEffect(() => {
     const saved = localStorage.getItem("volleyreel_matches");
-    let list = initialMatchesCopy;
+    let list = [];
     if (saved) {
       try {
         const parsed = JSON.parse(saved);

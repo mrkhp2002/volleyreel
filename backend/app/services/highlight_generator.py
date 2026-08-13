@@ -15,7 +15,7 @@ import os
 import subprocess
 
 # Add FFmpeg to PATH for Windows
-ffmpeg_path = r"C:\ffmpeg-8.1.1-essentials_build\ffmpeg-8.1.1-essentials_build\bin"
+ffmpeg_path = r"C:\ffmpeg-9.0.1-essentials_build\bin"
 os.environ["PATH"] += os.pathsep + ffmpeg_path
 
 
@@ -39,6 +39,7 @@ def generate_event_clip(
     Returns:
         True if clip was created successfully, False otherwise
     """
+    video_path = video_path.strip('\'"')
     # Calculate clip start and end times
     # Make sure we don't go before the start of the video
     start_time = max(0, timestamp_sec - before_sec)
@@ -138,6 +139,7 @@ def process_match_highlights(
             "highlight_url": "path/to/highlight_reel.mp4"
         }
     """
+    video_path = video_path.strip('\'"')
     os.makedirs(output_dir, exist_ok=True)
 
     clip_paths = []

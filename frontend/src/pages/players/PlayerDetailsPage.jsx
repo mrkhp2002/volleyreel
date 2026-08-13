@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
-import { initialPlayers } from "./playersData";
 import "../../styles/management.css";
 import "../../styles/players.css";
 
@@ -39,19 +38,13 @@ function getAvatarBg(name) {
   return avatarBgColors[index];
 }
 
-// Helper to generate consistent mock performance stats from name
+// Helper to return player performance stats
 function getPlayerPerformanceStats(name) {
-  if (!name) return { matches: 24, points: 312, aces: 48, blocks: 56 };
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const val = Math.abs(hash);
   return {
-    matches: (val % 12) + 15,     // 15 - 26 matches
-    points: (val % 150) + 200,    // 200 - 349 points
-    aces: (val % 25) + 30,        // 30 - 54 aces
-    blocks: (val % 35) + 35       // 35 - 69 blocks
+    matches: 0,
+    points: 0,
+    aces: 0,
+    blocks: 0
   };
 }
 

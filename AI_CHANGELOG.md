@@ -1,5 +1,36 @@
 # AI Changelog
 
+## [2026-08-13T09:32:00+05:30] - Executed Backend and Frontend Dev Servers
+
+### Added
+- Started the FastAPI backend server using Python Uvicorn on `http://127.0.0.1:8000`.
+- Started the React frontend dev server using Vite on `http://127.0.0.1:5173`.
+
+### Files Changed
+- None (launched background processes)
+
+## [2026-08-13T09:30:00+05:30] - Pulled Upstream Changes from dev Branch
+
+### Added
+- `backend/migrate_match_status.py` - Migration script for match status updates.
+
+### Changed
+- Pulled and fast-forwarded updates from `origin/dev` into local branch `dev_tournament_reporting`.
+- Updated match models, schemas, and routes on the backend (`match.py`, `matches.py`).
+- Updated frontend match dashboard, creation page, and matches list (`MatchDashboardPage.jsx`, `MatchesCreatePage.jsx`, `MatchesPage.jsx`).
+- Removed obsolete styles/logic from `LoginForm.jsx`.
+
+### Files Changed
+- `backend/app/models/match.py`
+- `backend/app/routes/matches.py`
+- `backend/app/schemas/match.py`
+- `backend/migrate_match_status.py`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+- `frontend/src/pages/matches/MatchDashboardPage.jsx`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesPage.jsx`
+- `AI_CHANGELOG.md`
+
 ## [2026-08-12T14:20:01+05:30] - Executed Backend and Frontend Dev Servers
 
 ### Added

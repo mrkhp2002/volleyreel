@@ -17,7 +17,7 @@ import subprocess
 import math
 
 # Add FFmpeg to PATH for Windows
-ffmpeg_path = r"C:\ffmpeg-8.1.1-essentials_build\ffmpeg-8.1.1-essentials_build\bin"
+ffmpeg_path = r"C:\ffmpeg-9.0.1-essentials_build\bin"
 os.environ["PATH"] += os.pathsep + ffmpeg_path
 
 # How long each chunk should be in seconds
@@ -32,6 +32,7 @@ def get_video_duration(video_path: str) -> float:
     Why: We need to know the total length so we can calculate
     how many chunks to split it into.
     """
+    video_path = video_path.strip('\'"')
     command = [
         "ffprobe",
         "-v", "error",
@@ -69,6 +70,7 @@ def split_video_into_chunks(video_path: str, output_dir: str) -> list[dict]:
     we need to add chunk_2's start_time (1200 seconds) to get the
     REAL timestamp in the original video: 1200 + 45 = 1245 seconds.
     """
+    video_path = video_path.strip('\'"')
     os.makedirs(output_dir, exist_ok=True)
 
     # Get total video duration

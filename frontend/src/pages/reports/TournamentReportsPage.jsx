@@ -4,69 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/reports.css";
 
-// Initial Mock Data
-const initialReports = [
-  {
-    id: "TR-2026-001",
-    title: "Spring Championship 2026 - Final Report",
-    tournament: "Spring Championship 2026",
-    date: "Mar 06, 2026",
-    type: "Tournament Summary",
-    status: "Published",
-    stats: {
-      matches: 16,
-      aces: 58,
-      blocks: 74,
-      efficiency: "72%",
-      skills: [
-        { label: "Spikes", val: 82, color: "#f59e0b" },
-        { label: "Blocks", val: 68, color: "#3b82f6" },
-        { label: "Serves", val: 55, color: "#10b981" },
-        { label: "Receptions", val: 78, color: "#8b5cf6" },
-      ]
-    }
-  },
-  {
-    id: "TR-2026-002",
-    title: "Regional Cup - Mid-Season Analysis",
-    tournament: "Regional Cup",
-    date: "Mar 10, 2026",
-    type: "Performance Analysis",
-    status: "Published",
-    stats: {
-      matches: 8,
-      aces: 34,
-      blocks: 41,
-      efficiency: "64%",
-      skills: [
-        { label: "Spikes", val: 65, color: "#f59e0b" },
-        { label: "Blocks", val: 75, color: "#3b82f6" },
-        { label: "Serves", val: 42, color: "#10b981" },
-        { label: "Receptions", val: 61, color: "#8b5cf6" },
-      ]
-    }
-  },
-  {
-    id: "TR-2026-003",
-    title: "National Schools League - Complete Stats",
-    tournament: "National Schools League",
-    date: "Jan 20, 2026",
-    type: "Statistical Report",
-    status: "Published",
-    stats: {
-      matches: 24,
-      aces: 112,
-      blocks: 148,
-      efficiency: "79%",
-      skills: [
-        { label: "Spikes", val: 88, color: "#f59e0b" },
-        { label: "Blocks", val: 81, color: "#3b82f6" },
-        { label: "Serves", val: 70, color: "#10b981" },
-        { label: "Receptions", val: 85, color: "#8b5cf6" },
-      ]
-    }
-  },
-];
+const initialReports = [];
 
 export default function TournamentReportsPage() {
   const { user } = useAuth();

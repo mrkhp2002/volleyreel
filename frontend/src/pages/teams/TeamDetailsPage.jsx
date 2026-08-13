@@ -23,19 +23,7 @@ const badgeClass = {
   Draft: "mgmt-badge mgmt-badge--upcoming",
 };
 
-// Maps roster player name to mock player ID for details redirect
-const playerRoutesMap = {
-  "James Anderson": "PL-2026-001",
-  "Sarah Kim": "PL-2026-002",
-  "Michael Chen": "PL-2026-003",
-  "Emily Davis": "PL-2026-004",
-  "David Martinez": "PL-2026-005",
-  "Lisa Thompson": "PL-2026-006",
-  "Alex Rivera": "PL-2026-001",
-  "Chris Lee": "PL-2026-003",
-  "Jordan Smith": "PL-2026-002",
-  "Sam Patel": "PL-2026-004"
-};
+const playerRoutesMap = {};
 
 export default function TeamDetailsPage() {
   const { teamId } = useParams();
@@ -60,7 +48,7 @@ export default function TeamDetailsPage() {
           tournamentId: t.tournament_id,
           coach: t.coach || "Not Assigned",
           clubName: t.club_name || "-",
-          city: t.city || "Colombo",
+          city: t.city || "-",
           status: t.status || "Active",
           description: t.description || "No description provided.",
           players: [],
@@ -77,16 +65,11 @@ export default function TeamDetailsPage() {
     fetchTeamDetails();
   }, [teamId]);
 
-  // Generate stable mock coach information
   const coachInfo = useMemo(() => {
     if (!team) return null;
-    const cleanCoach = team.coach || "Head Coach";
-    const cleanTeam = team.name || "VolleyReel";
-    const coachSlug = cleanCoach.toLowerCase().replace(/\s+/g, ".");
-    const teamSlug = cleanTeam.toLowerCase().replace(/\s+/g, "");
     return {
-      phone: "+1 (555) 123-4567",
-      email: `coach.${coachSlug}@${teamSlug}.com`
+      phone: "-",
+      email: "-"
     };
   }, [team]);
 

@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { ViewIcon, EditIcon, TrashIcon, PlusIcon } from "../../components/common/TableActionIcons";
-import { initialPlayers, baseStats } from "./playersData";
 import "../../styles/management.css";
 import "../../styles/players.css";
 

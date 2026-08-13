@@ -2,14 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/matches.css";
 
-const defaultMockVideos = [
-  { id: "v1", teams: "Thunder Strikers vs Ocean Waves", tournament: "Spring Championship 2026", type: "Full Highlights", date: "Mar 15, 2026", duration: "8:45", status: "ready" },
-  { id: "v2", teams: "Sky Hawks vs Net Ninjas", tournament: "Regional Cup", type: "Key Moments", date: "Mar 14, 2026", duration: "5:30", status: "generating" },
-  { id: "v3", teams: "Beach Blazers vs Court Kings", tournament: "Spring Championship 2026", type: "Top Plays", date: "Mar 13, 2026", duration: "6:15", status: "ready" },
-  { id: "v4", teams: "Thunder Strikers vs Sky Hawks", tournament: "Regional Cup", type: "Full Highlights", date: "Mar 12, 2026", duration: "9:20", status: "failed" },
-  { id: "v5", teams: "Net Ninjas vs Beach Blazers", tournament: "Spring Championship 2026", type: "Team Highlights", date: "Mar 11, 2026", duration: "7:10", status: "ready" },
-  { id: "v6", teams: "Ocean Waves vs Court Kings", tournament: "Regional Cup", type: "Key Moments", date: "Mar 10, 2026", duration: "4:55", status: "ready" }
-];
+const defaultMockVideos = [];
 
 export default function MatchesVideosPage() {
   const [toast, setToast] = useState("");
@@ -22,13 +15,11 @@ export default function MatchesVideosPage() {
   const [filterTourney, setFilterTourney] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // Dynamic videos list merging mock data & localStorage records
+  // Dynamic videos list
   const [videosList, setVideosList] = useState([]);
   
   // Progress states for generating videos
-  const [generatingProgress, setGeneratingProgress] = useState({
-    v2: 50,
-  });
+  const [generatingProgress, setGeneratingProgress] = useState({});
 
   // Load matches and initialize list
   useEffect(() => {
@@ -58,12 +49,7 @@ export default function MatchesVideosPage() {
         status: m.video === "Ready" ? "ready" : "generating"
       }));
 
-    // Merge default mockup videos with user videos, avoiding duplicates by team description
-    const filteredUserVideos = userVideos.filter(
-      (uv) => !defaultMockVideos.some((dv) => dv.teams.toLowerCase() === uv.teams.toLowerCase())
-    );
-
-    setVideosList([...defaultMockVideos, ...filteredUserVideos]);
+    setVideosList(userVideos);
   }, []);
 
   // Update generating progress simulation
