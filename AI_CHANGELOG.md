@@ -1,6 +1,22 @@
 # AI Changelog
 
-## [2026-08-13T11:46:00+05:30] - Add Event Clip Video Preview to Event Review Page (1 file)
+## [2026-08-13T16:36:00+05:30] - Merge Upstream Changes from dev Branch
+
+### Changed
+- Reset local uncommitted changes per user request (`git reset --hard`).
+- Merged `origin/dev` into local branch `dev_tournament_reporting`.
+- Resolved merge conflicts in `AI_CHANGELOG.md`, `MatchesUploadPage.jsx`, and `MatchesVideosPage.jsx`.
+
+### Files Changed
+- `AI_CHANGELOG.md`
+- `backend/app/main.py`
+- `backend/app/routes/pipeline.py`
+- `frontend/src/pages/matches/MatchesCreatePage.jsx`
+- `frontend/src/pages/matches/MatchesUploadPage.jsx`
+- `frontend/src/pages/matches/MatchesVideosPage.jsx`
+- `frontend/src/services/apiClient.js`
+
+
 
 ### FIX 1 — `frontend/src/pages/matches/MatchesUploadPage.jsx`
 - Replaced the fake "Calibrated Court Timeline Seeker" with a real HTML5 `<video>` element for previewing event clips.
