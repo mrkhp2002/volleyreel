@@ -251,17 +251,29 @@ export default function MatchesPage() {
     if (!videoUrl.trim() || !activeMatch) return;
     try {
       setUploadLoading(true);
+      // Auto-strip leading/trailing double or single quotes (e.g., "F:\path\file.mp4" -> F:\path\file.mp4)
+      const cleanUrl = videoUrl.trim().replace(/^["']|["']$/g, "").trim();
+
       const res = await API.put(`/matches/${activeMatch.match_id}`, {
-        video_url: videoUrl.trim(),
+        video_url: cleanUrl,
       });
       const upd = formatMatch(res.data, teamsMap, tournamentsMap);
       setMatches((prev) =>
         prev.map((m) => (m.match_id === activeMatch.match_id ? upd : m))
       );
-      setIsUploadOpen(false); setVideoUrl("");
+      setIsUploadOpen(false);
+      setVideoUrl("");
       triggerToast(`Video URL saved for match #${activeMatch.match_id}!`);
     } catch (err) {
-      triggerToast(err?.response?.data?.detail || "Failed to save video URL.", "error");
+      console.error("Error saving video URL:", err);
+      const detail = err?.response?.data?.detail;
+      const errorMsg =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
+          : "Failed to save video URL.";
+      triggerToast(errorMsg, "error");
     } finally {
       setUploadLoading(false);
     }
