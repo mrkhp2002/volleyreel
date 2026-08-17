@@ -319,7 +319,12 @@ export default function TeamsPage() {
         <div className="mgmt-tab-panel">
           {/* Summary Cards */}
           <div className="mgmt-stats-row">
-            {teamSummaryStats.map((stat) => (
+            {[
+              { label: "Total Teams", value: teams.length },
+              { label: "Active", value: teams.filter((t) => t.status === "Active").length },
+              { label: "Inactive", value: teams.filter((t) => t.status === "Inactive").length },
+              { label: "Draft", value: teams.filter((t) => t.status === "Draft").length },
+            ].map((stat) => (
               <div key={stat.label} className="mgmt-stat-card">
                 <span>{stat.label}</span>
                 <strong>{stat.value}</strong>
