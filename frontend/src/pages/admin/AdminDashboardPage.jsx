@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import API from "../../services/apiClient";
 import "../../styles/admin.css";
 
 // Icons inline to keep it React-only and zero-dependency
@@ -108,7 +109,7 @@ function CrossIcon() {
 }
 
 export default function AdminDashboardPage() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   
   // State variables
@@ -163,6 +164,69 @@ export default function AdminDashboardPage() {
   const [coaches, setCoaches] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [flaggedItems, setFlaggedItems] = useState([]);
+  const [matchesCount, setMatchesCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchAdminData() {
+      try {
+        const [usersRes, matchesRes, teamsRes] = await Promise.all([
+          API.get("/auth/users").catch(() => ({ data: [] })),
+          API.get("/matches/").catch(() => ({ data: [] })),
+          API.get("/teams/").catch(() => ({ data: [] }))
+        ]);
+
+        const teamsMap = {};
+        (teamsRes.data || []).forEach(t => { teamsMap[t.team_id] = t; });
+
+        // Map real users from backend database
+        if (Array.isArray(usersRes.data)) {
+          const mappedUsers = usersRes.data.map(u => ({
+            id: `CH-${u.id}`,
+            name: u.full_name || u.email,
+            email: u.email,
+            role: u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : "Coach",
+            status: u.is_active !== false ? "Active" : "Suspended"
+          }));
+          setCoaches(mappedUsers);
+        }
+
+        // Map real matches into AI Job Queue & System Overview
+        if (Array.isArray(matchesRes.data)) {
+          setMatchesCount(matchesRes.data.length);
+          const mappedJobs = matchesRes.data.map(m => {
+            const homeName = teamsMap[m.home_team_id]?.name || `Team #${m.home_team_id || "A"}`;
+            const awayName = teamsMap[m.away_team_id]?.name || `Team #${m.away_team_id || "B"}`;
+            
+            return {
+              id: `JOB-${m.match_id}`,
+              uploadedBy: `${homeName} vs ${awayName}`,
+              filename: m.video_url ? m.video_url.split("/").pop() : `match_${m.match_id}_full.mp4`,
+              uploadTimestamp: m.created_at ? new Date(m.created_at).toLocaleDateString() : "2026-08-15",
+              status: m.status === "complete" ? "Completed" : m.status === "processing" ? "Processing" : "Pending",
+              diagnostics: m.highlight_url ? "Highlight reel compiled successfully" : "Video track ingested",
+              error: m.status === "failed" ? "Processing error in AI engine" : ""
+            };
+          });
+          setJobs(mappedJobs);
+
+          // Map items awaiting moderation/review
+          const flagged = matchesRes.data
+            .filter(m => !m.highlight_url || m.status === "processing")
+            .map(m => ({
+              id: `MOD-${m.match_id}`,
+              matchTitle: `Match #${m.match_id} (${teamsMap[m.home_team_id]?.name || "Home"} vs ${teamsMap[m.away_team_id]?.name || "Away"})`,
+              uploadedBy: "Coach Administrator",
+              uploadDate: m.created_at ? new Date(m.created_at).toLocaleDateString() : "Aug 16, 2026",
+              reason: m.status === "processing" ? "AI tracking pipeline in progress" : "Video clip quality check required"
+            }));
+          setFlaggedItems(flagged);
+        }
+      } catch (err) {
+        console.error("Failed to load admin data:", err);
+      }
+    }
+    fetchAdminData();
+  }, []);
 
   const failedJobsCount = jobs.filter(j => j.status === "Failed").length;
 
@@ -356,10 +420,12 @@ export default function AdminDashboardPage() {
                 className="admin-profile-trigger"
                 onClick={() => setProfileOpen(!profileOpen)}
               >
-                <div className="admin-avatar">SA</div>
+                <div className="admin-avatar">
+                  {user?.fullName ? user.fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "SA"}
+                </div>
                 <div className="admin-profile-info">
-                  <span className="admin-profile-name">System Admin</span>
-                  <span className="admin-profile-role">Administrator</span>
+                  <span className="admin-profile-name">{user?.fullName || user?.email || "System Admin"}</span>
+                  <span className="admin-profile-role">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : "Administrator"}</span>
                 </div>
               </button>
 
@@ -452,7 +518,7 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
                   <div className="admin-kpi-body">
-                    <span className="admin-kpi-value">1,894</span>
+                    <span className="admin-kpi-value">{matchesCount || jobs.length || 0}</span>
                     <div className="admin-sparkline-container">
                       <svg viewBox="0 0 100 30" width="100%" height="100%">
                         <path d="M0,28 L20,20 L40,25 L60,12 L80,18 L100,5" fill="none" stroke="#16a34a" strokeWidth="2.5" />

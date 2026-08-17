@@ -62,8 +62,8 @@ function MenuIcon() {
 export default function Topbar({ onMobileToggle }) {
   const { user, logout } = useAuth();
   const { alerts, unreadCount, handleMarkAsRead } = useNotifications();
-  const displayName = user?.fullName || "Coach Admin";
-  const displayEmail = user?.email || "admin@volleyreel.com";
+  const displayName = user?.fullName || (user?.role === "admin" ? "System Admin" : "Coach");
+  const displayEmail = user?.email || "";
 
   return (
     <header className="topbar">
@@ -165,6 +165,16 @@ export default function Topbar({ onMobileToggle }) {
             <div className="dropdown-divider" />
 
             <ul className="dropdown-links">
+              {user?.role === "admin" && (
+                <li>
+                  <Link to="/admin/dashboard" className="dropdown-link-item" style={{ color: "var(--accent-amber, #f59e0b)", fontWeight: 600 }}>
+                    <span className="dropdown-link-icon">
+                      <SettingsIcon />
+                    </span>
+                    <span className="dropdown-link-label">Admin Dashboard</span>
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/profile" className="dropdown-link-item">
                   <span className="dropdown-link-icon">
