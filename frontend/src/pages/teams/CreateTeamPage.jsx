@@ -140,6 +140,21 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
         </div>
       </header>
 
+      {tournaments.length === 0 && (
+        <div style={{ padding: "20px 24px", marginBottom: 20, background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.25)", borderRadius: 12, display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: "1.4rem" }}>🏆</span>
+            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fbbf24", margin: 0 }}>No Active Tournaments Found</h3>
+          </div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: 0 }}>
+            You need to create a tournament before assigning teams.
+          </p>
+          <Link to="/tournaments/create" className="mgmt-btn mgmt-btn--primary" style={{ textDecoration: "none", marginTop: 4 }}>
+            + Create a Tournament
+          </Link>
+        </div>
+      )}
+
       {error && (
         <div className="mgmt-card" style={{ color: "#ef4444", marginBottom: 16, border: "1px solid #ef4444" }}>
           {error}

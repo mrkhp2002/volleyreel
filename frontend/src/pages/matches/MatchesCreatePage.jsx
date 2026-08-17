@@ -353,10 +353,18 @@ export default function MatchesCreatePage() {
         </div>
       )}
 
-      {dataError && !dataLoading && (
-        <div style={{ padding: "14px 18px", marginBottom: 16, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 10, color: "#fca5a5", fontSize: "0.88rem", display: "flex", gap: 10, alignItems: "center" }}>
-          <span>⚠️</span> {dataError}
-          <button type="button" onClick={() => window.location.reload()} style={{ marginLeft: "auto", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, color: "#fca5a5", padding: "4px 12px", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600 }}>Retry</button>
+      {(!dataLoading && (tournaments.length === 0 || dataError)) && (
+        <div style={{ padding: "24px", marginBottom: 24, background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.25)", borderRadius: 12, display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: "1.5rem" }}>🏆</span>
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fbbf24", margin: 0 }}>No Active Tournaments Found</h3>
+          </div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", margin: 0 }}>
+            You need to create a tournament first before setting up new matches or fixture schedules.
+          </p>
+          <Link to="/tournaments/create" className="matches-btn-orange" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            + Create a Tournament
+          </Link>
         </div>
       )}
 

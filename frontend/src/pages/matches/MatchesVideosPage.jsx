@@ -196,11 +196,16 @@ export default function MatchesVideosPage() {
         </div>
       )}
 
-      {!loading && loadError && (
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <div style={{ fontSize: "2rem", marginBottom: 12 }}>⚠️</div>
-          <p style={{ color: "#ef4444", fontWeight: 600, marginBottom: 12 }}>{loadError}</p>
-          <button onClick={() => window.location.reload()} className="matches-btn-orange">Retry</button>
+      {!loading && (loadError || videoCards.length === 0) && (
+        <div style={{ padding: "40px 20px", textAlign: "center", background: "rgba(2,6,17,0.6)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, margin: "20px 0" }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🏆</div>
+          <h3 style={{ color: "#ffffff", fontWeight: 700, fontSize: "1.2rem", marginBottom: 8 }}>No Active Tournaments or Videos Found</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: 20, maxWidth: 460, margin: "0 auto 20px auto", lineHeight: 1.5 }}>
+            You need to create a tournament and add matches before highlight videos can be generated or viewed.
+          </p>
+          <Link to="/tournaments/create" className="matches-btn-orange" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            + Create a Tournament
+          </Link>
         </div>
       )}
 
