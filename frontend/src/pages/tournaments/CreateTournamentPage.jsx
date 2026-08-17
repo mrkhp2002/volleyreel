@@ -222,7 +222,7 @@ export default function CreateTournamentPage() {
           <div className="mgmt-form-grid">
             <div className="mgmt-field">
               <label htmlFor="t-id">Tournament ID <span className="required">*</span></label>
-              <input id="t-id" type="text" value={nextId} readOnly style={{ opacity: 0.7, cursor: "not-allowed" }} />
+              <input id="t-id" type="text" value="TN-[Auto-generated]" disabled style={{ opacity: 0.7, cursor: "not-allowed" }} />
             </div>
             <div className="mgmt-field">
               <label htmlFor="t-name">Tournament Name <span className="required">*</span></label>

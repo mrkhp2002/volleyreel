@@ -20,7 +20,6 @@ import MatchesPage from "../pages/matches/MatchesPage";
 import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
 import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
 import MatchesVideosPage from "../pages/matches/MatchesVideosPage";
-import MatchDetailsPage from "../pages/matches/MatchDetailsPage";
 import MatchDashboardPage from "../pages/matches/MatchDashboardPage";
 import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
 import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
@@ -46,14 +45,14 @@ export default function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tournaments">
             <Route index element={<TournamentsPage />} />
-            <Route path="create" element={<CreateTournamentPage />} />
-            <Route path=":tournamentId/edit" element={<EditTournamentPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><CreateTournamentPage /></ProtectedRoute>} />
+            <Route path=":tournamentId/edit" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><EditTournamentPage /></ProtectedRoute>} />
             <Route path=":tournamentId" element={<TournamentDetailsPage />} />
           </Route>
           <Route path="/teams">
             <Route index element={<TeamsPage />} />
-            <Route path="create" element={<CreateTeamPage />} />
-            <Route path=":teamId/edit" element={<EditTeamPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><CreateTeamPage /></ProtectedRoute>} />
+            <Route path=":teamId/edit" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><EditTeamPage /></ProtectedRoute>} />
             <Route path=":teamId" element={<TeamDetailsPage />} />
           </Route>
           <Route path="/players">
@@ -62,11 +61,10 @@ export default function AppRoutes() {
           </Route>
           <Route path="/matches">
             <Route index element={<MatchesPage />} />
-            <Route path="create" element={<MatchesCreatePage />} />
-            <Route path="upload" element={<MatchesUploadPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><MatchesCreatePage /></ProtectedRoute>} />
+            <Route path="upload" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><MatchesUploadPage /></ProtectedRoute>} />
             <Route path="videos" element={<MatchesVideosPage />} />
-            <Route path=":matchId" element={<MatchDetailsPage />} />
-            <Route path=":matchId/dashboard" element={<MatchDashboardPage />} />
+            <Route path=":matchId" element={<MatchDashboardPage />} />
           </Route>
           <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
           <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />

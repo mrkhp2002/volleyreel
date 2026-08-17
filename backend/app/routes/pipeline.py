@@ -105,14 +105,15 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
         )
         print(f"Match {match_id}: Found {len(detected_events)} events")
 
-        # Step 7 — Generate highlight clips
+        # Step 7 — Generate highlight clips (but not the final reel)
         highlight_dir = os.path.join(OUTPUT_DIR, f"match_{match_id}")
         print(f"Match {match_id}: Generating highlights...")
         highlight_result = process_match_highlights(
             video_path=video_path,
             events=detected_events,
             output_dir=highlight_dir,
-            match_id=match_id
+            match_id=match_id,
+            generate_reel=False
         )
 
         # Step 8 — Save events to database
@@ -300,4 +301,36 @@ def generate_selected_highlight(
         "highlight_url": match.highlight_url,
         "clips_generated": len(result.get("clips", {})),
     }
+
+
+@router.delete("/{match_id}/highlight")
+def delete_highlight(
+    match_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """
+    Delete the generated highlight video for a match.
+    """
+    match = db.query(Match).filter(Match.match_id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    if not match.highlight_url:
+        raise HTTPException(status_code=400, detail="No highlight video to delete")
+
+    # Delete the actual file from disk
+    try:
+        abs_path = os.path.abspath(match.highlight_url)
+        if os.path.exists(abs_path):
+            os.remove(abs_path)
+    except Exception as e:
+        print(f"Failed to delete highlight file: {e}")
+
+    # Nullify in database
+    match.highlight_url = None
+    db.commit()
+    db.refresh(match)
+
+    return {"message": "Highlight video deleted successfully"}
 

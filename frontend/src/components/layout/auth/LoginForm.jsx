@@ -51,16 +51,20 @@ export default function LoginForm() {
       });
 
       if (res.data && res.data.access_token) {
-        const userRole = res.data.role || (form.email === "admin@volleyreel.com" ? "admin" : "coach");
+        const userRole = (res.data.role || (form.email === "admin@volleyreel.com" ? "admin" : "coach")).toLowerCase();
         login({
           email: res.data.email || form.email,
           fullName: res.data.full_name || "",
           access_token: res.data.access_token,
           role: userRole,
+          team_id: res.data.team_id || null,
+          team_name: res.data.team_name || "",
         });
 
         if (userRole === "admin") {
           navigate("/admin/dashboard");
+        } else if (userRole === "player") {
+          navigate("/profile");
         } else {
           navigate("/dashboard");
         }

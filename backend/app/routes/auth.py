@@ -21,6 +21,25 @@ def register(payload: UserCreate, db: Session = Depends(get_db)) -> UserRead:
     return user
 
 
+from app.models.player import Player
+from app.models.team import Team
+
+@router.get("/teams")
+def get_public_teams(db: Session = Depends(get_db)):
+    teams = db.query(Team).all()
+    return [
+        {
+            "team_id": t.team_id,
+            "name": t.name,
+            "coach": t.coach,
+            "club_name": t.club_name,
+            "division": t.division,
+            "tournament_id": t.tournament_id,
+        }
+        for t in teams
+    ]
+
+
 @router.post("/login", response_model=Token)
 def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
     user = authenticate_user(db=db, payload=payload)
@@ -30,12 +49,24 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> Token:
             detail="Incorrect email or password",
         )
     access_token = create_access_token(data={"sub": user.email})
+    
+    player_rec = db.query(Player).filter(Player.user_id == user.id).first()
+    team_name = None
+    team_id = None
+    if player_rec:
+        team_id = player_rec.team_id
+        team_obj = db.query(Team).filter(Team.team_id == player_rec.team_id).first()
+        if team_obj:
+            team_name = team_obj.name
+
     return Token(
         access_token=access_token,
         token_type="bearer",
         email=user.email,
         full_name=user.full_name,
         role=user.role,
+        team_id=team_id,
+        team_name=team_name,
     )
 
 

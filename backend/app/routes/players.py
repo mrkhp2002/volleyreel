@@ -10,12 +10,11 @@ router = APIRouter()
 
 @router.get("/", response_model=list[PlayerRead])
 def list_players(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return db.query(Player).filter(Player.user_id == current_user.id).all()
+    return db.query(Player).all()
 
 
 @router.post("/", response_model=PlayerRead, status_code=status.HTTP_201_CREATED)
 def create_player(payload: PlayerCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    print(f"DEBUG: Received payload: {payload}")
     if not payload.name or not payload.name.strip():
         raise HTTPException(
             status_code=400, detail="Player name cannot be empty or just whitespace.")
@@ -35,10 +34,7 @@ def create_player(payload: PlayerCreate, db: Session = Depends(get_db), current_
 
 @router.get("/{player_id}", response_model=PlayerRead)
 def get_player(player_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    player = db.query(Player).filter(
-        Player.player_id == player_id,
-        Player.user_id == current_user.id
-    ).first()
+    player = db.query(Player).filter(Player.player_id == player_id).first()
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
     return player
@@ -51,13 +47,13 @@ def update_player(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-
-    player = db.query(Player).filter(
-        Player.player_id == player_id,
-        Player.user_id == current_user.id
-    ).first()
+    player = db.query(Player).filter(Player.player_id == player_id).first()
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
+
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player" and player.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only edit your own player profile.")
 
     update_data = payload.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -70,11 +66,13 @@ def update_player(
 
 @router.delete("/{player_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_player(player_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    player = db.query(Player).filter(
-        Player.player_id == player_id,
-        Player.user_id == current_user.id
-    ).first()
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot delete player records.")
+
+    player = db.query(Player).filter(Player.player_id == player_id).first()
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
     db.delete(player)
     db.commit()
+
