@@ -183,6 +183,21 @@ export default function MatchesVideosPage() {
     triggerToast("Video URL copied to clipboard!");
   };
 
+  const handleDelete = async (card) => {
+    if (!window.confirm("Are you sure you want to delete this highlight reel?")) return;
+    try {
+      await API.delete(`/pipeline/${card.matchId}/highlight`);
+      triggerToast("Highlight reel deleted successfully.");
+      setAllMatches((prev) =>
+        prev.map((m) =>
+          m.match_id === card.matchId ? { ...m, highlight_url: null } : m
+        )
+      );
+    } catch (err) {
+      triggerToast("Failed to delete highlight reel.", "error");
+    }
+  };
+
   return (
     <div className="matches-page">
       <div className="matches-glow matches-glow--1" />
@@ -518,6 +533,27 @@ export default function MatchesVideosPage() {
                         <circle cx="18" cy="19" r="3" />
                         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(card)}
+                      className="matches-video-btn-action matches-video-btn-action--danger"
+                      title="Delete highlight reel"
+                      id={`btn-delete-${card.matchId}`}
+                      style={{ color: "#ef4444" }}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ width: 18, height: 18 }}
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                       </svg>
                     </button>
                   </div>

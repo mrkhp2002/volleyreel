@@ -22,6 +22,9 @@ from app.models.tournament import Tournament
 
 @router.get("/", response_model=list[MatchRead])
 def list_matches(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role in ["player", "admin", "viewer", "public_user"]:
+        return db.query(Match).all()
     return (
         db.query(Match)
         .join(Tournament, Match.tournament_id == Tournament.tournament_id)
@@ -33,7 +36,10 @@ def list_matches(db: Session = Depends(get_db), current_user=Depends(get_current
 @router.post("/", response_model=MatchRead, status_code=status.HTTP_201_CREATED)
 @router.post("", response_model=MatchRead, status_code=status.HTTP_201_CREATED)
 def create_match(payload: MatchCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # Explicit field assignment avoids passing unknown schema fields to the ORM.
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot create matches. Only coaches and admins can create matches.")
+
     match = Match(
         home_team_id=payload.home_team_id,
         away_team_id=payload.away_team_id,
@@ -67,6 +73,10 @@ def update_match(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot modify match details.")
+
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -83,6 +93,10 @@ def update_match(
 @router.delete("/{match_id}", status_code=status.HTTP_204_NO_CONTENT)
 @router.delete("/{match_id}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_match(match_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot delete matches.")
+
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -99,6 +113,9 @@ def upload_match_video(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot upload match videos.")
     """
     Upload a video file for a specific match.
 
@@ -168,3 +185,27 @@ def upload_match_video(
     db.refresh(match)
 
     return match
+
+
+# ── Match Video Stream Endpoint ────────────────────────────────────────────────
+
+from fastapi.responses import FileResponse
+
+
+@router.get("/{match_id}/video")
+@router.get("/{match_id}/video/")
+def stream_match_video(match_id: int, db: Session = Depends(get_db)):
+    """
+    Stream or serve the match video file directly to the browser.
+    Works for both uploaded videos in media/ and local video files on disk.
+    """
+    match = db.query(Match).filter(Match.match_id == match_id).first()
+    if not match or not match.video_url:
+        raise HTTPException(status_code=404, detail="No video file recorded for this match")
+
+    clean_path = match.video_url.strip('\'"')
+    if not os.path.isfile(clean_path):
+        raise HTTPException(status_code=404, detail=f"Video file not found at: {clean_path}")
+
+    return FileResponse(clean_path, media_type="video/mp4")
+

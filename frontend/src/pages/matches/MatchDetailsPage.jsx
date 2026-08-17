@@ -260,7 +260,10 @@ export default function MatchDetailsPage() {
             </div>
           </div>
 
-          {/* Panel 5: Review Progress Card */}
+          {/* Conditionally Render Panel 5 and Panel 6 based on Video Status */}
+          {(match.video === "Generated" || match.video === "Ready") && (
+            <>
+              {/* Panel 5: Review Progress Card */}
           <div className="matches-form-card">
             <h2 className="matches-form-card-title">Review Progress</h2>
             
@@ -364,6 +367,8 @@ export default function MatchDetailsPage() {
               </div>
             </div>
           </div>
+            </>
+          )}
 
           {/* Panel 7: Match Notes Card */}
           <div className="matches-form-card">

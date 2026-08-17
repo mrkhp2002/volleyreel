@@ -244,7 +244,7 @@ export default function MatchesCreatePage() {
         away_score: matchStatus === "completed" ? Number(awayScore) : null,
       });
       setCreatedMatchId(res.data.match_id);
-      triggerToast(`Match #${res.data.match_id} created successfully!`);
+      triggerToast(`Match TN${tournamentId}-M${res.data.match_id} created successfully!`);
       setTimeout(() => navigate("/matches"), 1200);
     } catch (err) {
       console.error("Error creating match:", err);
@@ -585,7 +585,13 @@ export default function MatchesCreatePage() {
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
             </svg>
             {videoFile ? (
-              <><strong>Selected: {videoFile.name}</strong><p>Drag another file or click below to change</p></>
+              <>
+                <strong style={{ color: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                  <span>✓</span> {videoFile.name}
+                </strong>
+                <p style={{ color: "#10b981", fontWeight: 600, margin: "4px 0" }}>Video is uploaded to the system</p>
+                <p style={{ fontSize: "0.85rem", marginTop: 8 }}>Drag another file or click below to change</p>
+              </>
             ) : (
               <><strong>Drag and drop match video here</strong><p>or</p></>
             )}

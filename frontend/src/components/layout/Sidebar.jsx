@@ -168,14 +168,30 @@ function NavGroup({ group, isOpen, onToggle, onMouseEnter, onMouseLeave, isSecti
 export default function Sidebar({ collapsed = false, onToggle, mobileOpen = false, onMobileClose, onMouseEnter, onMouseLeave }) {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const displayName = user?.fullName || "Coach Admin";
-  const displayEmail = user?.email || "admin@volleyreel.com";
+  const rawRole = (user?.role || "coach").toLowerCase();
+  const isPlayer = rawRole === "player" || rawRole === "public_user" || rawRole === "viewer";
+  const displayName = user?.fullName || (isPlayer ? "Player Athlete" : "Coach Admin");
+  const displayEmail = user?.email || "";
+
+  const tournamentsGroupData = {
+    ...tournamentsNavGroup,
+    children: isPlayer
+      ? tournamentsNavGroup.children.filter((c) => c.to === "/tournaments")
+      : tournamentsNavGroup.children,
+  };
+
+  const teamsGroupData = {
+    ...teamsNavGroup,
+    children: isPlayer
+      ? teamsNavGroup.children.filter((c) => c.to === "/teams")
+      : teamsNavGroup.children,
+  };
 
   const matchesGroupData = {
     ...matchesNavGroup,
-    children: user?.role === "public_user"
-      ? matchesNavGroup.children.filter(c => c.to === "/matches" || c.to === "/matches/videos")
-      : matchesNavGroup.children
+    children: isPlayer
+      ? matchesNavGroup.children.filter((c) => c.to === "/matches" || c.to === "/matches/videos")
+      : matchesNavGroup.children,
   };
 
   const isTournamentsSection = location.pathname.startsWith("/tournaments");
@@ -258,41 +274,35 @@ export default function Sidebar({ collapsed = false, onToggle, mobileOpen = fals
             <NavItem key={item.to} item={item} collapsed={collapsed} />
           ))}
 
-          {user?.role !== "public_user" && (
-            <NavGroup 
-              group={tournamentsNavGroup} 
-              isOpen={tournamentsOpen} 
-              onToggle={() => setTournamentsOpen(prev => !prev)} 
-              onMouseEnter={() => setTournamentsOpen(true)}
-              onMouseLeave={() => !isTournamentsSection && setTournamentsOpen(false)}
-              isSectionActive={isTournamentsSection} 
-              collapsed={collapsed} 
-            />
-          )}
+          <NavGroup 
+            group={tournamentsGroupData} 
+            isOpen={tournamentsOpen} 
+            onToggle={() => setTournamentsOpen(prev => !prev)} 
+            onMouseEnter={() => setTournamentsOpen(true)}
+            onMouseLeave={() => !isTournamentsSection && setTournamentsOpen(false)}
+            isSectionActive={isTournamentsSection} 
+            collapsed={collapsed} 
+          />
 
-          {user?.role !== "public_user" && (
-            <NavGroup 
-              group={teamsNavGroup} 
-              isOpen={teamsOpen} 
-              onToggle={() => setTeamsOpen(prev => !prev)} 
-              onMouseEnter={() => setTeamsOpen(true)}
-              onMouseLeave={() => !isTeamsSection && setTeamsOpen(false)}
-              isSectionActive={isTeamsSection} 
-              collapsed={collapsed} 
-            />
-          )}
+          <NavGroup 
+            group={teamsGroupData} 
+            isOpen={teamsOpen} 
+            onToggle={() => setTeamsOpen(prev => !prev)} 
+            onMouseEnter={() => setTeamsOpen(true)}
+            onMouseLeave={() => !isTeamsSection && setTeamsOpen(false)}
+            isSectionActive={isTeamsSection} 
+            collapsed={collapsed} 
+          />
 
-          {user?.role !== "public_user" && (
-            <NavGroup 
-              group={playersNavGroup} 
-              isOpen={playersOpen} 
-              onToggle={() => setPlayersOpen(prev => !prev)} 
-              onMouseEnter={() => setPlayersOpen(true)}
-              onMouseLeave={() => !isPlayersSection && setPlayersOpen(false)}
-              isSectionActive={isPlayersSection} 
-              collapsed={collapsed} 
-            />
-          )}
+          <NavGroup 
+            group={playersNavGroup} 
+            isOpen={playersOpen} 
+            onToggle={() => setPlayersOpen(prev => !prev)} 
+            onMouseEnter={() => setPlayersOpen(true)}
+            onMouseLeave={() => !isPlayersSection && setPlayersOpen(false)}
+            isSectionActive={isPlayersSection} 
+            collapsed={collapsed} 
+          />
 
           <NavGroup 
             group={matchesGroupData} 

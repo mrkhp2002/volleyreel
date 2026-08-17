@@ -1,12 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../../components/common/TableActionIcons";
 import { initialTournaments } from "./tournamentsData";
 import "../../styles/management.css";
-
-
 import API from "../../services/apiClient";
 
 const statusClass = {
@@ -28,26 +27,9 @@ function formatDate(dateStr) {
 }
 
 export default function TournamentsPage() {
-  /*
-  const [tournaments, setTournaments] = useState(() => {
-    const saved = localStorage.getItem("volleyreel_tournaments");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return initialTournaments;
-  });
-
-  // Sync to local storage when state changes
-  useEffect(() => {
-    localStorage.setItem("volleyreel_tournaments", JSON.stringify(tournaments));
-  }, [tournaments]);
-*/
-
+  const { user } = useAuth();
+  const rawRole = (user?.role || "coach").toLowerCase();
+  const isPlayer = rawRole === "player" || rawRole === "viewer" || rawRole === "public_user";
 
   const [tournaments, setTournaments] = useState([]);
   useEffect(() => {
@@ -150,24 +132,28 @@ export default function TournamentsPage() {
       {/* Main Header */}
       <header className="mgmt-header">
         <div>
-          <h1>Tournament Management</h1>
-          <p>Manage all volleyball tournaments in one place</p>
+          <h1>{isPlayer ? "Tournament Directory" : "Tournament Management"}</h1>
+          <p>{isPlayer ? "Browse all ongoing, upcoming, and completed volleyball tournaments" : "Manage all volleyball tournaments in one place"}</p>
         </div>
-        <Link to="/tournaments/create" className="mgmt-btn mgmt-btn--primary">
-          <PlusIcon />
-          Create Tournament
-        </Link>
+        {!isPlayer && (
+          <Link to="/tournaments/create" className="mgmt-btn mgmt-btn--primary">
+            <PlusIcon />
+            Create Tournament
+          </Link>
+        )}
       </header>
 
       {/* Shared Page Navigation Tabs */}
-      <div className="mgmt-tabs-nav">
-        <Link to="/tournaments" className="mgmt-tab-btn active">
-          Tournament Directory
-        </Link>
-        <Link to="/tournaments/create" className="mgmt-tab-btn">
-          Create Tournament
-        </Link>
-      </div>
+      {!isPlayer && (
+        <div className="mgmt-tabs-nav">
+          <Link to="/tournaments" className="mgmt-tab-btn active">
+            Tournament Directory
+          </Link>
+          <Link to="/tournaments/create" className="mgmt-tab-btn">
+            Create Tournament
+          </Link>
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="mgmt-stats-row" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px", marginBottom: "20px" }}>
@@ -273,21 +259,25 @@ export default function TournamentsPage() {
                       >
                         <ViewIcon />
                       </Link>
-                      <Link
-                        to={`/tournaments/${item.id}/edit`}
-                        className="mgmt-icon-btn"
-                        title="Edit"
-                      >
-                        <EditIcon />
-                      </Link>
-                      <button
-                        type="button"
-                        className="mgmt-icon-btn mgmt-icon-btn--danger"
-                        title="Delete"
-                        onClick={() => setDeleteTarget(item)}
-                      >
-                        <TrashIcon />
-                      </button>
+                      {!isPlayer && (
+                        <>
+                          <Link
+                            to={`/tournaments/${item.id}/edit`}
+                            className="mgmt-icon-btn"
+                            title="Edit"
+                          >
+                            <EditIcon />
+                          </Link>
+                          <button
+                            type="button"
+                            className="mgmt-icon-btn mgmt-icon-btn--danger"
+                            title="Delete"
+                            onClick={() => setDeleteTarget(item)}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

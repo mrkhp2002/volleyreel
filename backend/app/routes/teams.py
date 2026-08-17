@@ -10,12 +10,18 @@ router = APIRouter()
 
 @router.get("/", response_model=list[TeamRead])
 def list_teams(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role in ["player", "admin", "viewer", "public_user"]:
+        return db.query(Team).all()
     return db.query(Team).filter(Team.user_id == current_user.id).all()
 
 
 @router.post("/", response_model=TeamRead, status_code=status.HTTP_201_CREATED)
 def create_team(payload: TeamCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot create teams. Only coaches and admins can create teams.")
+
     existing = db.query(Team).filter(
         Team.name == payload.name,
         Team.tournament_id == payload.tournament_id,
@@ -34,11 +40,15 @@ def create_team(payload: TeamCreate, db: Session = Depends(get_db), current_user
 
 @router.get("/{team_id}", response_model=TeamRead)
 def get_team(team_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role in ["player", "admin", "viewer", "public_user"]:
+        team = db.query(Team).filter(Team.team_id == team_id).first()
+    else:
+        team = db.query(Team).filter(
+            Team.team_id == team_id,
+            Team.user_id == current_user.id
+        ).first()
 
-    team = db.query(Team).filter(
-        Team.team_id == team_id,
-        Team.user_id == current_user.id
-    ).first()
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
     return team
@@ -51,6 +61,9 @@ def update_team(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot modify teams.")
 
     team = db.query(Team).filter(
         Team.team_id == team_id,
@@ -70,6 +83,9 @@ def update_team(
 
 @router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_team(team_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot delete teams.")
 
     team = db.query(Team).filter(
         Team.team_id == team_id,
@@ -79,3 +95,4 @@ def delete_team(team_id: int, db: Session = Depends(get_db), current_user=Depend
         raise HTTPException(status_code=404, detail="Team not found")
     db.delete(team)
     db.commit()
+

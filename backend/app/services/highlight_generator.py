@@ -128,7 +128,8 @@ def process_match_highlights(
     video_path: str,
     events: list[dict],
     output_dir: str,
-    match_id: int
+    match_id: int,
+    generate_reel: bool = True
 ) -> dict:
     """
     Generate all clips and combine them into a highlight reel MP4.
@@ -167,14 +168,16 @@ def process_match_highlights(
                 clip_paths.append(clip_path)
                 event_clips[i] = clip_path.replace("\\", "/")
 
-    # Generate the final highlight reel
-    highlight_path = os.path.join(
-        output_dir,
-        f"match_{match_id}_highlight_reel.mp4"
-    )
+    clean_highlight_url = None
+    if generate_reel:
+        # Generate the final highlight reel
+        highlight_path = os.path.join(
+            output_dir,
+            f"match_{match_id}_highlight_reel.mp4"
+        )
 
-    highlight_success = generate_highlight_reel(clip_paths, highlight_path)
-    clean_highlight_url = highlight_path.replace("\\", "/") if (highlight_success and os.path.isfile(highlight_path)) else None
+        highlight_success = generate_highlight_reel(clip_paths, highlight_path)
+        clean_highlight_url = highlight_path.replace("\\", "/") if (highlight_success and os.path.isfile(highlight_path)) else None
 
     return {
         "clips": event_clips,

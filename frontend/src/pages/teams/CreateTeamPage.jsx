@@ -208,9 +208,9 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
               <label htmlFor="teamId">Team ID</label>
               <input
                 id="teamId"
-                value={form.teamId}
-                onChange={(e) => setField("teamId", e.target.value)}
-                disabled={isEdit} // Edit කරද්දී ID එක වෙනස් කරන්න බැරි වෙන්න දාලා තියෙන්නේ
+                value={isEdit ? form.teamId : `TM-${form.tournament_id || '[Tournament]'}-[Auto-generated]`}
+                disabled
+                style={{ opacity: 0.7, cursor: "not-allowed" }}
               />
             </div>
 
