@@ -20,11 +20,13 @@ class Token(BaseModel):
     token_type: str
     email: EmailStr
     full_name: str | None = None
+    role: str | None = "coach"
 
 
 class UserRead(UserBase):
     id: int
     is_active: bool
+    role: str | None = "coach"
 
     class Config:
         from_attributes = True

@@ -51,13 +51,19 @@ export default function LoginForm() {
       });
 
       if (res.data && res.data.access_token) {
+        const userRole = res.data.role || (form.email === "admin@volleyreel.com" ? "admin" : "coach");
         login({
           email: res.data.email || form.email,
           fullName: res.data.full_name || "",
-          // token: res.data.access_token,
           access_token: res.data.access_token,
+          role: userRole,
         });
-        navigate("/dashboard");
+
+        if (userRole === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         setError("Invalid credentials returned from server.");
       }
