@@ -250,16 +250,11 @@ export default function MatchesVideosPage() {
               <h3 style={{ fontWeight: 700, marginBottom: 10, fontSize: "1.1rem" }}>
                 {searchQuery ? "No videos match your search." : "No highlight videos generated yet."}
               </h3>
-              <p style={{ color: "var(--text-muted)", marginBottom: 24, fontSize: "0.9rem", lineHeight: 1.6 }}>
+              <p style={{ color: "var(--text-muted)", marginBottom: 0, fontSize: "0.9rem", lineHeight: 1.6 }}>
                 {searchQuery
-                  ? "Try a different search term."
-                  : "Confirm events in Upload & Event Review, then click \"Compile Highlights\" to generate your first video."}
+                  ? "Try adjusting your search criteria."
+                  : "Highlight videos will appear here once generated for your matches."}
               </p>
-              {!searchQuery && (
-                <Link to="/matches/upload" className="matches-btn-orange" style={{ textDecoration: "none", display: "inline-block" }}>
-                  Go to Upload &amp; Event Review
-                </Link>
-              )}
             </div>
           ) : (
             <div className="matches-videos-grid">
