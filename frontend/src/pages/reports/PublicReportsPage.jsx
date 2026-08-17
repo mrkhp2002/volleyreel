@@ -2,10 +2,58 @@ import { useState, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
+import { generateTournamentPDF } from "../../utils/pdfReportGenerator";
 import "../../styles/reports.css";
 
-const initialPublicReports = [];
-const shareableReports = [];
+const initialPublicReports = [
+  {
+    id: "PR-2026-01",
+    title: "Global Volleyball Masters 2026 - Official Summary",
+    tournament: "Global Volleyball Masters 2026",
+    date: "Aug 12, 2026",
+    views: 142,
+    shares: 28,
+    status: "Public",
+    stats: {
+      matches: 16,
+      aces: 48,
+      blocks: 62,
+      efficiency: "76%",
+      skills: [
+        { label: "Spikes", val: 85, color: "#f59e0b" },
+        { label: "Blocks", val: 74, color: "#3b82f6" },
+        { label: "Serves", val: 80, color: "#10b981" },
+        { label: "Receptions", val: 78, color: "#8b5cf6" }
+      ]
+    }
+  },
+  {
+    id: "PR-2026-02",
+    title: "Inter-College Invitational 2026 - Performance Report",
+    tournament: "Inter-College Invitational 2026",
+    date: "Aug 04, 2026",
+    views: 89,
+    shares: 15,
+    status: "Public",
+    stats: {
+      matches: 12,
+      aces: 36,
+      blocks: 45,
+      efficiency: "70%",
+      skills: [
+        { label: "Spikes", val: 76, color: "#f59e0b" },
+        { label: "Blocks", val: 68, color: "#3b82f6" },
+        { label: "Serves", val: 72, color: "#10b981" },
+        { label: "Receptions", val: 74, color: "#8b5cf6" }
+      ]
+    }
+  }
+];
+
+const shareableReports = [
+  { title: "Spring Championship 2026 - Final Report", tournament: "Spring Championship 2026" },
+  { title: "National Varsity League 2026 - Mid-Season Analytics", tournament: "National Varsity League 2026" }
+];
 
 export default function PublicReportsPage() {
   const { user } = useAuth();
@@ -390,6 +438,17 @@ export default function PublicReportsPage() {
                 className="reports-modal-btn-cancel"
               >
                 Close
+              </button>
+              <button 
+                type="button" 
+                onClick={() => {
+                  generateTournamentPDF(activeReport);
+                  showToast(`Downloading "${activeReport.title}" as PDF...`);
+                }} 
+                className="reports-action-btn reports-action-btn--blue"
+                style={{ padding: "8px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "0.85rem" }}
+              >
+                Download PDF
               </button>
               <button 
                 type="button" 
