@@ -5,6 +5,26 @@ import CustomSelect from "../../components/common/CustomSelect";
 import { PlusIcon } from "../../components/common/TableActionIcons";
 import "../../styles/management.css";
 
+const DIVISION_OPTIONS = [
+  { value: "Premier", label: "Premier Division" },
+  { value: "Super League", label: "Super League" },
+  { value: "Division 1", label: "Division 1" },
+  { value: "Division 2", label: "Division 2" },
+  { value: "University Division", label: "University Division" },
+  { value: "National Championship", label: "National Championship" },
+  { value: "Open Division", label: "Open Division" }
+];
+
+const CATEGORY_OPTIONS = [
+  { value: "Men's Senior", label: "Men's Senior" },
+  { value: "Women's Senior", label: "Women's Senior" },
+  { value: "Men's U23", label: "Men's Under-23 (U23)" },
+  { value: "Women's U23", label: "Women's Under-23 (U23)" },
+  { value: "Boys U19", label: "Boys Under-19 (U19)" },
+  { value: "Girls U19", label: "Girls Under-19 (U19)" },
+  { value: "Mixed / Open", label: "Mixed / Open Category" }
+];
+
 const initialForm = {
   teamId: "TM-2026-006",
   name: "",
@@ -171,21 +191,17 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
               <label htmlFor="tournament_id">
                 Assign to Tournament <span className="required">*</span>
               </label>
-              <select
+              <CustomSelect
                 id="tournament_id"
-                value={form.tournament_id}
+                value={String(form.tournament_id)}
                 onChange={(e) => setField("tournament_id", e.target.value)}
-                required
-                className="mgmt-filter-select"
-                style={{ width: "100%", padding: "10px", backgroundColor: "var(--surface)", color: "white", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px" }}
-              >
-                <option value="">-- Choose a Tournament --</option>
-                {tournaments.map((t) => (
-                  <option key={t.tournament_id} value={t.tournament_id}>
-                    TN-{t.tournament_id} : {t.name}
-                  </option>
-                ))}
-              </select>
+                options={tournaments.map((t) => ({
+                  value: String(t.tournament_id),
+                  label: `TN-${t.tournament_id} : ${t.name}`
+                }))}
+                placeholder="-- Choose a Tournament --"
+                className="mgmt-field-select"
+              />
             </div>
 
             <div className="mgmt-field">
@@ -213,21 +229,25 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
 
             <div className="mgmt-field">
               <label htmlFor="division">Division</label>
-              <input
+              <CustomSelect
                 id="division"
-                placeholder="e.g., Premier"
                 value={form.division}
                 onChange={(e) => setField("division", e.target.value)}
+                options={DIVISION_OPTIONS}
+                placeholder="-- Select Division --"
+                className="mgmt-field-select"
               />
             </div>
 
             <div className="mgmt-field">
               <label htmlFor="category">Category</label>
-              <input
+              <CustomSelect
                 id="category"
-                placeholder="e.g., Men's Senior"
                 value={form.category}
                 onChange={(e) => setField("category", e.target.value)}
+                options={CATEGORY_OPTIONS}
+                placeholder="-- Select Category --"
+                className="mgmt-field-select"
               />
             </div>
 
