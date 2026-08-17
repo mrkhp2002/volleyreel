@@ -1,76 +1,81 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
+import { generateTournamentPDF } from "../../utils/pdfReportGenerator";
+import apiClient from "../../services/apiClient";
 import "../../styles/reports.css";
 
-// Initial Mock Data
-const initialReports = [
+const defaultInitialReports = [
   {
-    id: "TR-2026-001",
+    id: "TR-2026-01",
     title: "Spring Championship 2026 - Final Report",
     tournament: "Spring Championship 2026",
-    date: "Mar 06, 2026",
+    date: "Aug 15, 2026",
     type: "Tournament Summary",
     status: "Published",
+    match_format: "Best of 5 Sets (25 Point Rally Score)",
     stats: {
-      matches: 16,
-      aces: 58,
-      blocks: 74,
-      efficiency: "72%",
+      matches: 14,
+      aces: 42,
+      blocks: 56,
+      efficiency: "74%",
       skills: [
         { label: "Spikes", val: 82, color: "#f59e0b" },
         { label: "Blocks", val: 68, color: "#3b82f6" },
-        { label: "Serves", val: 55, color: "#10b981" },
-        { label: "Receptions", val: 78, color: "#8b5cf6" },
+        { label: "Serves", val: 76, color: "#10b981" },
+        { label: "Receptions", val: 70, color: "#8b5cf6" }
       ]
     }
   },
   {
-    id: "TR-2026-002",
-    title: "Regional Cup - Mid-Season Analysis",
-    tournament: "Regional Cup",
-    date: "Mar 10, 2026",
+    id: "TR-2026-02",
+    title: "National Varsity League 2026 - Mid-Season Analytics",
+    tournament: "National Varsity League 2026",
+    date: "Aug 10, 2026",
     type: "Performance Analysis",
     status: "Published",
+    match_format: "Best of 3 Sets",
     stats: {
-      matches: 8,
-      aces: 34,
-      blocks: 41,
-      efficiency: "64%",
+      matches: 18,
+      aces: 51,
+      blocks: 64,
+      efficiency: "69%",
       skills: [
-        { label: "Spikes", val: 65, color: "#f59e0b" },
-        { label: "Blocks", val: 75, color: "#3b82f6" },
-        { label: "Serves", val: 42, color: "#10b981" },
-        { label: "Receptions", val: 61, color: "#8b5cf6" },
+        { label: "Spikes", val: 74, color: "#f59e0b" },
+        { label: "Blocks", val: 72, color: "#3b82f6" },
+        { label: "Serves", val: 65, color: "#10b981" },
+        { label: "Receptions", val: 78, color: "#8b5cf6" }
       ]
     }
   },
   {
-    id: "TR-2026-003",
-    title: "National Schools League - Complete Stats",
-    tournament: "National Schools League",
-    date: "Jan 20, 2026",
+    id: "TR-2026-03",
+    title: "Summer Volleyball Open 2026 - Statistical Breakdown",
+    tournament: "Summer Volleyball Open 2026",
+    date: "Jul 28, 2026",
     type: "Statistical Report",
     status: "Published",
+    match_format: "Best of 5 Sets",
     stats: {
-      matches: 24,
-      aces: 112,
-      blocks: 148,
-      efficiency: "79%",
+      matches: 9,
+      aces: 28,
+      blocks: 39,
+      efficiency: "63%",
       skills: [
-        { label: "Spikes", val: 88, color: "#f59e0b" },
-        { label: "Blocks", val: 81, color: "#3b82f6" },
+        { label: "Spikes", val: 68, color: "#f59e0b" },
+        { label: "Blocks", val: 60, color: "#3b82f6" },
         { label: "Serves", val: 70, color: "#10b981" },
-        { label: "Receptions", val: 85, color: "#8b5cf6" },
+        { label: "Receptions", val: 65, color: "#8b5cf6" }
       ]
     }
-  },
+  }
 ];
 
 export default function TournamentReportsPage() {
   const { user } = useAuth();
-  const [reports, setReports] = useState(initialReports);
+  const [reports, setReports] = useState(defaultInitialReports);
+  const [dbTournaments, setDbTournaments] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All");
   
@@ -86,6 +91,24 @@ export default function TournamentReportsPage() {
   
   // Download alert state
   const [toastMessage, setToastMessage] = useState("");
+
+  // Fetch real tournaments from API backend if available
+  useEffect(() => {
+    async function fetchTournaments() {
+      try {
+        const response = await apiClient.get("/tournaments");
+        if (response.data && Array.isArray(response.data)) {
+          setDbTournaments(response.data);
+          if (response.data.length > 0 && !newTournament) {
+            setNewTournament(response.data[0].name);
+          }
+        }
+      } catch (err) {
+        // Fallback silently if API not authenticated or unavailable
+      }
+    }
+    fetchTournaments();
+  }, []);
 
   // Filtering
   const filteredReports = useMemo(() => {
@@ -119,16 +142,17 @@ export default function TournamentReportsPage() {
       date: formattedDate,
       type: newType,
       status: "Published",
+      match_format: "Best of 5 Sets (Rally Score)",
       stats: {
-        matches: Math.floor(Math.random() * 15) + 5,
-        aces: Math.floor(Math.random() * 50) + 15,
-        blocks: Math.floor(Math.random() * 60) + 20,
-        efficiency: `${Math.floor(Math.random() * 30) + 55}%`,
+        matches: Math.floor(Math.random() * 12) + 6,
+        aces: Math.floor(Math.random() * 40) + 20,
+        blocks: Math.floor(Math.random() * 50) + 25,
+        efficiency: `${Math.floor(Math.random() * 25) + 65}%`,
         skills: [
-          { label: "Spikes", val: Math.floor(Math.random() * 40) + 50, color: "#f59e0b" },
-          { label: "Blocks", val: Math.floor(Math.random() * 40) + 50, color: "#3b82f6" },
-          { label: "Serves", val: Math.floor(Math.random() * 40) + 30, color: "#10b981" },
-          { label: "Receptions", val: Math.floor(Math.random() * 40) + 50, color: "#8b5cf6" },
+          { label: "Spikes", val: Math.floor(Math.random() * 30) + 60, color: "#f59e0b" },
+          { label: "Blocks", val: Math.floor(Math.random() * 30) + 55, color: "#3b82f6" },
+          { label: "Serves", val: Math.floor(Math.random() * 30) + 50, color: "#10b981" },
+          { label: "Receptions", val: Math.floor(Math.random() * 30) + 60, color: "#8b5cf6" },
         ]
       }
     };
@@ -138,16 +162,21 @@ export default function TournamentReportsPage() {
     
     // Clear inputs and close
     setNewTitle("");
-    setNewTournament("");
+    setNewTournament(dbTournaments.length > 0 ? dbTournaments[0].name : "");
     setNewType("Tournament Summary");
     setIsCreateOpen(false);
     
     showToast(`Successfully generated "${newReport.title}"`);
   };
 
-  // Trigger simulated file download
+  // Trigger file download using jsPDF generator
   const handleDownload = (report) => {
     showToast(`Downloading "${report.title}" as PDF...`);
+    try {
+      generateTournamentPDF(report);
+    } catch (err) {
+      console.error("Failed to generate PDF", err);
+    }
   };
 
   const showToast = (msg) => {
@@ -352,14 +381,24 @@ export default function TournamentReportsPage() {
 
               <div className="reports-modal-field">
                 <label htmlFor="modal-report-tournament">Tournament *</label>
-                <input
-                  id="modal-report-tournament"
-                  type="text"
-                  placeholder="e.g., Spring Championship 2026"
-                  value={newTournament}
-                  onChange={(e) => setNewTournament(e.target.value)}
-                  required
-                />
+                {dbTournaments.length > 0 ? (
+                  <CustomSelect
+                    value={newTournament}
+                    onChange={(e) => setNewTournament(e.target.value)}
+                    options={dbTournaments.map((t) => ({ value: t.name, label: t.name }))}
+                    id="modal-report-tournament-select"
+                    className="reports-modal-select"
+                  />
+                ) : (
+                  <input
+                    id="modal-report-tournament"
+                    type="text"
+                    placeholder="e.g., Spring Championship 2026"
+                    value={newTournament}
+                    onChange={(e) => setNewTournament(e.target.value)}
+                    required
+                  />
+                )}
               </div>
 
               <div className="reports-modal-field">

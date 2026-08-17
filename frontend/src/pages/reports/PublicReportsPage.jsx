@@ -2,80 +2,57 @@ import { useState, useMemo } from "react";
 import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
+import { generateTournamentPDF } from "../../utils/pdfReportGenerator";
 import "../../styles/reports.css";
 
-// Initial Mock Data
 const initialPublicReports = [
   {
-    id: "PR-2026-001",
-    title: "Spring Championship 2026 - Public Highlights",
-    tournament: "Spring Championship 2026",
-    date: "Mar 06, 2026",
-    views: 1245,
-    shares: 87,
+    id: "PR-2026-01",
+    title: "Global Volleyball Masters 2026 - Official Summary",
+    tournament: "Global Volleyball Masters 2026",
+    date: "Aug 12, 2026",
+    views: 142,
+    shares: 28,
     status: "Public",
     stats: {
       matches: 16,
-      aces: 58,
-      blocks: 74,
-      efficiency: "72%",
+      aces: 48,
+      blocks: 62,
+      efficiency: "76%",
       skills: [
-        { label: "Spikes", val: 82, color: "#f59e0b" },
+        { label: "Spikes", val: 85, color: "#f59e0b" },
+        { label: "Blocks", val: 74, color: "#3b82f6" },
+        { label: "Serves", val: 80, color: "#10b981" },
+        { label: "Receptions", val: 78, color: "#8b5cf6" }
+      ]
+    }
+  },
+  {
+    id: "PR-2026-02",
+    title: "Inter-College Invitational 2026 - Performance Report",
+    tournament: "Inter-College Invitational 2026",
+    date: "Aug 04, 2026",
+    views: 89,
+    shares: 15,
+    status: "Public",
+    stats: {
+      matches: 12,
+      aces: 36,
+      blocks: 45,
+      efficiency: "70%",
+      skills: [
+        { label: "Spikes", val: 76, color: "#f59e0b" },
         { label: "Blocks", val: 68, color: "#3b82f6" },
-        { label: "Serves", val: 55, color: "#10b981" },
-        { label: "Receptions", val: 78, color: "#8b5cf6" },
+        { label: "Serves", val: 72, color: "#10b981" },
+        { label: "Receptions", val: 74, color: "#8b5cf6" }
       ]
     }
-  },
-  {
-    id: "PR-2026-002",
-    title: "Top Performers - Regional Cup",
-    tournament: "Regional Cup",
-    date: "Mar 10, 2026",
-    views: 892,
-    shares: 45,
-    status: "Public",
-    stats: {
-      matches: 8,
-      aces: 34,
-      blocks: 41,
-      efficiency: "64%",
-      skills: [
-        { label: "Spikes", val: 65, color: "#f59e0b" },
-        { label: "Blocks", val: 75, color: "#3b82f6" },
-        { label: "Serves", val: 42, color: "#10b981" },
-        { label: "Receptions", val: 61, color: "#8b5cf6" },
-      ]
-    }
-  },
-  {
-    id: "PR-2026-003",
-    title: "National Schools League - Season Recap",
-    tournament: "National Schools League",
-    date: "Jan 20, 2026",
-    views: 2341,
-    shares: 156,
-    status: "Public",
-    stats: {
-      matches: 24,
-      aces: 112,
-      blocks: 148,
-      efficiency: "79%",
-      skills: [
-        { label: "Spikes", val: 88, color: "#f59e0b" },
-        { label: "Blocks", val: 81, color: "#3b82f6" },
-        { label: "Serves", val: 70, color: "#10b981" },
-        { label: "Receptions", val: 85, color: "#8b5cf6" },
-      ]
-    }
-  },
+  }
 ];
 
-// Available reports to select for sharing
 const shareableReports = [
-  { title: "Winter League Finals - Season Recap", tournament: "Winter League Finals", type: "Performance Analysis" },
-  { title: "Negombo District Tournament Highlights", tournament: "Negombo District Tournament", type: "Tournament Summary" },
-  { title: "Under-19 Girls Championship Detail Analysis", tournament: "U-19 Girls Championship", type: "Statistical Report" },
+  { title: "Spring Championship 2026 - Final Report", tournament: "Spring Championship 2026" },
+  { title: "National Varsity League 2026 - Mid-Season Analytics", tournament: "National Varsity League 2026" }
 ];
 
 export default function PublicReportsPage() {
@@ -461,6 +438,17 @@ export default function PublicReportsPage() {
                 className="reports-modal-btn-cancel"
               >
                 Close
+              </button>
+              <button 
+                type="button" 
+                onClick={() => {
+                  generateTournamentPDF(activeReport);
+                  showToast(`Downloading "${activeReport.title}" as PDF...`);
+                }} 
+                className="reports-action-btn reports-action-btn--blue"
+                style={{ padding: "8px 16px", borderRadius: "8px", fontWeight: "600", fontSize: "0.85rem" }}
+              >
+                Download PDF
               </button>
               <button 
                 type="button" 

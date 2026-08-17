@@ -3,49 +3,11 @@ import { Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/leaderboards.css";
 
-const teamRoutesMap = {
-  "Thunder Strikers": "TM-2026-001",
-  "Ocean Waves": "TM-2026-002",
-  "Sky Hawks": "TM-2026-003",
-  "Net Ninjas": "TM-2026-004",
-  "Beach Blazers": "TM-2026-005",
-  "Court Kings": "TM-2026-001"
-};
+const teamRoutesMap = {};
+const playerRoutesMap = {};
 
-const playerRoutesMap = {
-  "James Anderson": "PL-2026-001",
-  "Sarah Kim": "PL-2026-002",
-  "Michael Chen": "PL-2026-003",
-  "Emily Davis": "PL-2026-004",
-  "David Martinez": "PL-2026-005",
-  "Lisa Thompson": "PL-2026-006",
-  "Alex Rivera": "PL-2026-001",
-  "Chris Lee": "PL-2026-003",
-  "Jordan Smith": "PL-2026-002",
-  "Sam Patel": "PL-2026-004",
-  "David Miller": "PL-2026-004",
-  "Emily Watson": "PL-2026-005",
-  "Jessica Taylor": "PL-2026-006"
-};
-
-// Comprehensive Mock Data
-const teamRankings = [
-  { rank: 1, name: "Thunder Strikers", record: "15W - 2L", points: 45, winRate: "88.2%", tournament: "Spring Championship 2026", division: "Premier Division" },
-  { rank: 2, name: "Ocean Waves", record: "13W - 5L", points: 38, winRate: "72.2%", tournament: "Regional Cup", division: "Premier Division" },
-  { rank: 3, name: "Sky Hawks", record: "12W - 6L", points: 35, winRate: "66.7%", tournament: "Regional Cup", division: "Division 1" },
-  { rank: 4, name: "Net Ninjas", record: "11W - 7L", points: 32, winRate: "61.1%", tournament: "Spring Championship 2026", division: "Division 1" },
-  { rank: 5, name: "Beach Blazers", record: "9W - 8L", points: 28, winRate: "52.9%", tournament: "Regional Cup", division: "Division 2" },
-  { rank: 6, name: "Court Kings", record: "8W - 9L", points: 25, winRate: "47.1%", tournament: "Spring Championship 2026", division: "Division 2" },
-];
-
-const playerRankings = [
-  { rank: 1, name: "James Anderson", team: "Thunder Strikers", points: 247, matches: 17, tournament: "Spring Championship 2026", division: "Premier Division" },
-  { rank: 2, name: "Sarah Kim", team: "Ocean Waves", points: 215, matches: 18, tournament: "Regional Cup", division: "Premier Division" },
-  { rank: 3, name: "Michael Chen", team: "Thunder Strikers", points: 198, matches: 17, tournament: "Spring Championship 2026", division: "Division 1" },
-  { rank: 4, name: "David Miller", team: "Net Ninjas", points: 184, matches: 18, tournament: "Spring Championship 2026", division: "Division 1" },
-  { rank: 5, name: "Emily Watson", team: "Sky Hawks", points: 172, matches: 18, tournament: "Regional Cup", division: "Division 2" },
-  { rank: 6, name: "Jessica Taylor", team: "Beach Blazers", points: 155, matches: 17, tournament: "Regional Cup", division: "Division 2" },
-];
+const teamRankings = [];
+const playerRankings = [];
 
 export default function LeaderboardsPage() {
   const [selectedTournament, setSelectedTournament] = useState("All");
@@ -70,25 +32,10 @@ export default function LeaderboardsPage() {
 
   // Highlights state calculated dynamically based on filters
   const highlights = useMemo(() => {
-    if (selectedTournament === "Regional Cup") {
-      return {
-        improved: { title: "Ocean Waves", subtitle: "+18% win rate this month" },
-        streak: { title: "Ocean Waves", subtitle: "5 consecutive wins" },
-        scorer: { title: "Sarah Kim", subtitle: "189 points total" },
-      };
-    }
-    if (selectedTournament === "Spring Championship 2026") {
-      return {
-        improved: { title: "Net Ninjas", subtitle: "+15% win rate this month" },
-        streak: { title: "Thunder Strikers", subtitle: "8 consecutive wins" },
-        scorer: { title: "James Anderson", subtitle: "247 points total" },
-      };
-    }
-    // Default highlights (All)
     return {
-      improved: { title: "Sky Hawks", subtitle: "+25% win rate this month" },
-      streak: { title: "Thunder Strikers", subtitle: "8 consecutive wins" },
-      scorer: { title: "James Anderson", subtitle: "247 points total" },
+      improved: { title: "N/A", subtitle: "No data available" },
+      streak: { title: "N/A", subtitle: "No data available" },
+      scorer: { title: "N/A", subtitle: "No data available" },
     };
   }, [selectedTournament]);
 

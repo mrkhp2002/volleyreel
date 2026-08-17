@@ -50,6 +50,7 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
         match.status = "processing"
         db.commit()
         print(f"Match {match_id}: Starting pipeline...")
+        video_path = video_path.strip('\'"')
 
         # Step 2 — Get players for this match (for attribution)
         players = []

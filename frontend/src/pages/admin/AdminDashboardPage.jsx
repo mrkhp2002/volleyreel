@@ -137,12 +137,7 @@ export default function AdminDashboardPage() {
   });
 
   // Database Backups States
-  const [backups, setBackups] = useState([
-    { id: "BK-1001", date: "2026-05-28 02:00", size: "74.8 KB", createdBy: "System (Auto)", status: "Completed" },
-    { id: "BK-1002", date: "2026-05-27 02:00", size: "73.2 KB", createdBy: "System (Auto)", status: "Completed" },
-    { id: "BK-1003", date: "2026-05-26 14:10", size: "72.5 KB", createdBy: "System Admin", status: "Completed" },
-    { id: "BK-1004", date: "2026-05-25 02:00", size: "71.9 KB", createdBy: "System (Auto)", status: "Completed" }
-  ]);
+  const [backups, setBackups] = useState([]);
   const [restoreModal, setRestoreModal] = useState(null); // backup object or null
   const [restoring, setRestoring] = useState(false);
   const [restoreConfirmInput, setRestoreConfirmInput] = useState("");
@@ -164,30 +159,10 @@ export default function AdminDashboardPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Mock Database
-  const [coaches, setCoaches] = useState([
-    { id: "C-101", name: "David Miller", email: "d.miller@volleyballclub.com", role: "Head Coach", status: "Active" },
-    { id: "C-102", name: "Sarah Connor", email: "sarah.c@volleyschool.edu", role: "Assistant Coach", status: "Active" },
-    { id: "C-103", name: "Kenji Sato", email: "k.sato@nationalteam.jp", role: "Head Coach", status: "Pending Verification" },
-    { id: "C-104", name: "Elena Rostova", email: "elena.r@spikers.org", role: "Video Analyst", status: "Active" },
-    { id: "C-105", name: "Marcus Aurelius", email: "m.aurelius@romeclub.it", role: "Head Coach", status: "Suspended" },
-    { id: "C-106", name: "Chloe Dupont", email: "c.dupont@parisvolley.fr", role: "Assistant Coach", status: "Active" }
-  ]);
-
-  const [jobs, setJobs] = useState([
-    { id: "JOB-9021", uploadedBy: "David Miller", filename: "final_match_colombo.mp4", status: "Failed", date: "2026-05-28 14:32", error: "Audio/Video desync detected on frame 2400" },
-    { id: "JOB-9022", uploadedBy: "Sarah Connor", filename: "training_sets_review.mp4", status: "Completed", date: "2026-05-28 17:15", error: "" },
-    { id: "JOB-9023", uploadedBy: "Kenji Sato", filename: "tokyo_v_osaka_set1.mp4", status: "Processing", date: "2026-05-28 23:45", error: "" },
-    { id: "JOB-9024", uploadedBy: "Elena Rostova", filename: "jump_serve_compilation.mov", status: "Pending", date: "2026-05-29 00:02", error: "" },
-    { id: "JOB-9025", uploadedBy: "David Miller", filename: "semi_final_replay.mp4", status: "Failed", date: "2026-05-28 11:22", error: "VGA format not supported, H264 required" },
-    { id: "JOB-9026", uploadedBy: "Chloe Dupont", filename: "scouting_rotations.mp4", status: "Completed", date: "2026-05-27 19:40", error: "" }
-  ]);
-
-  const [flaggedItems, setFlaggedItems] = useState([
-    { id: "MOD-301", title: "National Championship - Highlight Spike", uploadedBy: "Marcus Aurelius", reason: "Copyright claim by Broadcaster Network", date: "2026-05-28 09:12", flags: 3 },
-    { id: "MOD-302", title: "Locker Room Post-Match Celebration", uploadedBy: "David Miller", reason: "Privacy concern reported by player", date: "2026-05-28 16:30", flags: 1 },
-    { id: "MOD-303", title: "Referee argument & red card breakdown", uploadedBy: "Sarah Connor", reason: "Unsportsmanlike actions flagged by moderator", date: "2026-05-27 12:05", flags: 2 }
-  ]);
+  // Database State
+  const [coaches, setCoaches] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [flaggedItems, setFlaggedItems] = useState([]);
 
   const failedJobsCount = jobs.filter(j => j.status === "Failed").length;
 
