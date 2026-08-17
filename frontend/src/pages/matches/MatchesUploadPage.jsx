@@ -37,8 +37,11 @@ export default function MatchesUploadPage() {
 
   const videoRef = useRef(null);
 
-  // ── Real matches from API ────────────────────────────────────────────────
+  // ── Real matches, teams, tournaments from API ─────────────────────────────
   const [matches, setMatches] = useState([]);
+  const [tournaments, setTournaments] = useState([]);
+  const [teamsMap, setTeamsMap] = useState({});
+  const [selectedTournamentId, setSelectedTournamentId] = useState("all");
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [selectedMatchId, setSelectedMatchId] = useState("");
 
@@ -51,6 +54,9 @@ export default function MatchesUploadPage() {
   const [searchPlayer, setSearchPlayer] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+
+  // ── Multi-select state ───────────────────────────────────────────────────
+  const [selectedEventIds, setSelectedEventIds] = useState(new Set());
 
   // ── Inline edit state ────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState(null);
@@ -67,25 +73,52 @@ export default function MatchesUploadPage() {
     setTimeout(() => setToast(""), 4000);
   };
 
-  // ── Load matches on mount ────────────────────────────────────────────────
+  // Clear multi-select when match or filters change
+  useEffect(() => {
+    setSelectedEventIds(new Set());
+  }, [selectedMatchId, filterType, filterStatus, searchPlayer]);
+
+  // ── Load matches, teams, tournaments on mount ────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         setMatchesLoading(true);
-        const res = await API.get("/matches/");
-        const list = res.data || [];
+        const [matchesRes, teamsRes, tourneysRes] = await Promise.all([
+          API.get("/matches/"),
+          API.get("/teams/").catch(() => ({ data: [] })),
+          API.get("/tournaments/").catch(() => ({ data: [] })),
+        ]);
+
+        const list = matchesRes.data || [];
+        const tList = teamsRes.data || [];
+        const tournList = tourneysRes.data || [];
+
+        const tMap = {};
+        tList.forEach((tm) => {
+          tMap[tm.team_id] = tm.name;
+        });
+
         setMatches(list);
+        setTeamsMap(tMap);
+        setTournaments(tournList);
 
         const params = new URLSearchParams(location.search);
         const mId = params.get("matchId");
         if (mId && list.some((m) => String(m.match_id) === String(mId))) {
+          const matched = list.find((m) => String(m.match_id) === String(mId));
           setSelectedMatchId(String(mId));
+          if (matched && matched.tournament_id) {
+            setSelectedTournamentId(String(matched.tournament_id));
+          }
         } else if (list.length > 0) {
           setSelectedMatchId(String(list[0].match_id));
+          if (list[0].tournament_id) {
+            setSelectedTournamentId(String(list[0].tournament_id));
+          }
         }
       } catch (err) {
-        console.error("Failed to load matches:", err);
-        triggerToast("Failed to load matches.");
+        console.error("Failed to load matches and tournament data:", err);
+        triggerToast("Failed to load match and tournament details.");
       } finally {
         setMatchesLoading(false);
       }
@@ -151,7 +184,88 @@ export default function MatchesUploadPage() {
     }
   }, [activeEventClipUrl]);
 
+  // ── Multi-select & Bulk actions ─────────────────────────────────────────
+  const toggleSelectEvent = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedEventIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const visibleIds = filteredEvents.map((e) => e.id);
+    const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedEventIds.has(id));
+    if (allSelected) {
+      setSelectedEventIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedEventIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedEventIds(new Set());
+  };
+
+  const handleBulkConfirm = () => {
+    if (selectedEventIds.size === 0) return;
+    setEvents((prev) =>
+      prev.map((e) => (selectedEventIds.has(e.id) ? { ...e, status: "Confirmed" } : e))
+    );
+    triggerToast(`✓ Confirmed ${selectedEventIds.size} selected events!`);
+    clearSelection();
+  };
+
+  const handleBulkReject = () => {
+    if (selectedEventIds.size === 0) return;
+    setEvents((prev) =>
+      prev.map((e) => (selectedEventIds.has(e.id) ? { ...e, status: "Rejected" } : e))
+    );
+    triggerToast(`✖ Marked ${selectedEventIds.size} events as Rejected.`);
+    clearSelection();
+  };
+
+  const handleBulkPending = () => {
+    if (selectedEventIds.size === 0) return;
+    setEvents((prev) =>
+      prev.map((e) => (selectedEventIds.has(e.id) ? { ...e, status: "Pending" } : e))
+    );
+    triggerToast(`Reset ${selectedEventIds.size} events to Pending.`);
+    clearSelection();
+  };
+
+  const handleBulkChangeType = (newType) => {
+    if (selectedEventIds.size === 0 || !newType) return;
+    setEvents((prev) =>
+      prev.map((e) => (selectedEventIds.has(e.id) ? { ...e, type: newType } : e))
+    );
+    if (activeEvent && selectedEventIds.has(activeEvent.id)) {
+      setActiveEvent((prev) => ({ ...prev, type: newType }));
+    }
+    triggerToast(`Updated ${selectedEventIds.size} events to type: ${newType}!`);
+  };
+
   // ── Row actions ──────────────────────────────────────────────────────────
+  const handleTypeChange = (id, newType) => {
+    setEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, type: newType } : e))
+    );
+    if (activeEvent && activeEvent.id === id) {
+      setActiveEvent((prev) => ({ ...prev, type: newType }));
+    }
+    triggerToast(`Event #${id} type set to ${newType}!`);
+  };
+
   const handleConfirmEvent = (id) => {
     setEvents((prev) => prev.map((e) => e.id === id ? { ...e, status: "Confirmed" } : e));
     triggerToast("Event confirmed!");
@@ -188,34 +302,63 @@ export default function MatchesUploadPage() {
 
   // ── Compile highlights ───────────────────────────────────────────────────
   const handleCompileHighlights = async () => {
-    if (!selectedMatchId) { triggerToast("No match selected."); return; }
-    const confirmedIds = events
-      .filter((e) => e.status === "Confirmed")
-      .map((e) => e.id);
-    if (confirmedIds.length === 0) {
-      triggerToast("Confirm at least one event before compiling.");
+    if (!selectedMatchId) {
+      triggerToast("No match selected.", "error");
       return;
     }
+
+    // 1. If coach selected events via checkboxes, compile those!
+    // 2. Otherwise compile confirmed events
+    // 3. If none confirmed or selected, compile all events for this match
+    let eventIdsToCompile = [];
+    if (selectedEventIds && selectedEventIds.size > 0) {
+      eventIdsToCompile = Array.from(selectedEventIds);
+    } else {
+      const confirmed = events.filter((e) => e.status === "Confirmed").map((e) => e.id);
+      eventIdsToCompile = confirmed.length > 0 ? confirmed : events.map((e) => e.id);
+    }
+
+    if (eventIdsToCompile.length === 0) {
+      triggerToast("No events available to compile into highlights.", "error");
+      return;
+    }
+
     try {
       setCompiling(true);
-      setCompileProgress(0);
-      // Show fake progress while API call is in-flight
+      setCompileProgress(15);
       const iv = setInterval(() => {
         setCompileProgress((p) => {
-          if (p >= 80) { clearInterval(iv); return 80; }
-          return p + 20;
+          if (p >= 85) {
+            clearInterval(iv);
+            return 85;
+          }
+          return p + 15;
         });
       }, 300);
-      await API.post(`/pipeline/${selectedMatchId}/generate-highlight/`, {
-        event_ids: confirmedIds,
+
+      const res = await API.post(`/pipeline/${selectedMatchId}/generate-highlight/`, {
+        event_ids: eventIdsToCompile,
       });
+
       clearInterval(iv);
       setCompileProgress(100);
-      triggerToast("Highlights compiled successfully!");
-      setTimeout(() => { setCompiling(false); setCompileProgress(0); navigate("/matches/videos"); }, 800);
+      triggerToast(`Highlight video compiled successfully with ${res.data.clips_generated || eventIdsToCompile.length} clips!`);
+      setTimeout(() => {
+        setCompiling(false);
+        setCompileProgress(0);
+        navigate("/matches/videos");
+      }, 900);
     } catch (err) {
       setCompiling(false);
-      triggerToast(err?.response?.data?.detail || "Highlight compilation failed.");
+      setCompileProgress(0);
+      const detail = err?.response?.data?.detail;
+      const errorMsg =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
+          : "Highlight compilation failed.";
+      triggerToast(errorMsg, "error");
     }
   };
 
@@ -224,7 +367,7 @@ export default function MatchesUploadPage() {
     () =>
       events.filter((e) => {
         const matchSearch = !searchPlayer || e.player.toLowerCase().includes(searchPlayer.toLowerCase());
-        const matchType = filterType === "All" || e.type === filterType;
+        const matchType = filterType === "All" || e.type.toLowerCase() === filterType.toLowerCase();
         const matchStatus = filterStatus === "All" || e.status === filterStatus;
         return matchSearch && matchType && matchStatus;
       }),
@@ -245,15 +388,57 @@ export default function MatchesUploadPage() {
     return null;
   })();
 
-  // ── Match options for dropdown ────────────────────────────────────────────
+  // ── Filter matches by selected tournament ────────────────────────────────
+  const filteredMatches = useMemo(() => {
+    if (selectedTournamentId === "all" || !selectedTournamentId) {
+      return matches;
+    }
+    return matches.filter((m) => String(m.tournament_id) === String(selectedTournamentId));
+  }, [matches, selectedTournamentId]);
+
+  // ── Tournament options for dropdown ───────────────────────────────────────
+  const tournamentOptions = useMemo(
+    () => [
+      { value: "all", label: "All Tournaments" },
+      ...tournaments.map((t) => ({
+        value: String(t.tournament_id),
+        label: `TN-${t.tournament_id} : ${t.name}`,
+      })),
+    ],
+    [tournaments]
+  );
+
+  // ── Match options with real team names ────────────────────────────────────
   const matchOptions = useMemo(
     () =>
-      matches.map((m) => ({
-        value: String(m.match_id),
-        label: `#${m.match_id} — Team #${m.home_team_id} vs Team #${m.away_team_id}`,
-      })),
-    [matches]
+      filteredMatches.map((m) => {
+        const homeName = teamsMap[m.home_team_id] || `Team #${m.home_team_id}`;
+        const awayName = teamsMap[m.away_team_id] || `Team #${m.away_team_id}`;
+        return {
+          value: String(m.match_id),
+          label: `#${m.match_id} — ${homeName} vs ${awayName}`,
+        };
+      }),
+    [filteredMatches, teamsMap]
   );
+
+  // ── Tournament Change Handler ─────────────────────────────────────────────
+  const handleTournamentChange = (tournId) => {
+    setSelectedTournamentId(tournId);
+    const available =
+      tournId === "all" || !tournId
+        ? matches
+        : matches.filter((m) => String(m.tournament_id) === String(tournId));
+    if (available.length > 0) {
+      setSelectedMatchId(String(available[0].match_id));
+    } else {
+      setSelectedMatchId("");
+    }
+    setSearchPlayer("");
+    setFilterType("All");
+    setFilterStatus("All");
+    setEditingId(null);
+  };
 
   return (
     <div className="matches-page">
@@ -284,40 +469,115 @@ export default function MatchesUploadPage() {
         </div>
       </header>
 
-      {/* Match Selector */}
-      <div className="matches-form-card" style={{ gap: 12, padding: "16px 24px" }}>
-        <div className="matches-field" style={{ maxWidth: 360 }}>
-          <label htmlFor="select-upload-match">
-            Active Match for Review
-            {matchesLoading && <span style={{ marginLeft: 8, color: "#6366f1", fontSize: "0.75rem" }}>loading…</span>}
-          </label>
-          <CustomSelect
-            id="select-upload-match"
-            value={selectedMatchId}
-            onChange={(e) => {
-              setSelectedMatchId(e.target.value);
-              setSearchPlayer(""); setFilterType("All"); setFilterStatus("All");
-              setEditingId(null);
-            }}
-            options={
-              matchesLoading
-                ? [{ value: "", label: "Loading matches…" }]
-                : matchOptions.length > 0
-                ? matchOptions
-                : [{ value: "", label: "No matches found" }]
-            }
-          />
+      {/* Tournament & Match Selector Card */}
+      <div
+        className="matches-form-card"
+        style={{
+          position: "relative",
+          zIndex: 50,
+          padding: "20px 24px",
+          marginBottom: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 20,
+            alignItems: "end",
+          }}
+        >
+          {/* Tournament Selector */}
+          <div className="matches-field" style={{ position: "relative", zIndex: 60 }}>
+            <label htmlFor="select-upload-tournament" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span>🏆 Select Tournament</span>
+              {matchesLoading && <span style={{ color: "#6366f1", fontSize: "0.75rem" }}>(loading…)</span>}
+            </label>
+            <CustomSelect
+              id="select-upload-tournament"
+              value={selectedTournamentId}
+              onChange={(e) => handleTournamentChange(e.target.value)}
+              options={tournamentOptions}
+              placeholder="Filter by Tournament..."
+            />
+          </div>
+
+          {/* Match Selector */}
+          <div className="matches-field" style={{ position: "relative", zIndex: 60 }}>
+            <label htmlFor="select-upload-match" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span>🏐 Active Match for Review</span>
+              {matchesLoading && <span style={{ color: "#6366f1", fontSize: "0.75rem" }}>(loading…)</span>}
+            </label>
+            <CustomSelect
+              id="select-upload-match"
+              value={selectedMatchId}
+              onChange={(e) => {
+                setSelectedMatchId(e.target.value);
+                setSearchPlayer("");
+                setFilterType("All");
+                setFilterStatus("All");
+                setEditingId(null);
+              }}
+              options={
+                matchesLoading
+                  ? [{ value: "", label: "Loading matches…" }]
+                  : matchOptions.length > 0
+                  ? matchOptions
+                  : [{ value: "", label: "No matches found for this tournament" }]
+              }
+              placeholder="Choose a Match..."
+            />
+          </div>
         </div>
+
         {activeMatch && (
-          <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "flex", gap: 16, flexWrap: "wrap", marginTop: 4 }}>
-            <span>Pipeline status: <strong style={{ color: pipelineStatus === "complete" ? "#10b981" : pipelineStatus === "processing" ? "#3b82f6" : pipelineStatus === "failed" ? "#ef4444" : "#94a3b8" }}>{pipelineStatus}</strong></span>
-            <span>Events loaded: <strong style={{ color: "#fff" }}>{events.length}</strong></span>
+          <div
+            style={{
+              fontSize: "0.83rem",
+              color: "var(--text-muted)",
+              display: "flex",
+              gap: 20,
+              flexWrap: "wrap",
+              paddingTop: 12,
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <span>
+              Match:{" "}
+              <strong style={{ color: "#fff" }}>
+                #{activeMatch.match_id} — {teamsMap[activeMatch.home_team_id] || `Team #${activeMatch.home_team_id}`} vs{" "}
+                {teamsMap[activeMatch.away_team_id] || `Team #${activeMatch.away_team_id}`}
+              </strong>
+            </span>
+            <span>
+              Pipeline Status:{" "}
+              <strong
+                style={{
+                  color:
+                    pipelineStatus === "complete"
+                      ? "#10b981"
+                      : pipelineStatus === "processing"
+                      ? "#3b82f6"
+                      : pipelineStatus === "failed"
+                      ? "#ef4444"
+                      : "#94a3b8",
+                }}
+              >
+                {pipelineStatus}
+              </strong>
+            </span>
+            <span>
+              Events Loaded: <strong style={{ color: "#f59e0b" }}>{events.length}</strong>
+            </span>
           </div>
         )}
       </div>
 
       {/* Event Review Layout */}
-      <div className="matches-review-layout">
+      <div className="matches-review-layout" style={{ position: "relative", zIndex: 1 }}>
         {/* Left Column: Real Video Preview */}
         <div className="matches-video-review-panel">
           <h2 className="matches-form-card-title" style={{ border: "none", paddingBottom: 0, margin: 0 }}>
@@ -357,23 +617,49 @@ export default function MatchesUploadPage() {
 
           {activeEvent && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "rgba(15,23,42,0.6)", padding: "12px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <span className={`matches-badge ${
-                    activeEvent.type.toLowerCase() === "kill" ? "matches-badge--red" : 
-                    activeEvent.type.toLowerCase() === "ace" ? "matches-badge--green" : 
-                    activeEvent.type.toLowerCase() === "block" ? "matches-badge--blue" : 
-                    "matches-badge--muted"
-                  }`}>
-                    {activeEvent.type}
-                  </span>
-                  <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#fff" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <label style={{ fontSize: "0.78rem", color: "#94a3b8", fontWeight: 600 }}>Event Type:</label>
+                  <select
+                    value={activeEvent.type}
+                    onChange={(e) => handleTypeChange(activeEvent.id, e.target.value)}
+                    className={`matches-badge ${
+                      activeEvent.type.toLowerCase() === "kill" ? "matches-badge--red" : 
+                      activeEvent.type.toLowerCase() === "ace" ? "matches-badge--green" : 
+                      activeEvent.type.toLowerCase() === "block" ? "matches-badge--blue" : 
+                      activeEvent.type.toLowerCase() === "spike" ? "matches-badge--orange" :
+                      activeEvent.type.toLowerCase() === "dig" ? "matches-badge--purple" :
+                      "matches-badge--yellow"
+                    }`}
+                    style={{
+                      cursor: "pointer",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      fontWeight: 700,
+                      fontSize: "0.82rem",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      outline: "none",
+                      background: "#0f172a",
+                      color: "#ffffff"
+                    }}
+                  >
+                    <option value="Kill" style={{ background: "#0f172a", color: "#f87171" }}>Kill</option>
+                    <option value="Ace" style={{ background: "#0f172a", color: "#4ade80" }}>Ace</option>
+                    <option value="Block" style={{ background: "#0f172a", color: "#60a5fa" }}>Block</option>
+                    <option value="Spike" style={{ background: "#0f172a", color: "#fb923c" }}>Spike</option>
+                    <option value="Dig" style={{ background: "#0f172a", color: "#c084fc" }}>Dig</option>
+                    <option value="Serve" style={{ background: "#0f172a", color: "#facc15" }}>Serve</option>
+                    <option value="Set" style={{ background: "#0f172a", color: "#38bdf8" }}>Set</option>
+                    <option value="Reception" style={{ background: "#0f172a", color: "#e2e8f0" }}>Reception</option>
+                    <option value="Assist" style={{ background: "#0f172a", color: "#94a3b8" }}>Assist</option>
+                  </select>
+                  <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#fff", marginLeft: 4 }}>
                     {activeEvent.player}
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: 16, fontSize: "0.8rem", color: "#cbd5e1" }}>
-                  <span>Time: {activeEvent.time}</span>
-                  <span>Confidence: {activeEvent.confidence}</span>
+                  <span>Time: <strong style={{ color: "#fff" }}>{activeEvent.time}</strong></span>
+                  <span>Confidence: <strong style={{ color: "#fff" }}>{activeEvent.confidence}</strong></span>
                 </div>
               </div>
               {activeEvent.transcript_snippet && (
@@ -387,43 +673,237 @@ export default function MatchesUploadPage() {
 
         {/* Right Column: Events Tagging List */}
         <div className="matches-event-list-panel">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
             <h2 className="matches-form-card-title" style={{ border: "none", paddingBottom: 0, margin: 0 }}>
               Tagged Play Events ({filteredEvents.length})
             </h2>
-            <button type="button" onClick={handleConfirmAll} className="matches-btn-view" style={{ padding: "4px 10px", fontSize: "0.78rem" }}>
-              Confirm All
-            </button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={handleConfirmAll}
+                className="matches-btn-view"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  border: "1px solid rgba(16, 185, 129, 0.4)",
+                  color: "#ffffff",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 10px rgba(16, 185, 129, 0.25)",
+                  transition: "all 0.2s ease"
+                }}
+                title="Confirm all events in this match"
+              >
+                <span>✓</span> Confirm All ({events.length})
+              </button>
+            </div>
           </div>
 
+          {/* Collective / Bulk Actions Toolbar (Active when 1+ events are selected) */}
+          {selectedEventIds.size > 0 && (
+            <div
+              className="matches-bulk-actions-bar"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 10,
+                background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98))",
+                border: "1px solid rgba(59, 130, 246, 0.45)",
+                borderRadius: "10px",
+                padding: "8px 14px",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+                animation: "matchesSlideUp 0.2s ease-out"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span
+                  style={{
+                    background: "#3b82f6",
+                    color: "#ffffff",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: "99px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4
+                  }}
+                >
+                  ⚡ {selectedEventIds.size} Selected
+                </span>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#94a3b8",
+                    fontSize: "0.78rem",
+                    cursor: "pointer",
+                    textDecoration: "underline"
+                  }}
+                >
+                  Deselect all
+                </button>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                {/* Collective Confirm */}
+                <button
+                  type="button"
+                  onClick={handleBulkConfirm}
+                  style={{
+                    background: "rgba(16, 185, 129, 0.2)",
+                    border: "1px solid rgba(16, 185, 129, 0.5)",
+                    color: "#34d399",
+                    padding: "5px 12px",
+                    borderRadius: "6px",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    transition: "all 0.15s ease"
+                  }}
+                  title="Confirm all selected events"
+                >
+                  <span>✓</span> Confirm ({selectedEventIds.size})
+                </button>
+
+                {/* Collective Reject */}
+                <button
+                  type="button"
+                  onClick={handleBulkReject}
+                  style={{
+                    background: "rgba(239, 68, 68, 0.2)",
+                    border: "1px solid rgba(239, 68, 68, 0.5)",
+                    color: "#f87171",
+                    padding: "5px 12px",
+                    borderRadius: "6px",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    transition: "all 0.15s ease"
+                  }}
+                  title="Reject all selected events"
+                >
+                  <span>✖</span> Reject ({selectedEventIds.size})
+                </button>
+
+                {/* Collective Reset Pending */}
+                <button
+                  type="button"
+                  onClick={handleBulkPending}
+                  style={{
+                    background: "rgba(234, 179, 8, 0.2)",
+                    border: "1px solid rgba(234, 179, 8, 0.5)",
+                    color: "#facc15",
+                    padding: "5px 10px",
+                    borderRadius: "6px",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    transition: "all 0.15s ease"
+                  }}
+                  title="Reset status of all selected events to Pending"
+                >
+                  <span>🔄</span> Pending
+                </button>
+
+                {/* Collective Change Type */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Type:</span>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleBulkChangeType(e.target.value);
+                        e.target.value = "";
+                      }
+                    }}
+                    defaultValue=""
+                    style={{
+                      background: "#0f172a",
+                      color: "#ffffff",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      outline: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <option value="" disabled>Change type...</option>
+                    <option value="Kill">Kill</option>
+                    <option value="Ace">Ace</option>
+                    <option value="Block">Block</option>
+                    <option value="Spike">Spike</option>
+                    <option value="Dig">Dig</option>
+                    <option value="Serve">Serve</option>
+                    <option value="Set">Set</option>
+                    <option value="Reception">Reception</option>
+                    <option value="Assist">Assist</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Filter Bar */}
-          <div className="matches-event-filters-row">
-            <input
-              type="text" placeholder="Search player…"
-              value={searchPlayer} onChange={(e) => setSearchPlayer(e.target.value)}
-              style={{ flex: 1 }}
-            />
-            <CustomSelect
-              value={filterType} onChange={(e) => setFilterType(e.target.value)}
-              options={[
-                { value: "All", label: "All Types" },
-                { value: "Kill", label: "Kill" }, { value: "Ace", label: "Ace" },
-                { value: "Block", label: "Block" }, { value: "Dig", label: "Dig" },
-                { value: "Serve", label: "Serve" }, { value: "Spike", label: "Spike" },
-                { value: "Set", label: "Set" },
-              ]}
-              className="matches-event-select-filter"
-            />
-            <CustomSelect
-              value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-              options={[
-                { value: "All", label: "All Status" },
-                { value: "Pending", label: "Pending" },
-                { value: "Confirmed", label: "Confirmed" },
-                { value: "Rejected", label: "Rejected" },
-              ]}
-              className="matches-event-select-filter"
-            />
+          <div className="matches-event-filters-row" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <input
+                type="text" placeholder="Search player…"
+                value={searchPlayer} onChange={(e) => setSearchPlayer(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div style={{ width: 140, minWidth: 120 }}>
+              <CustomSelect
+                value={filterType} onChange={(e) => setFilterType(e.target.value)}
+                options={[
+                  { value: "All", label: "All Types" },
+                  { value: "Kill", label: "Kill" },
+                  { value: "Ace", label: "Ace" },
+                  { value: "Block", label: "Block" },
+                  { value: "Spike", label: "Spike" },
+                  { value: "Dig", label: "Dig" },
+                  { value: "Serve", label: "Serve" },
+                  { value: "Set", label: "Set" },
+                  { value: "Reception", label: "Reception" },
+                  { value: "Assist", label: "Assist" },
+                ]}
+                placeholder="Event Type..."
+                className="matches-event-select-filter"
+              />
+            </div>
+            <div style={{ width: 130, minWidth: 110 }}>
+              <CustomSelect
+                value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+                options={[
+                  { value: "All", label: "All Status" },
+                  { value: "Pending", label: "Pending" },
+                  { value: "Confirmed", label: "Confirmed" },
+                  { value: "Rejected", label: "Rejected" },
+                ]}
+                placeholder="Status..."
+                className="matches-event-select-filter"
+              />
+            </div>
           </div>
 
           {/* Events Table */}
@@ -431,13 +911,22 @@ export default function MatchesUploadPage() {
             <table className="matches-event-table">
               <thead>
                 <tr>
-                  <th>Time</th><th>Type</th><th>Player</th><th>Conf.</th><th>Status</th><th>Actions</th>
+                  <th style={{ width: 40, textAlign: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={filteredEvents.length > 0 && filteredEvents.every((e) => selectedEventIds.has(e.id))}
+                      onChange={handleSelectAll}
+                      title="Select / Deselect all visible events"
+                      style={{ cursor: "pointer", width: 16, height: 16, accentColor: "#3b82f6" }}
+                    />
+                  </th>
+                  <th>Time</th><th>Type (Selectable)</th><th>Player</th><th>Conf.</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {eventsLoading ? (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: "center", padding: 30, color: "var(--text-muted)" }}>
+                    <td colSpan="7" style={{ textAlign: "center", padding: 30, color: "var(--text-muted)" }}>
                       Loading events…
                     </td>
                   </tr>
@@ -445,29 +934,90 @@ export default function MatchesUploadPage() {
                   filteredEvents.map((evt) => {
                     const isEditing = editingId === evt.id;
                     const isActive = activeEvent && activeEvent.id === evt.id;
+                    const isSelected = selectedEventIds.has(evt.id);
                     return (
                       <tr
                         key={evt.id}
                         onClick={() => !isEditing && setActiveEvent(evt)}
                         className={`matches-event-row${isActive ? " active" : ""}`}
+                        style={isSelected ? { background: "rgba(59, 130, 246, 0.12)", borderLeft: "3px solid #3b82f6" } : {}}
                       >
+                        <td style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => toggleSelectEvent(evt.id, e)}
+                            title="Select event for bulk action"
+                            style={{ cursor: "pointer", width: 16, height: 16, accentColor: "#3b82f6" }}
+                          />
+                        </td>
                         <td>{evt.time}</td>
                         <td>
                           {isEditing ? (
                             <div onClick={(e) => e.stopPropagation()}>
-                              <CustomSelect
-                                className="matches-event-select-edit"
+                              <select
                                 value={editType}
                                 onChange={(e) => setEditType(e.target.value)}
-                                options={[
-                                  { value: "Kill", label: "Kill" }, { value: "Ace", label: "Ace" },
-                                  { value: "Block", label: "Block" }, { value: "Dig", label: "Dig" },
-                                  { value: "Serve", label: "Serve" }, { value: "Spike", label: "Spike" },
-                                  { value: "Set", label: "Set" },
-                                ]}
-                              />
+                                style={{
+                                  background: "#0f172a",
+                                  color: "#ffffff",
+                                  border: "1px solid #3b82f6",
+                                  borderRadius: "6px",
+                                  padding: "4px 8px",
+                                  fontSize: "0.82rem",
+                                  fontWeight: 600,
+                                  outline: "none"
+                                }}
+                              >
+                                <option value="Kill">Kill</option>
+                                <option value="Ace">Ace</option>
+                                <option value="Block">Block</option>
+                                <option value="Spike">Spike</option>
+                                <option value="Dig">Dig</option>
+                                <option value="Serve">Serve</option>
+                                <option value="Set">Set</option>
+                                <option value="Reception">Reception</option>
+                                <option value="Assist">Assist</option>
+                              </select>
                             </div>
-                          ) : evt.type}
+                          ) : (
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <select
+                                value={evt.type}
+                                onChange={(e) => handleTypeChange(evt.id, e.target.value)}
+                                title="Coach: Click to change event type"
+                                className={`matches-badge ${
+                                  evt.type.toLowerCase() === "kill" ? "matches-badge--red" : 
+                                  evt.type.toLowerCase() === "ace" ? "matches-badge--green" : 
+                                  evt.type.toLowerCase() === "block" ? "matches-badge--blue" : 
+                                  evt.type.toLowerCase() === "spike" ? "matches-badge--orange" :
+                                  evt.type.toLowerCase() === "dig" ? "matches-badge--purple" :
+                                  "matches-badge--yellow"
+                                }`}
+                                style={{
+                                  cursor: "pointer",
+                                  padding: "3px 6px",
+                                  borderRadius: "6px",
+                                  fontWeight: 700,
+                                  fontSize: "0.78rem",
+                                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                                  outline: "none",
+                                  background: "#0f172a",
+                                  color: "#ffffff"
+                                }}
+                              >
+                                <option value="Kill" style={{ background: "#0f172a", color: "#f87171" }}>Kill</option>
+                                <option value="Ace" style={{ background: "#0f172a", color: "#4ade80" }}>Ace</option>
+                                <option value="Block" style={{ background: "#0f172a", color: "#60a5fa" }}>Block</option>
+                                <option value="Spike" style={{ background: "#0f172a", color: "#fb923c" }}>Spike</option>
+                                <option value="Dig" style={{ background: "#0f172a", color: "#c084fc" }}>Dig</option>
+                                <option value="Serve" style={{ background: "#0f172a", color: "#facc15" }}>Serve</option>
+                                <option value="Set" style={{ background: "#0f172a", color: "#38bdf8" }}>Set</option>
+                                <option value="Reception" style={{ background: "#0f172a", color: "#e2e8f0" }}>Reception</option>
+                                <option value="Assist" style={{ background: "#0f172a", color: "#94a3b8" }}>Assist</option>
+                              </select>
+                            </div>
+                          )}
                         </td>
                         <td>
                           {isEditing ? (
@@ -499,7 +1049,7 @@ export default function MatchesUploadPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: "center", padding: 30, color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.6 }}>
+                    <td colSpan="7" style={{ textAlign: "center", padding: 30, color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.6 }}>
                       {eventsEmptyMsg || "No events match your filter."}
                     </td>
                   </tr>

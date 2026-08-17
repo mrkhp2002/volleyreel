@@ -31,6 +31,7 @@ def list_matches(db: Session = Depends(get_db), current_user=Depends(get_current
 
 
 @router.post("/", response_model=MatchRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=MatchRead, status_code=status.HTTP_201_CREATED)
 def create_match(payload: MatchCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     # Explicit field assignment avoids passing unknown schema fields to the ORM.
     match = Match(
@@ -50,6 +51,7 @@ def create_match(payload: MatchCreate, db: Session = Depends(get_db), current_us
 
 
 @router.get("/{match_id}", response_model=MatchRead)
+@router.get("/{match_id}/", response_model=MatchRead)
 def get_match(match_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
@@ -58,6 +60,7 @@ def get_match(match_id: int, db: Session = Depends(get_db), current_user=Depends
 
 
 @router.put("/{match_id}", response_model=MatchRead)
+@router.put("/{match_id}/", response_model=MatchRead)
 def update_match(
     match_id: int,
     payload: MatchUpdate,
@@ -78,6 +81,7 @@ def update_match(
 
 
 @router.delete("/{match_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{match_id}/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_match(match_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:

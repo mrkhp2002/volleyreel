@@ -247,7 +247,15 @@ export default function MatchesCreatePage() {
       triggerToast(`Match #${res.data.match_id} created successfully!`);
       setTimeout(() => navigate("/matches"), 1200);
     } catch (err) {
-      triggerToast(err?.response?.data?.detail || "Failed to create match.", "error");
+      console.error("Error creating match:", err);
+      const detail = err?.response?.data?.detail;
+      const errorMsg =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
+          : "Failed to create match.";
+      triggerToast(errorMsg, "error");
     } finally {
       setSubmitLoading(false);
     }

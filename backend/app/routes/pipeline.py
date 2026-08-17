@@ -149,6 +149,7 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
 
 
 @router.post("/{match_id}/process")
+@router.post("/{match_id}/process/")
 def trigger_pipeline(
     match_id: int,
     background_tasks: BackgroundTasks,
@@ -157,11 +158,6 @@ def trigger_pipeline(
 ):
     """
     Trigger the AI pipeline for a match.
-
-    Why BackgroundTasks?
-    Processing takes a long time. BackgroundTasks lets FastAPI
-    return a response immediately while processing continues
-    in the background.
     """
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
@@ -190,6 +186,7 @@ def trigger_pipeline(
 
 
 @router.get("/{match_id}/status")
+@router.get("/{match_id}/status/")
 def get_pipeline_status(
     match_id: int,
     db: Session = Depends(get_db),
@@ -197,9 +194,6 @@ def get_pipeline_status(
 ):
     """
     Check the current processing status of a match.
-
-    Frontend polls this endpoint every 30 seconds to check
-    if processing is complete.
     """
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
@@ -229,6 +223,7 @@ class GenerateHighlightRequest(BaseModel):
 
 
 @router.post("/{match_id}/generate-highlight")
+@router.post("/{match_id}/generate-highlight/")
 def generate_selected_highlight(
     match_id: int,
     payload: GenerateHighlightRequest,
@@ -236,14 +231,8 @@ def generate_selected_highlight(
     current_user=Depends(get_current_user)
 ):
     """
-    Generate a highlight reel from a specific set of confirmed events.
-
-    Why this endpoint?
-    The full pipeline generates highlights from ALL detected events.
-    This endpoint lets coaches pick only the events they confirmed and
-    compile a custom highlight reel from those specific moments.
+    Generate a highlight reel from a specific set of confirmed/selected events.
     """
-    # Validate match exists
     match = db.query(Match).filter(Match.match_id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -257,7 +246,7 @@ def generate_selected_highlight(
     if not payload.event_ids:
         raise HTTPException(
             status_code=400,
-            detail="No event IDs provided. Confirm at least one event."
+            detail="No event IDs provided. Select at least one event."
         )
 
     # Fetch the selected events from the database
@@ -278,13 +267,14 @@ def generate_selected_highlight(
             "event_type": e.event_type,
             "timestamp_sec": e.timestamp_sec,
             "player_id": e.player_id,
+            "clip_url": e.clip_url,
             "transcript_snippet": e.transcript_snippet or "",
             "confidence": e.confidence or 0.0,
         }
         for e in events
     ]
 
-    # Run highlight generation synchronously (it's fast for selected clips)
+    # Run highlight generation synchronously (fast when clips exist or are cut)
     output_dir = os.path.join(OUTPUT_DIR, f"match_{match_id}")
     try:
         result = process_match_highlights(
@@ -299,14 +289,15 @@ def generate_selected_highlight(
             detail=f"Highlight generation failed: {exc}"
         )
 
-    # Persist the highlight URL back to the match record
-    if result.get("highlight_url"):
-        match.highlight_url = result["highlight_url"]
+    # Persist the clean highlight URL back to the match record
+    highlight_url = result.get("highlight_url")
+    if highlight_url:
+        match.highlight_url = highlight_url.replace("\\", "/")
         db.commit()
         db.refresh(match)
 
     return {
-        "highlight_url": result.get("highlight_url"),
+        "highlight_url": match.highlight_url,
         "clips_generated": len(result.get("clips", {})),
     }
 
