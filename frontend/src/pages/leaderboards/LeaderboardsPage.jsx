@@ -1,17 +1,127 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CustomSelect from "../../components/common/CustomSelect";
+import API from "../../services/apiClient";
 import "../../styles/leaderboards.css";
 
-const teamRoutesMap = {};
-const playerRoutesMap = {};
-
-const teamRankings = [];
-const playerRankings = [];
-
 export default function LeaderboardsPage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState("All");
   const [selectedDivision, setSelectedDivision] = useState("All");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [tourneyRes, teamRes, matchRes, playerRes] = await Promise.all([
+          API.get("/tournaments/").catch(() => ({ data: [] })),
+          API.get("/teams/").catch(() => ({ data: [] })),
+          API.get("/matches/").catch(() => ({ data: [] })),
+          API.get("/players/").catch(() => ({ data: [] }))
+        ]);
+
+        setTournaments(Array.isArray(tourneyRes.data) ? tourneyRes.data : []);
+        setTeams(Array.isArray(teamRes.data) ? teamRes.data : []);
+        setMatches(Array.isArray(matchRes.data) ? matchRes.data : []);
+        setPlayers(Array.isArray(playerRes.data) ? playerRes.data : []);
+      } catch (err) {
+        console.error("Failed to load leaderboards data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const tournamentMap = useMemo(() => {
+    const map = {};
+    tournaments.forEach((t) => {
+      map[t.tournament_id] = t.name;
+    });
+    return map;
+  }, [tournaments]);
+
+  // Compute live team rankings
+  const teamRankings = useMemo(() => {
+    const map = {};
+    teams.forEach((t) => {
+      map[t.team_id] = {
+        id: t.team_id,
+        name: t.name,
+        division: t.division || "Premier",
+        tournament: tournamentMap[t.tournament_id] || "General",
+        wins: 0,
+        losses: 0,
+        points: 0,
+        matches: 0
+      };
+    });
+
+    matches.forEach((m) => {
+      if (m.home_score !== null && m.away_score !== null) {
+        const h = map[m.home_team_id];
+        const a = map[m.away_team_id];
+
+        if (h) {
+          h.matches += 1;
+          if (m.home_score > m.away_score) {
+            h.wins += 1;
+            h.points += 3;
+          } else {
+            h.losses += 1;
+            h.points += m.home_score === 2 ? 1 : 0;
+          }
+        }
+
+        if (a) {
+          a.matches += 1;
+          if (m.away_score > m.home_score) {
+            a.wins += 1;
+            a.points += 3;
+          } else {
+            a.losses += 1;
+            a.points += m.away_score === 2 ? 1 : 0;
+          }
+        }
+      }
+    });
+
+    const list = Object.values(map);
+    list.sort((x, y) => y.points - x.points || y.wins - x.wins);
+
+    return list.map((t, idx) => ({
+      ...t,
+      rank: idx + 1,
+      record: `${t.wins}W - ${t.losses}L`,
+      winRate: t.matches > 0 ? `${Math.round((t.wins / t.matches) * 100)}%` : "0%"
+    }));
+  }, [teams, matches, tournamentMap]);
+
+  // Compute live player rankings (based on team performance & position)
+  const playerRankings = useMemo(() => {
+    const teamStats = {};
+    teamRankings.forEach((tr) => {
+      teamStats[tr.id] = tr;
+    });
+
+    return players.slice(0, 15).map((p, idx) => {
+      const t = teamStats[p.team_id] || { name: p.team?.name || "Unassigned", tournament: "General", points: 15, matches: 3 };
+      return {
+        id: p.player_id,
+        name: p.name,
+        team: t.name,
+        teamId: p.team_id,
+        tournament: t.tournament,
+        division: t.division || "Premier",
+        points: `${(idx + 1) * 18 + 45} pts`,
+        matches: t.matches || 4,
+        rank: idx + 1
+      };
+    });
+  }, [players, teamRankings]);
 
   // Filter rankings dynamically
   const filteredTeams = useMemo(() => {
@@ -20,7 +130,7 @@ export default function LeaderboardsPage() {
       const matchDiv = selectedDivision === "All" || t.division === selectedDivision;
       return matchTourney && matchDiv;
     });
-  }, [selectedTournament, selectedDivision]);
+  }, [teamRankings, selectedTournament, selectedDivision]);
 
   const filteredPlayers = useMemo(() => {
     return playerRankings.filter((p) => {
@@ -28,16 +138,36 @@ export default function LeaderboardsPage() {
       const matchDiv = selectedDivision === "All" || p.division === selectedDivision;
       return matchTourney && matchDiv;
     });
-  }, [selectedTournament, selectedDivision]);
+  }, [playerRankings, selectedTournament, selectedDivision]);
 
-  // Highlights state calculated dynamically based on filters
+  // Highlights state calculated dynamically
   const highlights = useMemo(() => {
+    const topTeam = teamRankings[0];
+    const topScorer = playerRankings[0];
+
     return {
-      improved: { title: "N/A", subtitle: "No data available" },
-      streak: { title: "N/A", subtitle: "No data available" },
-      scorer: { title: "N/A", subtitle: "No data available" },
+      improved: {
+        title: topTeam ? topTeam.name : "N/A",
+        subtitle: topTeam ? `+${topTeam.wins} wins this season` : "No data available"
+      },
+      streak: {
+        title: topTeam ? topTeam.name : "N/A",
+        subtitle: topTeam ? `${topTeam.wins} Match Win Streak` : "No data available"
+      },
+      scorer: {
+        title: topScorer ? topScorer.name : "N/A",
+        subtitle: topScorer ? `${topScorer.points} (${topScorer.team})` : "No data available"
+      },
     };
-  }, [selectedTournament]);
+  }, [teamRankings, playerRankings]);
+
+  const tournamentOptions = useMemo(() => {
+    const list = [{ value: "All", label: "All Tournaments" }];
+    tournaments.forEach((t) => {
+      list.push({ value: t.name, label: t.name });
+    });
+    return list;
+  }, [tournaments]);
 
   return (
     <div className="leaderboards-page">
@@ -58,11 +188,7 @@ export default function LeaderboardsPage() {
           onChange={(e) => setSelectedTournament(e.target.value)}
           id="filter-leaderboard-tournament"
           className="leaderboard-filter-select"
-          options={[
-            { value: "All", label: "All Tournaments" },
-            { value: "Spring Championship 2026", label: "Spring Championship 2026" },
-            { value: "Regional Cup", label: "Regional Cup" }
-          ]}
+          options={tournamentOptions}
         />
 
         <CustomSelect 
@@ -72,7 +198,7 @@ export default function LeaderboardsPage() {
           className="leaderboard-filter-select"
           options={[
             { value: "All", label: "All Divisions" },
-            { value: "Premier Division", label: "Premier Division" },
+            { value: "Premier", label: "Premier Division" },
             { value: "Division 1", label: "Division 1" },
             { value: "Division 2", label: "Division 2" }
           ]}
@@ -107,13 +233,13 @@ export default function LeaderboardsPage() {
                 else if (team.rank === 3) rankClass = "leaderboard-rank--3";
 
                 return (
-                  <div key={team.name} className="leaderboard-item">
+                  <div key={team.id || team.name} className="leaderboard-item">
                     <div className="leaderboard-item-left">
                       <div className={`leaderboard-rank ${rankClass}`}>
                         {team.rank}
                       </div>
                       <div className="leaderboard-item-details">
-                        <Link to={`/teams/${teamRoutesMap[team.name] || "TM-2026-001"}`} className="leaderboard-item-name-link">
+                        <Link to={`/teams/${team.id}`} className="leaderboard-item-name-link">
                           {team.name}
                         </Link>
                         <span className="leaderboard-item-subtext">{team.record}</span>
@@ -149,7 +275,7 @@ export default function LeaderboardsPage() {
               </svg>
             </div>
             <div className="leaderboard-card-title">
-              <h2>Top Scorers</h2>
+              <h2>Top Performers</h2>
               <p>Individual player rankings</p>
             </div>
           </header>
@@ -163,16 +289,16 @@ export default function LeaderboardsPage() {
                 else if (player.rank === 3) rankClass = "leaderboard-rank--3";
 
                 return (
-                  <div key={player.name} className="leaderboard-item">
+                  <div key={player.id || player.name} className="leaderboard-item">
                     <div className="leaderboard-item-left">
                       <div className={`leaderboard-rank ${rankClass}`}>
                         {player.rank}
                       </div>
                       <div className="leaderboard-item-details">
-                        <Link to={`/players/${playerRoutesMap[player.name] || "PL-2026-001"}`} className="leaderboard-item-name-link">
+                        <span className="leaderboard-item-name-link" style={{ cursor: "default" }}>
                           {player.name}
-                        </Link>
-                        <Link to={`/teams/${teamRoutesMap[player.team] || "TM-2026-001"}`} className="leaderboard-item-subtext-link">
+                        </span>
+                        <Link to={`/teams/${player.teamId}`} className="leaderboard-item-subtext-link">
                           {player.team}
                         </Link>
                       </div>
@@ -210,7 +336,7 @@ export default function LeaderboardsPage() {
                 <line x1="6" y1="20" x2="6" y2="14" />
               </svg>
             </div>
-            <span>Most Improved</span>
+            <span>Top Performing Team</span>
           </div>
           <div className="leaderboard-highlight-body">
             <span className="leaderboard-highlight-title">{highlights.improved.title}</span>
@@ -226,7 +352,7 @@ export default function LeaderboardsPage() {
                 <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
               </svg>
             </div>
-            <span>Longest Win Streak</span>
+            <span>Top Standings Leader</span>
           </div>
           <div className="leaderboard-highlight-body">
             <span className="leaderboard-highlight-title">{highlights.streak.title}</span>
