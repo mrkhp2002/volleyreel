@@ -68,6 +68,9 @@ def update_tournament(
     return tournament
 
 
+from app.models.match import Match
+from app.models.team import Team
+
 @router.delete("/{tournament_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     tournament = db.query(Tournament).filter(
@@ -77,5 +80,14 @@ def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current
 
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
+
+    # Explicitly delete all matches in this tournament
+    db.query(Match).filter(Match.tournament_id == tournament_id).delete(synchronize_session=False)
+
+    # Explicitly delete all teams in this tournament
+    db.query(Team).filter(Team.tournament_id == tournament_id).delete(synchronize_session=False)
+
+    # Delete the tournament object
     db.delete(tournament)
     db.commit()
+

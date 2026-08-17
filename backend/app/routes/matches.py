@@ -18,9 +18,16 @@ VIDEO_UPLOAD_DIR = "media/videos"
 
 # ── Existing CRUD endpoints ────────────────────────────────────────────────────
 
+from app.models.tournament import Tournament
+
 @router.get("/", response_model=list[MatchRead])
 def list_matches(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return db.query(Match).all()
+    return (
+        db.query(Match)
+        .join(Tournament, Match.tournament_id == Tournament.tournament_id)
+        .filter(Tournament.user_id == current_user.id)
+        .all()
+    )
 
 
 @router.post("/", response_model=MatchRead, status_code=status.HTTP_201_CREATED)

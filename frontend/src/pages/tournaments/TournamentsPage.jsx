@@ -127,12 +127,18 @@ export default function TournamentsPage() {
     };
   }, [tournaments]);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-    const updated = tournaments.filter((t) => t.id !== deleteTarget.id);
-    setTournaments(updated);
-    setDeleteTarget(null);
-    setPage(1);
+    try {
+      await API.delete(`/tournaments/${deleteTarget.id}`);
+      const updated = tournaments.filter((t) => t.id !== deleteTarget.id);
+      setTournaments(updated);
+      setDeleteTarget(null);
+      setPage(1);
+    } catch (error) {
+      console.error("Error deleting tournament:", error);
+      alert("Failed to delete tournament from database.");
+    }
   };
 
   return (
@@ -338,10 +344,10 @@ export default function TournamentsPage() {
       {/* Delete Confirmation popup overlay */}
       <DeleteConfirmModal
         open={Boolean(deleteTarget)}
-        title="Delete Tournament Profile"
-        description="Are you sure you want to permanently delete this tournament profile? All associated logs and schedules will be lost."
+        title="Delete Tournament & All Data"
+        description="⚠️ WARNING: Deleting this tournament will PERMANENTLY DELETE all associated teams, match records, player rosters, video uploads, and analytics reports. This action CANNOT be undone."
         itemName={deleteTarget?.name || ""}
-        confirmLabel="Delete Tournament"
+        confirmLabel="Delete Everything"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirm}
       />

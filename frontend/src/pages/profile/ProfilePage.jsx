@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
+import API from "../../services/apiClient";
 import "../../styles/management.css";
 import "../../styles/profile.css";
 
@@ -88,6 +89,33 @@ export default function ProfilePage() {
   const email = user?.email || "admin@volleyreel.com";
   const role = user?.role || "Administrator";
 
+  // Live Activity Stats from Database
+  const [liveStats, setLiveStats] = useState({
+    tournamentsManaged: 0,
+    matchesManaged: 0,
+    reportsCreated: 0,
+    lastLogin: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + " at " + new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+  });
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const statsRes = await API.get("/dashboard/stats");
+        if (statsRes.data) {
+          setLiveStats((prev) => ({
+            ...prev,
+            tournamentsManaged: statsRes.data.total_tournaments || 0,
+            matchesManaged: statsRes.data.total_matches || 0,
+            reportsCreated: statsRes.data.total_tournaments || 0,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile live stats", err);
+      }
+    }
+    fetchStats();
+  }, []);
+
   // Additional profile states persisted in localStorage
   const [profileData, setProfileData] = useState(() => {
     const saved = localStorage.getItem("volleyreel_profile_extra");
@@ -98,7 +126,7 @@ export default function ProfilePage() {
       city: "Los Angeles",
       country: "United States",
       joinedDate: "January 15, 2024",
-      lastActive: "March 18, 2026 at 10:30 AM",
+      lastActive: "Active Now",
       avatarUrl: null
     };
 
@@ -558,17 +586,17 @@ export default function ProfilePage() {
             <div className="profile-activity-cards-list">
               <div className="profile-activity-stat-card profile-activity-stat-card--amber">
                 <span>Reports Created</span>
-                <strong>45</strong>
+                <strong>{liveStats.reportsCreated}</strong>
               </div>
 
               <div className="profile-activity-stat-card profile-activity-stat-card--blue">
                 <span>Matches Managed</span>
-                <strong>128</strong>
+                <strong>{liveStats.matchesManaged}</strong>
               </div>
 
               <div className="profile-activity-stat-card profile-activity-stat-card--teal">
                 <span>Tournaments Managed</span>
-                <strong>12</strong>
+                <strong>{liveStats.tournamentsManaged}</strong>
               </div>
             </div>
 
@@ -586,7 +614,7 @@ export default function ProfilePage() {
                 Last Login
               </span>
               <strong style={{ fontSize: "0.85rem", color: "#ffffff", fontWeight: 700 }}>
-                March 18, 2026 at 9:30 AM
+                {liveStats.lastLogin}
               </strong>
             </div>
           </div>
