@@ -122,14 +122,45 @@ export default function MatchesCreatePage() {
     [tournamentTeams, homeTeamId]
   );
 
+  const venueOptions = useMemo(() => {
+    const set = new Set();
+    const selectedTourn = tournaments.find((t) => String(t.tournament_id) === String(tournamentId));
+    if (selectedTourn && selectedTourn.location && selectedTourn.location.trim()) {
+      set.add(selectedTourn.location.trim());
+    }
+    tournamentTeams.forEach((t) => {
+      if (t.home_venue && t.home_venue.trim()) {
+        set.add(t.home_venue.trim());
+      }
+      if (t.city && t.city.trim()) {
+        set.add(`${t.city.trim()} Indoor Arena`);
+      }
+    });
+    if (set.size === 0) {
+      set.add("Main Indoor Sports Arena");
+      set.add("University Gymnasium Court 1");
+      set.add("National Volleyball Center");
+    }
+    return Array.from(set);
+  }, [tournaments, tournamentId, tournamentTeams]);
+
   const handleTournamentChange = (e) => {
     setTournamentId(e.target.value);
     setHomeTeamId("");
     setAwayTeamId("");
+    setVenue("");
   };
+
   const handleHomeTeamChange = (e) => {
-    setHomeTeamId(e.target.value);
-    if (e.target.value && e.target.value === awayTeamId) setAwayTeamId("");
+    const selectedTeamId = e.target.value;
+    setHomeTeamId(selectedTeamId);
+    if (selectedTeamId && selectedTeamId === awayTeamId) setAwayTeamId("");
+
+    // Auto-select Home Team's venue if available
+    const selectedTeam = tournamentTeams.find((t) => String(t.team_id) === String(selectedTeamId));
+    if (selectedTeam && selectedTeam.home_venue) {
+      setVenue(selectedTeam.home_venue);
+    }
   };
 
   // ── Real file picker ─────────────────────────────────────────────────────
@@ -191,8 +222,15 @@ export default function MatchesCreatePage() {
     if (String(homeTeamId) === String(awayTeamId)) {
       triggerToast("Home and away teams must be different.", "error"); return;
     }
-    if (matchStatus === "completed" && (homeScore === "" || awayScore === "")) {
-      triggerToast("Scores are required for completed matches.", "error"); return;
+    if (matchStatus === "completed") {
+      if (homeScore === "" || awayScore === "") {
+        triggerToast("Sets won are required for completed matches.", "error"); return;
+      }
+      const h = Number(homeScore);
+      const a = Number(awayScore);
+      if (h !== 3 && a !== 3) {
+        triggerToast("One team must win 3 sets to win a volleyball match (e.g. 3-0, 3-1, 3-2).", "error"); return;
+      }
     }
     try {
       setSubmitLoading(true);
@@ -224,8 +262,15 @@ export default function MatchesCreatePage() {
     if (!tournamentId) { triggerToast("Please select a tournament.", "error"); return; }
     if (!homeTeamId) { triggerToast("Please select a home team.", "error"); return; }
     if (!awayTeamId) { triggerToast("Please select an away team.", "error"); return; }
-    if (String(homeTeamId) === String(awayTeamId)) {
-      triggerToast("Home and away teams must be different.", "error"); return;
+    if (matchStatus === "completed") {
+      if (homeScore === "" || awayScore === "") {
+        triggerToast("Sets won are required for completed matches.", "error"); return;
+      }
+      const h = Number(homeScore);
+      const a = Number(awayScore);
+      if (h !== 3 && a !== 3) {
+        triggerToast("One team must win 3 sets to win a volleyball match (e.g. 3-0, 3-1, 3-2).", "error"); return;
+      }
     }
 
     try {
@@ -424,12 +469,29 @@ export default function MatchesCreatePage() {
           {matchStatus === "completed" && (
             <>
               <div className="matches-field">
-                <label htmlFor="form-home-score">Home Score *</label>
-                <input id="form-home-score" type="number" min="0" placeholder="e.g., 25" value={homeScore} onChange={(e) => setHomeScore(e.target.value)} required />
+                <label htmlFor="form-home-score">Home Sets Won (Sessions) *</label>
+                <select id="form-home-score" value={homeScore} onChange={(e) => setHomeScore(e.target.value)} style={SEL} required>
+                  <option value="">— Select Sets Won —</option>
+                  <option value="3">3 Sets Won (Match Winner)</option>
+                  <option value="2">2 Sets Won</option>
+                  <option value="1">1 Set Won</option>
+                  <option value="0">0 Sets Won</option>
+                </select>
               </div>
               <div className="matches-field">
-                <label htmlFor="form-away-score">Away Score *</label>
-                <input id="form-away-score" type="number" min="0" placeholder="e.g., 20" value={awayScore} onChange={(e) => setAwayScore(e.target.value)} required />
+                <label htmlFor="form-away-score">Away Sets Won (Sessions) *</label>
+                <select id="form-away-score" value={awayScore} onChange={(e) => setAwayScore(e.target.value)} style={SEL} required>
+                  <option value="">— Select Sets Won —</option>
+                  <option value="3">3 Sets Won (Match Winner)</option>
+                  <option value="2">2 Sets Won</option>
+                  <option value="1">1 Set Won</option>
+                  <option value="0">0 Sets Won</option>
+                </select>
+              </div>
+              <div className="matches-field matches-form-grid--full">
+                <div style={{ background: "rgba(59, 130, 246, 0.08)", border: "1px solid rgba(59, 130, 246, 0.25)", borderRadius: 8, padding: "10px 14px", fontSize: "0.83rem", color: "#93c5fd", lineHeight: 1.5 }}>
+                  🏐 <strong>Volleyball Match Format (Best of 5 Sets):</strong> The final score represents the total <strong>sets (sessions) won</strong> by each team. One team must win <strong>3 sets</strong> to win the match (e.g. <strong>3–0</strong>, <strong>3–1</strong>, or <strong>3–2</strong>).
+                </div>
               </div>
             </>
           )}
@@ -452,11 +514,35 @@ export default function MatchesCreatePage() {
           </div>
           <div className="matches-field">
             <label htmlFor="form-venue">Venue</label>
-            <input id="form-venue" type="text" placeholder="e.g., Central Sports Arena" value={venue} onChange={(e) => setVenue(e.target.value)} />
+            <select id="form-venue" value={venue} onChange={(e) => setVenue(e.target.value)} style={SEL}>
+              <option value="">— Select Venue —</option>
+              {venueOptions.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            {tournamentId && (
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 4, display: "block" }}>
+                📍 Displays home venues of teams in this tournament
+              </span>
+            )}
           </div>
+
           <div className="matches-field">
             <label htmlFor="form-stage">Match Stage / Round</label>
-            <input id="form-stage" type="text" placeholder="e.g., Finals" value={stage} onChange={(e) => setStage(e.target.value)} />
+            <select id="form-stage" value={stage} onChange={(e) => setStage(e.target.value)} style={SEL}>
+              <option value="">— Select Stage / Round —</option>
+              <option value="Group Stage">Group Stage</option>
+              <option value="Group Stage - Round 1">Group Stage - Round 1</option>
+              <option value="Group Stage - Round 2">Group Stage - Round 2</option>
+              <option value="Group Stage - Round 3">Group Stage - Round 3</option>
+              <option value="Quarter-Finals">Quarter-Finals</option>
+              <option value="Semi-Finals">Semi-Finals</option>
+              <option value="3rd Place Playoff">3rd Place Playoff</option>
+              <option value="Finals">Finals</option>
+              <option value="Exhibition / Friendly">Exhibition / Friendly</option>
+            </select>
           </div>
           <div className="matches-field matches-form-grid--full">
             <label htmlFor="form-notes">Notes</label>

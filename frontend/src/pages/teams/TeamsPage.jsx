@@ -28,15 +28,25 @@ export default function TeamsPage() {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await API.get("/teams/");
+        const [teamsRes, playersRes] = await Promise.all([
+          API.get("/teams/"),
+          API.get("/players/").catch(() => ({ data: [] }))
+        ]);
 
-        // Backend data Frontend galapena widihata map karanawa
-        const formattedTeams = response.data.map(t => ({
+        const allPlayers = playersRes.data || [];
+        const playersCountMap = {};
+        allPlayers.forEach(p => {
+          if (p.team_id) {
+            playersCountMap[p.team_id] = (playersCountMap[p.team_id] || 0) + 1;
+          }
+        });
+
+        const formattedTeams = (teamsRes.data || []).map(t => ({
           id: String(t.team_id),
           name: t.name,
           coach: t.coach || "-",
           city: t.club_name || "-",
-          players: 0,
+          players: playersCountMap[t.team_id] || 0,
           division: t.division || "Premier",
           status: t.status || "Active",
           tournament_id: t.tournament_id

@@ -79,8 +79,21 @@ export default function TournamentDetailsPage() {
   useEffect(() => {
     const fetchTournamentDetails = async () => {
       try {
-        const response = await API.get(`/tournaments/${tournamentId}`);
-        const t = response.data;
+        setLoading(true);
+        const [tournRes, allTeamsRes, allMatchesRes] = await Promise.all([
+          API.get(`/tournaments/${tournamentId}`),
+          API.get("/teams/").catch(() => ({ data: [] })),
+          API.get("/matches/").catch(() => ({ data: [] }))
+        ]);
+
+        const t = tournRes.data;
+        const numId = Number(tournamentId);
+
+        const tournamentTeams = (allTeamsRes.data || []).filter(
+          (tm) => Number(tm.tournament_id) === numId
+        );
+
+        setTeams(tournamentTeams);
 
         setTournament({
           id: String(t.tournament_id),
@@ -88,10 +101,10 @@ export default function TournamentDetailsPage() {
           category: t.category || "General",
           type: t.type || "Standard",
           status: t.status || "Upcoming",
-          teamsCount: 0,
+          teamsCount: tournamentTeams.length,
           teamLimit: t.team_limit || 16,
           groupsCount: t.groups_count || 4,
-          matchFormat: t.match_format || "Best of 3 Sets",
+          matchFormat: t.match_format || "Best of 5 Sets",
           setRules: t.set_rules || "25 Point Rally",
           location: t.location || "-",
           organizerName: t.organizer_name || "-",
@@ -103,11 +116,6 @@ export default function TournamentDetailsPage() {
           enableLeaderboard: t.enable_leaderboard !== false,
           notes: t.notes || ""
         });
-
-        const teamsResponse = await API.get(`/teams/${tournamentId}`);
-        setTeams(teamsResponse.data);
-
-
       } catch (error) {
         console.error("Error fetching tournament details:", error);
       } finally {

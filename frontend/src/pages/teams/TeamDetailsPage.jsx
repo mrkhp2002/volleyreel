@@ -38,9 +38,39 @@ export default function TeamDetailsPage() {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await API.get(`/teams/${teamId}`);
-        const t = response.data;
+        setLoading(true);
+        const [teamRes, playersRes, matchesRes] = await Promise.all([
+          API.get(`/teams/${teamId}`),
+          API.get("/players/").catch(() => ({ data: [] })),
+          API.get("/matches/").catch(() => ({ data: [] }))
+        ]);
 
+        const t = teamRes.data;
+        const numId = Number(teamId);
+
+        // Real players for this team
+        const teamPlayers = (playersRes.data || []).filter(
+          (p) => Number(p.team_id) === numId
+        );
+
+        // Real matches and win stats for this team
+        const teamMatches = (matchesRes.data || []).filter(
+          (m) => Number(m.home_team_id) === numId || Number(m.away_team_id) === numId
+        );
+
+        const matchesPlayedCount = teamMatches.length;
+        let winsCount = 0;
+
+        teamMatches.forEach((m) => {
+          const isHome = Number(m.home_team_id) === numId;
+          const isAway = Number(m.away_team_id) === numId;
+          const hScore = Number(m.home_score || 0);
+          const aScore = Number(m.away_score || 0);
+
+          if ((isHome && hScore > aScore) || (isAway && aScore > hScore)) {
+            winsCount++;
+          }
+        });
 
         setTeam({
           id: String(t.team_id),
@@ -51,9 +81,9 @@ export default function TeamDetailsPage() {
           city: t.city || "-",
           status: t.status || "Active",
           description: t.description || "No description provided.",
-          players: [],
-          matchesPlayed: 0,
-          wins: 0
+          players: teamPlayers,
+          matchesPlayed: matchesPlayedCount,
+          wins: winsCount
         });
       } catch (error) {
         console.error("Error fetching team details:", error);
