@@ -8,7 +8,7 @@ import "../../styles/profile.css";
 // SVG Icons
 function MapPinIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -17,7 +17,7 @@ function MapPinIcon() {
 
 function PhoneIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   );
@@ -25,7 +25,7 @@ function PhoneIcon() {
 
 function MailIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
       <polyline points="22,6 12,13 2,6" />
     </svg>
@@ -34,7 +34,7 @@ function MailIcon() {
 
 function BuildingIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
       <line x1="9" y1="22" x2="9" y2="16" />
       <line x1="15" y1="22" x2="15" y2="16" />
@@ -46,7 +46,7 @@ function BuildingIcon() {
 
 function CalendarIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
@@ -57,7 +57,7 @@ function CalendarIcon() {
 
 function ClockIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "16px", height: "16px" }}>
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
@@ -66,7 +66,7 @@ function ClockIcon() {
 
 function ShieldIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "18px", height: "18px" }}>
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
@@ -74,7 +74,7 @@ function ShieldIcon() {
 
 function EditIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: "18px", height: "18px" }}>
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
@@ -120,11 +120,11 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState(() => {
     const saved = localStorage.getItem("volleyreel_profile_extra");
     const defaultData = {
-      phone: "+1 (555) 123-4567",
+      phone: "",
       club: "VolleyReel Analytics Platform",
-      address: "123 Sports Avenue",
-      city: "Los Angeles",
-      country: "United States",
+      address: "",
+      city: "",
+      country: "",
       joinedDate: "January 15, 2024",
       lastActive: "Active Now",
       avatarUrl: null
@@ -421,19 +421,55 @@ export default function ProfilePage() {
               </div>
               <div className="profile-info-block">
                 <span className="profile-info-label">Phone Number</span>
-                <span className="profile-info-value">{profileData.phone}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                  <span className="profile-info-value" style={{ color: profileData.phone ? "#ffffff" : "#64748b", fontStyle: profileData.phone ? "normal" : "italic", fontWeight: profileData.phone ? 700 : 500 }}>
+                    {profileData.phone || "Not specified"}
+                  </span>
+                  {!profileData.phone && (
+                    <button type="button" onClick={() => setEditProfileOpen(true)} className="profile-pref-edit-btn" style={{ fontSize: "0.75rem", padding: "2px 8px" }}>
+                      + Edit
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="profile-info-block">
                 <span className="profile-info-label">Address</span>
-                <span className="profile-info-value">{profileData.address}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                  <span className="profile-info-value" style={{ color: profileData.address ? "#ffffff" : "#64748b", fontStyle: profileData.address ? "normal" : "italic", fontWeight: profileData.address ? 700 : 500 }}>
+                    {profileData.address || "Not specified"}
+                  </span>
+                  {!profileData.address && (
+                    <button type="button" onClick={() => setEditProfileOpen(true)} className="profile-pref-edit-btn" style={{ fontSize: "0.75rem", padding: "2px 8px" }}>
+                      + Edit
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="profile-info-block">
                 <span className="profile-info-label">City</span>
-                <span className="profile-info-value">{profileData.city}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                  <span className="profile-info-value" style={{ color: profileData.city ? "#ffffff" : "#64748b", fontStyle: profileData.city ? "normal" : "italic", fontWeight: profileData.city ? 700 : 500 }}>
+                    {profileData.city || "Not specified"}
+                  </span>
+                  {!profileData.city && (
+                    <button type="button" onClick={() => setEditProfileOpen(true)} className="profile-pref-edit-btn" style={{ fontSize: "0.75rem", padding: "2px 8px" }}>
+                      + Edit
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="profile-info-block">
                 <span className="profile-info-label">Country</span>
-                <span className="profile-info-value">{profileData.country}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                  <span className="profile-info-value" style={{ color: profileData.country ? "#ffffff" : "#64748b", fontStyle: profileData.country ? "normal" : "italic", fontWeight: profileData.country ? 700 : 500 }}>
+                    {profileData.country || "Not specified"}
+                  </span>
+                  {!profileData.country && (
+                    <button type="button" onClick={() => setEditProfileOpen(true)} className="profile-pref-edit-btn" style={{ fontSize: "0.75rem", padding: "2px 8px" }}>
+                      + Edit
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -534,37 +570,49 @@ export default function ProfilePage() {
           
           {/* Card 5: Security Card */}
           <div className="mgmt-card" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <h3 className="mgmt-card-title" style={{ borderBottom: "none", marginBottom: 0, paddingBottom: 0 }}>
-              <ShieldIcon />
-              Security
-            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingBottom: "12px", borderBottom: "1px solid rgba(255, 255, 255, 0.06)" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(20, 184, 166, 0.12)", border: "1px solid rgba(20, 184, 166, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "#14b8a6", flexShrink: 0 }}>
+                <ShieldIcon />
+              </div>
+              <div>
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, margin: 0, color: "#ffffff" }}>Security &amp; Account</h3>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block" }}>Authentication &amp; Session Controls</span>
+              </div>
+            </div>
             
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "10px" }}>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>
-                  Password Last Changed
-                </span>
-                <strong style={{ fontSize: "0.95rem", color: "#ffffff" }}>February 10, 2026</strong>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "10px" }}>
+                <div>
+                  <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "2px" }}>
+                    Password Last Changed
+                  </span>
+                  <strong style={{ fontSize: "0.88rem", color: "#ffffff" }}>February 10, 2026</strong>
+                </div>
+                <button type="button" onClick={() => setChangePasswordOpen(true)} className="profile-pref-edit-btn" style={{ fontSize: "0.78rem" }}>
+                  Change
+                </button>
               </div>
 
-              <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "10px" }}>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>
-                  Two-Factor Authentication
-                </span>
-                <span className="mgmt-badge mgmt-badge--inactive">Not Enabled</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "10px" }}>
+                <div>
+                  <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "2px" }}>
+                    Two-Factor Authentication
+                  </span>
+                  <span className="mgmt-badge mgmt-badge--inactive" style={{ fontSize: "0.72rem" }}>Not Enabled</span>
+                </div>
               </div>
 
               <div>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "2px" }}>
                   Active Session
                 </span>
-                <strong style={{ fontSize: "0.95rem", color: "#ffffff" }}>1 device</strong>
+                <strong style={{ fontSize: "0.88rem", color: "#ffffff" }}>1 Active Device (Current Browser)</strong>
               </div>
             </div>
 
             <button 
               type="button" 
-              onClick={() => setManageSecurityOpen(true)}
+              onClick={() => setChangePasswordOpen(true)}
               className="mgmt-btn mgmt-btn--block"
               style={{
                 background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
@@ -573,7 +621,7 @@ export default function ProfilePage() {
                 marginTop: "4px"
               }}
             >
-              Manage Security
+              Manage Security Settings
             </button>
           </div>
 
@@ -628,30 +676,46 @@ export default function ProfilePage() {
       {/* Modal 1: Edit Profile details overlay */}
       {editProfileOpen && (
         <div className="profile-modal-overlay" onClick={() => setEditProfileOpen(false)}>
-          <div className="profile-modal-container" onClick={(e) => e.stopPropagation()}>
-            <h3>
-              <EditIcon />
-              Edit User Profile Details
-            </h3>
+          <div className="profile-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "560px", padding: "28px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "16px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(245, 158, 11, 0.12)", border: "1px solid rgba(245, 158, 11, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#f59e0b" }}>
+                  <EditIcon />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: "1.15rem", fontWeight: 700, margin: 0, color: "#ffffff" }}>Edit User Profile Details</h3>
+                  <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block" }}>Update your personal information &amp; contact details</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditProfileOpen(false)}
+                style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: "1.4rem", cursor: "pointer", padding: "4px 8px" }}
+              >
+                ✕
+              </button>
+            </div>
             
             <form onSubmit={handleSaveProfile} className="profile-modal-form">
               {/* Form Grid */}
-              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div className="mgmt-field">
-                  <label htmlFor="p-first">First Name</label>
+                  <label htmlFor="p-first">First Name *</label>
                   <input 
                     id="p-first"
                     type="text" 
+                    placeholder="e.g. John"
                     value={formFirstName} 
                     onChange={(e) => setFormFirstName(e.target.value)} 
                     required 
                   />
                 </div>
                 <div className="mgmt-field">
-                  <label htmlFor="p-last">Last Name</label>
+                  <label htmlFor="p-last">Last Name *</label>
                   <input 
                     id="p-last"
                     type="text" 
+                    placeholder="e.g. Doe"
                     value={formLastName} 
                     onChange={(e) => setFormLastName(e.target.value)} 
                     required 
@@ -659,21 +723,23 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div className="mgmt-field">
                   <label htmlFor="p-phone">Phone Number</label>
                   <input 
                     id="p-phone"
                     type="text" 
+                    placeholder="+94 77 123 4567"
                     value={formPhone} 
                     onChange={(e) => setFormPhone(e.target.value)} 
                   />
                 </div>
                 <div className="mgmt-field">
-                  <label htmlFor="p-club">Club Affiliation</label>
+                  <label htmlFor="p-club">Club / Affiliation</label>
                   <input 
                     id="p-club"
                     type="text" 
+                    placeholder="e.g. National Federation"
                     value={formClub} 
                     onChange={(e) => setFormClub(e.target.value)} 
                   />
@@ -685,17 +751,19 @@ export default function ProfilePage() {
                 <input 
                   id="p-addr"
                   type="text" 
+                  placeholder="Street address..."
                   value={formAddress} 
                   onChange={(e) => setFormAddress(e.target.value)} 
                 />
               </div>
 
-              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="mgmt-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div className="mgmt-field">
                   <label htmlFor="p-city">City</label>
                   <input 
                     id="p-city"
                     type="text" 
+                    placeholder="e.g. Colombo"
                     value={formCity} 
                     onChange={(e) => setFormCity(e.target.value)} 
                   />
@@ -705,6 +773,7 @@ export default function ProfilePage() {
                   <input 
                     id="p-cntry"
                     type="text" 
+                    placeholder="e.g. Sri Lanka"
                     value={formCountry} 
                     onChange={(e) => setFormCountry(e.target.value)} 
                   />
@@ -712,25 +781,29 @@ export default function ProfilePage() {
               </div>
 
               <div className="mgmt-field">
-                <label>Upload Profile Picture</label>
-                <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "4px" }}>
+                <label>Profile Picture</label>
+                <div style={{ display: "flex", gap: "16px", alignItems: "center", marginTop: "6px" }}>
                   <div 
                     style={{
-                      width: "60px",
-                      height: "60px",
+                      width: "56px",
+                      height: "56px",
                       borderRadius: "50%",
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                      border: "2px solid rgba(255, 255, 255, 0.15)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      overflow: "hidden"
+                      overflow: "hidden",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      fontSize: "1.2rem",
+                      flexShrink: 0
                     }}
                   >
                     {formAvatar ? (
                       <img src={formAvatar} alt="Upload Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
-                      "?"
+                      (formFirstName[0] || "U").toUpperCase()
                     )}
                   </div>
                   <input 
@@ -742,7 +815,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="profile-modal-footer">
+              <div className="profile-modal-footer" style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                 <button 
                   type="button" 
                   className="mgmt-btn mgmt-btn--outline"
@@ -754,7 +827,7 @@ export default function ProfilePage() {
                   type="submit" 
                   className="mgmt-btn mgmt-btn--primary"
                 >
-                  Save Profile
+                  Save Profile Changes
                 </button>
               </div>
             </form>

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import "../../styles/management.css"; // Reuse general layout styles
 
 export default function SettingsPage() {
+  const { user, updateUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
 
@@ -17,35 +19,34 @@ export default function SettingsPage() {
     }, 3000);
   };
 
-  // Form states - Profile
-  const [profileName, setProfileName] = useState("Coach Admin");
-  const [profileEmail] = useState("admin@volleyreel.com"); // Email is readonly
-  const [profilePhone, setProfilePhone] = useState("+94 77 123 4567");
-  const [profileClub, setProfileClub] = useState("National Volleyball Federation");
-  const [profileRole, setProfileRole] = useState("Coach");
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  // Form states - Profile loaded from real logged in user context
+  const [profileName, setProfileName] = useState(user?.fullName || "");
+  const [profileEmail, setProfileEmail] = useState(user?.email || "");
+  const [profilePhone, setProfilePhone] = useState(user?.phone || "");
+  const [profileClub, setProfileClub] = useState(user?.club || "");
+  const [profileRole, setProfileRole] = useState(user?.role || "Coach");
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || null);
 
-  // Form states - Platform
-  const [sensitivity, setSensitivity] = useState(85);
-  const [courtDetection, setCourtDetection] = useState(true);
-  const [ballTracking, setBallTracking] = useState(true);
-  const [matchFormat, setMatchFormat] = useState("Best of 5 Sets");
-  const [setRules, setSetRules] = useState("25 Point Rally Score");
-
-  // Form states - Notifications
-  const [digestPref, setDigestPref] = useState("Daily Digest");
-  const [notifyAI, setNotifyAI] = useState(true);
-  const [notifyInvite, setNotifyInvite] = useState(true);
-  const [notifyRoster, setNotifyRoster] = useState(false);
-  const [notifyReports, setNotifyReports] = useState(true);
-
-  // Form states - Security
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  useEffect(() => {
+    if (user) {
+      setProfileName(user.fullName || user.email || "");
+      setProfileEmail(user.email || "");
+      setProfilePhone(user.phone || "");
+      setProfileClub(user.club || "");
+      setProfileRole(user.role || "Coach");
+      if (user.avatarUrl) setAvatarPreview(user.avatarUrl);
+    }
+  }, [user]);
 
   const handleProfileSave = (e) => {
     e.preventDefault();
+    updateUser({
+      fullName: profileName,
+      phone: profilePhone,
+      club: profileClub,
+      role: profileRole,
+      avatarUrl: avatarPreview
+    });
     showToast("Profile settings saved successfully!");
   };
 
