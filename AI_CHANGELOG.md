@@ -1135,3 +1135,13 @@ All 4 listed pages already use `import API from "../../services/apiClient"` corr
 - `frontend/src/components/layout/Topbar.jsx`
 - `AI_CHANGELOG.md`
 
+## [2026-08-18T15:56:00+05:30] - Merge Local Feature Branch into Dev and Push Upstream
+
+### Changed
+- Merged feature branch `dev_tournament_reporting` into local `dev` branch.
+- Prepared and updated `AI_CHANGELOG.md` before pushing to `origin/dev`.
+
+### Files Changed
+- `AI_CHANGELOG.md`
+
+
