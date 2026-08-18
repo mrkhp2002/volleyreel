@@ -27,6 +27,25 @@ export default function SettingsPage() {
   const [profileRole, setProfileRole] = useState(user?.role || "Coach");
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || null);
 
+  // Platform tab states
+  const [sensitivity, setSensitivity] = useState(85);
+  const [courtDetection, setCourtDetection] = useState(true);
+  const [ballTracking, setBallTracking] = useState(true);
+  const [matchFormat, setMatchFormat] = useState("Best of 5 Sets");
+  const [setRules, setSetRules] = useState("25 Point Rally Score");
+
+  // Notifications tab states
+  const [digestPref, setDigestPref] = useState("Weekly Digest");
+  const [notifyAI, setNotifyAI] = useState(true);
+  const [notifyInvite, setNotifyInvite] = useState(true);
+  const [notifyRoster, setNotifyRoster] = useState(true);
+  const [notifyReports, setNotifyReports] = useState(true);
+
+  // Security tab states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   useEffect(() => {
     if (user) {
       setProfileName(user.fullName || user.email || "");

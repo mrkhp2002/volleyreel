@@ -55,11 +55,12 @@ export default function PublicReportsPage() {
 
           return {
             id: `PR-${t.tournament_id || idx + 1}`,
+            tournament_id: t.tournament_id,
             title: `${t.name} - Public Performance Summary`,
             tournament: t.name,
             date: createdDate,
-            views: matchCount * 18 + 24,
-            shares: matchCount * 4 + 6,
+            views: t.views || 0,
+            shares: t.shares || 0,
             status: "Public",
             stats: {
               matches: matchCount,
@@ -153,8 +154,16 @@ export default function PublicReportsPage() {
     }, 4000);
   };
 
-  const handleOpenPreview = (report) => {
-    // Increment view count simulation
+  const handleOpenPreview = async (report) => {
+    // Increment view count via API
+    try {
+      if (report.tournament_id) {
+        await apiClient.post(`/tournaments/${report.tournament_id}/views`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
     setPublicReports(prev => 
       prev.map(r => r.id === report.id ? { ...r, views: r.views + 1 } : r)
     );
@@ -162,8 +171,16 @@ export default function PublicReportsPage() {
     setIsPreviewOpen(true);
   };
 
-  const handleSocialShareSimulate = (report) => {
-    // Increment share count simulation
+  const handleSocialShareSimulate = async (report) => {
+    // Increment share count via API
+    try {
+      if (report.tournament_id) {
+        await apiClient.post(`/tournaments/${report.tournament_id}/shares`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
     setPublicReports(prev => 
       prev.map(r => r.id === report.id ? { ...r, shares: r.shares + 1 } : r)
     );

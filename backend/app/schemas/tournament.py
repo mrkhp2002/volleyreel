@@ -61,5 +61,7 @@ class TournamentUpdate(BaseModel):
 class TournamentRead(TournamentBase):
     tournament_id: int
     created_at: datetime
+    views: int
+    shares: int
 
     model_config = {"from_attributes": True}

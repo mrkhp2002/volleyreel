@@ -108,3 +108,27 @@ def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current
     db.commit()
 
 
+@router.post("/{tournament_id}/views", response_model=TournamentRead)
+def increment_tournament_views(tournament_id: int, db: Session = Depends(get_db)):
+    # Anyone can increment views, no auth required
+    tournament = db.query(Tournament).filter(Tournament.tournament_id == tournament_id).first()
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    
+    tournament.views += 1
+    db.commit()
+    db.refresh(tournament)
+    return tournament
+
+
+@router.post("/{tournament_id}/shares", response_model=TournamentRead)
+def increment_tournament_shares(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    # Usually logged-in users share it
+    tournament = db.query(Tournament).filter(Tournament.tournament_id == tournament_id).first()
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    
+    tournament.shares += 1
+    db.commit()
+    db.refresh(tournament)
+    return tournament

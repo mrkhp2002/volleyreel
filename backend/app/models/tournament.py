@@ -29,6 +29,8 @@ class Tournament(Base):
     public_visibility = Column(Boolean, default=True)
     allow_report_sharing = Column(Boolean, default=True)
     enable_leaderboard = Column(Boolean, default=True)
+    views = Column(Integer, default=0)
+    shares = Column(Integer, default=0)
 
     user_id = Column(
         Integer,
