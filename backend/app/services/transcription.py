@@ -1,9 +1,9 @@
 # backend/app/services/transcription.py
 #
 # WHY THIS FILE EXISTS:
-# This is the core of your AI pipeline.
-# It takes each video chunk's audio and runs it through
-# OpenAI Whisper to get a text transcript with timestamps.
+# This handles the core speech-to-text transcription service.
+# It uses OpenAI Whisper to convert audio chunks into text transcripts 
+# with precise word-level timestamps for event alignment.
 #
 # WHY WE USE "base" MODEL:
 # Whisper has multiple models:
@@ -24,13 +24,14 @@
 
 import whisper
 import os
+import logging
 
 # Load the Whisper model once when the module is imported
 # Loading it every time would be very slow (model is 150MB)
 # "base" model — good balance of speed and accuracy
-print("Loading Whisper model...")
+logging.info("Loading Whisper model...")
 MODEL = whisper.load_model("base")
-print("Whisper model loaded!")
+logging.info("Whisper model loaded!")
 
 
 def transcribe_audio_chunk(audio_path: str, chunk_start_time: float) -> list[dict]:
@@ -98,7 +99,7 @@ def transcribe_all_chunks(chunks: list[dict]) -> list[dict]:
     all_segments = []
 
     for chunk in chunks:
-        print(f"Transcribing chunk {chunk['chunk_index']}...")
+        logging.info(f"Transcribing chunk {chunk['chunk_index']}...")
 
         segments = transcribe_audio_chunk(
             audio_path=chunk["audio_path"],

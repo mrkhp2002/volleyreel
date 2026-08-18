@@ -33,8 +33,8 @@ class Match(Base):
     # Your Whisper pipeline downloads and processes this
     video_url = Column(String, nullable=True)
 
-    # Tracks where this match is in YOUR AI pipeline
-    # "pending" → "processing" → "complete" → "failed"
+    # Tracks the processing state of the match video pipeline
+    # Valid states: "pending" | "processing" | "complete" | "failed"
     status = Column(String, default="pending")
 
     tournament_id = Column(
@@ -73,7 +73,7 @@ class Match(Base):
         back_populates="away_matches"
     )
 
-    # All events detected by your AI pipeline
+    # Relationship to all events detected during video processing
     events = relationship(
         "Event",
         back_populates="match",

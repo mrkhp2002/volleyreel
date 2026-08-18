@@ -1,7 +1,7 @@
 # backend/app/routes/pipeline.py
 #
 # WHY THIS FILE EXISTS:
-# This is the API endpoint that triggers the entire AI pipeline.
+# This is the API endpoint that triggers the core video processing pipeline.
 # When a coach uploads a match video, this endpoint:
 # 1. Updates match status to "processing"
 # 2. Runs video chunking
@@ -10,8 +10,8 @@
 # 5. Generates highlight clips
 # 6. Updates match with results
 # 7. Updates match status to "complete"
-
 import os
+import logging
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
@@ -49,7 +49,7 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
 
         match.status = "processing"
         db.commit()
-        print(f"Match {match_id}: Starting pipeline...")
+        logging.info(f"Match {match_id}: Starting pipeline...")
         video_path = video_path.strip('\'"')
 
         # Step 2 — Get players for this match (for attribution)
@@ -78,11 +78,11 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
 
         # Step 3 — Split video into chunks
         chunk_dir = os.path.join(TEMP_DIR, f"match_{match_id}")
-        print(f"Match {match_id}: Splitting video into chunks...")
+        logging.info(f"Match {match_id}: Splitting video into chunks...")
         chunks = split_video_into_chunks(video_path, chunk_dir)
 
         # Step 4 — Transcribe all chunks with Whisper
-        print(f"Match {match_id}: Transcribing audio...")
+        logging.info(f"Match {match_id}: Transcribing audio...")
         segments = transcribe_all_chunks(chunks)
         full_transcript = segments_to_full_text(segments)
 
@@ -93,21 +93,21 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
         # Step 5 — Detect whistle sounds from first chunk audio
         whistle_times = []
         if chunks:
-            print(f"Match {match_id}: Detecting whistles...")
+            logging.info(f"Match {match_id}: Detecting whistles...")
             whistle_times = detect_whistle_timestamps(chunks[0]["audio_path"])
 
         # Step 6 — Detect events from transcript
-        print(f"Match {match_id}: Detecting events...")
+        logging.info(f"Match {match_id}: Detecting events...")
         detected_events = detect_events_from_transcript(
             segments=segments,
             whistle_times=whistle_times,
             players=players
         )
-        print(f"Match {match_id}: Found {len(detected_events)} events")
+        logging.info(f"Match {match_id}: Found {len(detected_events)} events")
 
         # Step 7 — Generate highlight clips (but not the final reel)
         highlight_dir = os.path.join(OUTPUT_DIR, f"match_{match_id}")
-        print(f"Match {match_id}: Generating highlights...")
+        logging.info(f"Match {match_id}: Generating highlights...")
         highlight_result = process_match_highlights(
             video_path=video_path,
             events=detected_events,
@@ -136,13 +136,13 @@ def run_pipeline(match_id: int, video_path: str, db: Session):
         match.status = "complete"
         db.commit()
 
-        print(f"Match {match_id}: Pipeline complete!")
+        logging.info(f"Match {match_id}: Pipeline complete!")
 
         # Step 10 — Cleanup temporary chunk files
         cleanup_chunks(chunk_dir)
 
     except Exception as e:
-        print(f"Match {match_id}: Pipeline failed — {e}")
+        logging.error(f"Match {match_id}: Pipeline failed — {e}")
         match = db.query(Match).filter(Match.match_id == match_id).first()
         if match:
             match.status = "failed"
@@ -325,7 +325,7 @@ def delete_highlight(
         if os.path.exists(abs_path):
             os.remove(abs_path)
     except Exception as e:
-        print(f"Failed to delete highlight file: {e}")
+        logging.error(f"Failed to delete highlight file: {e}")
 
     # Nullify in database
     match.highlight_url = None

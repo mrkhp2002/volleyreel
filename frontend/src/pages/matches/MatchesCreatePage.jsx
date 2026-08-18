@@ -578,7 +578,7 @@ export default function MatchesCreatePage() {
           <div
             className="matches-upload-zone"
             onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const fakeEvt = { target: { files: [f] } }; handleRealFileSelect(fakeEvt); } }}
+            onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const fileEvent = { target: { files: [f] } }; handleRealFileSelect(fileEvent); } }}
             style={{ padding: "40px 20px" }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

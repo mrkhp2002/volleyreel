@@ -21,6 +21,7 @@
 
 import librosa
 import numpy as np
+import logging
 from typing import Optional
 
 
@@ -92,7 +93,7 @@ def detect_whistle_timestamps(audio_path: str) -> list[float]:
         return filtered_times
 
     except Exception as e:
-        print(f"Whistle detection error: {e}")
+        logging.error(f"Whistle detection error: {e}")
         return []
 
 
