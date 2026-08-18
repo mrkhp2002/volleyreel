@@ -1,28 +1,95 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import AppLayout from '../components/layout/AppLayout';
-import DashboardPage from '../pages/dashboard/DashboardPage';
-import TournamentsPage from '../pages/tournaments/TournamentsPage';
-import TeamsPage from '../pages/teams/TeamsPage';
-import PlayersPage from '../pages/players/PlayersPage';
-import MatchesPage from '../pages/matches/MatchesPage';
-import TournamentAnalyticsPage from '../pages/tournament-analytics/TournamentAnalyticsPage';
-import ReportsPage from '../pages/reports/ReportsPage';
-import LeaderboardsPage from '../pages/leaderboards/LeaderboardsPage';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "../components/layout/AppLayout";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import DashboardPage from "../pages/dashboard/DashboardPage";
+import TournamentsPage from "../pages/tournaments/TournamentsPage";
+import CreateTournamentPage from "../pages/tournaments/CreateTournamentPage";
+import EditTournamentPage from "../pages/tournaments/EditTournamentPage";
+import TournamentDetailsPage from "../pages/tournaments/TournamentDetailsPage";
+import TeamsPage from "../pages/teams/TeamsPage";
+import CreateTeamPage from "../pages/teams/CreateTeamPage";
+import TeamDetailsPage from "../pages/teams/TeamDetailsPage";
+import EditTeamPage from "../pages/teams/EditTeamPage";
+import PlayersPage from "../pages/players/PlayersPage";
+import PlayerDetailsPage from "../pages/players/PlayerDetailsPage";
+import MatchesPage from "../pages/matches/MatchesPage";
+import MatchesCreatePage from "../pages/matches/MatchesCreatePage";
+import MatchesUploadPage from "../pages/matches/MatchesUploadPage";
+import MatchesVideosPage from "../pages/matches/MatchesVideosPage";
+import MatchDashboardPage from "../pages/matches/MatchDashboardPage";
+import TournamentAnalyticsPage from "../pages/tournament-analytics/TournamentAnalyticsPage";
+import TournamentReportsPage from "../pages/reports/TournamentReportsPage";
+import PublicReportsPage from "../pages/reports/PublicReportsPage";
+import SettingsPage from "../pages/settings/SettingsPage";
+import LeaderboardsPage from "../pages/leaderboards/LeaderboardsPage";
+import ProfilePage from "../pages/profile/ProfilePage";
+import NotificationsPage from "../pages/notifications/NotificationsPage";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 
 export default function AppRoutes() {
   return (
-    <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tournaments" element={<TournamentsPage />} />
-        <Route path="/teams" element={<TeamsPage />} />
-        <Route path="/players" element={<PlayersPage />} />
-        <Route path="/matches" element={<MatchesPage />} />
-        <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/leaderboards" element={<LeaderboardsPage />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+        {/* Protected Application Routes (wrapped in AppLayout and ProtectedRoute) */}
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tournaments">
+            <Route index element={<TournamentsPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><CreateTournamentPage /></ProtectedRoute>} />
+            <Route path=":tournamentId/edit" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><EditTournamentPage /></ProtectedRoute>} />
+            <Route path=":tournamentId" element={<TournamentDetailsPage />} />
+          </Route>
+          <Route path="/teams">
+            <Route index element={<TeamsPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><CreateTeamPage /></ProtectedRoute>} />
+            <Route path=":teamId/edit" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><EditTeamPage /></ProtectedRoute>} />
+            <Route path=":teamId" element={<TeamDetailsPage />} />
+          </Route>
+          <Route path="/players">
+            <Route index element={<PlayersPage />} />
+            <Route path=":playerId" element={<PlayerDetailsPage />} />
+          </Route>
+          <Route path="/matches">
+            <Route index element={<MatchesPage />} />
+            <Route path="create" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><MatchesCreatePage /></ProtectedRoute>} />
+            <Route path="upload" element={<ProtectedRoute allowedRoles={["coach", "admin"]}><MatchesUploadPage /></ProtectedRoute>} />
+            <Route path="videos" element={<MatchesVideosPage />} />
+            <Route path=":matchId" element={<MatchDashboardPage />} />
+          </Route>
+          <Route path="/tournament-analytics" element={<TournamentAnalyticsPage />} />
+          <Route path="/reports" element={<Navigate to="/reports/tournament" replace />} />
+          <Route path="/reports/tournament" element={<TournamentReportsPage />} />
+          <Route path="/reports/public" element={<PublicReportsPage />} />
+          <Route path="/leaderboards" element={<LeaderboardsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/profile" element={<ErrorBoundary><ProfilePage /></ErrorBoundary>} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+        </Route>
+
+        {/* Admin Dashboard Routes */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Fallback route */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </BrowserRouter>
   );
 }
