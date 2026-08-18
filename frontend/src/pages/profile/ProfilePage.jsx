@@ -144,7 +144,7 @@ export default function ProfilePage() {
     fetchStats();
   }, []);
 
-  // Additional profile states persisted in localStorage without hardcoded dummy addresses
+  // Additional profile states persisted in localStorage
   const [profileData, setProfileData] = useState(() => {
     const saved = localStorage.getItem("volleyreel_profile_extra");
     const userTeam = user?.team_name || user?.teamName || "";
@@ -167,7 +167,7 @@ export default function ProfilePage() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === "object") {
-          // Clear any old fake dummy data strings if present
+          // Clear legacy placeholder address strings if present
           if (parsed.address === "123 Sports Avenue") parsed.address = "";
           if (parsed.city === "Los Angeles") parsed.city = "";
           if (parsed.country === "United States") parsed.country = "";

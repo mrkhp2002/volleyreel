@@ -125,7 +125,8 @@ export const NotificationsProvider = ({ children }) => {
         }));
 
         setAlerts(finalAlerts);
-        localStorage.removeItem("volleyreel_notifications"); // Purge old dummy data
+        // Clear legacy notification cache to ensure data consistency
+        localStorage.removeItem("volleyreel_notifications");
       } catch (err) {
         console.error("Error loading real notifications:", err);
       }
