@@ -163,18 +163,20 @@ export default function ProfilePage() {
       avatarUrl: user?.avatarUrl || null,
     };
 
-    if (saved) {
+    if (saved && saved !== "null" && saved !== "undefined") {
       try {
         const parsed = JSON.parse(saved);
-        // Clear any old fake dummy data strings if present
-        if (parsed.address === "123 Sports Avenue") parsed.address = "";
-        if (parsed.city === "Los Angeles") parsed.city = "";
-        if (parsed.country === "United States") parsed.country = "";
-        if (parsed.phone === "+1 (555) 123-4567") parsed.phone = "";
-        if (userTeam && (!parsed.club || parsed.club === "Thunder Strikers VC")) {
-          parsed.club = userTeam;
+        if (parsed && typeof parsed === "object") {
+          // Clear any old fake dummy data strings if present
+          if (parsed.address === "123 Sports Avenue") parsed.address = "";
+          if (parsed.city === "Los Angeles") parsed.city = "";
+          if (parsed.country === "United States") parsed.country = "";
+          if (parsed.phone === "+1 (555) 123-4567") parsed.phone = "";
+          if (userTeam && (!parsed.club || parsed.club === "Thunder Strikers VC")) {
+            parsed.club = userTeam;
+          }
+          return { ...defaultData, ...parsed };
         }
-        return { ...defaultData, ...parsed };
       } catch (e) {
         console.error(e);
       }
@@ -184,7 +186,11 @@ export default function ProfilePage() {
 
   // Sync profile extra data to local storage
   useEffect(() => {
-    localStorage.setItem("volleyreel_profile_extra", JSON.stringify(profileData));
+    try {
+      localStorage.setItem("volleyreel_profile_extra", JSON.stringify(profileData));
+    } catch (e) {
+      console.warn("Failed to save profile data (quota exceeded):", e);
+    }
   }, [profileData]);
 
   // Keep avatar synchronized with Auth context
@@ -216,7 +222,11 @@ export default function ProfilePage() {
 
   // Sync preferences to local storage
   useEffect(() => {
-    localStorage.setItem("volleyreel_preferences", JSON.stringify(preferences));
+    try {
+      localStorage.setItem("volleyreel_preferences", JSON.stringify(preferences));
+    } catch (e) {
+      console.warn("Failed to save preferences:", e);
+    }
   }, [preferences]);
 
   // Toast notifications
@@ -318,11 +328,37 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const newAvatarUrl = reader.result;
-        setProfileData((prev) => ({ ...prev, avatarUrl: newAvatarUrl }));
-        updateUser({ avatarUrl: newAvatarUrl });
-        showToast("Profile picture updated!");
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 256;
+          const MAX_HEIGHT = 256;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          const newAvatarUrl = canvas.toDataURL("image/jpeg", 0.7);
+          
+          setProfileData((prev) => ({ ...prev, avatarUrl: newAvatarUrl }));
+          updateUser({ avatarUrl: newAvatarUrl });
+          showToast("Profile picture updated!");
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -359,8 +395,33 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormAvatar(reader.result);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 256;
+          const MAX_HEIGHT = 256;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          setFormAvatar(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "../components/layout/AppLayout";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
@@ -72,7 +73,7 @@ export default function AppRoutes() {
           <Route path="/reports/public" element={<PublicReportsPage />} />
           <Route path="/leaderboards" element={<LeaderboardsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ErrorBoundary><ProfilePage /></ErrorBoundary>} />
           <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
 

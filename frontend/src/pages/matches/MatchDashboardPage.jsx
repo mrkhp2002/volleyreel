@@ -792,7 +792,25 @@ export default function MatchDashboardPage() {
                 <span style={{ fontSize: ".88rem", color: "var(--text-muted)" }}>
                   <span style={{ fontWeight: 700, color: "#fff" }}>{selectedEventIds.size}</span> of {events.length} selected
                 </span>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Link 
+                    to={`/matches/upload?matchId=${matchId}`} 
+                    className="matches-btn-outline" 
+                    style={{ 
+                      padding: "6px 14px", 
+                      fontSize: ".8rem", 
+                      textDecoration: "none", 
+                      color: "#c084fc",
+                      borderColor: "rgba(192, 132, 252, 0.4)",
+                      background: "rgba(192, 132, 252, 0.05)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }} 
+                    title="Review and Edit Events"
+                  >
+                    Review & Edit Events
+                  </Link>
                   <button onClick={selectAll} className="matches-btn-outline" style={{ padding: "6px 14px", fontSize: ".8rem" }} id="btn-select-all-events">
                     Select All
                   </button>

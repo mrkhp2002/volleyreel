@@ -120,6 +120,7 @@ export default function MatchesVideosPage() {
               })
             : "—",
           pipelineStatus: m.status,
+          sortTime: m.updated_at ? new Date(m.updated_at).getTime() : (m.created_at ? new Date(m.created_at).getTime() : 0),
         };
       }),
     [videoMatches, teamsMap, tournamentsMap]
@@ -127,7 +128,7 @@ export default function MatchesVideosPage() {
 
   // ── Filtered cards ────────────────────────────────────────────────────────
   const filteredCards = useMemo(() => {
-    return videoCards.filter((v) => {
+    const filtered = videoCards.filter((v) => {
       const q = searchQuery.toLowerCase();
       const matchSearch =
         !q ||
@@ -146,6 +147,9 @@ export default function MatchesVideosPage() {
 
       return matchSearch && matchTourn && matchStatus;
     });
+
+    // Sort by generated time (newest first)
+    return filtered.sort((a, b) => b.sortTime - a.sortTime);
   }, [videoCards, searchQuery, filterTournament, filterStatus]);
 
   // ── Tournament filter options ─────────────────────────────────────────────

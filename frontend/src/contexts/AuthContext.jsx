@@ -11,7 +11,23 @@ export const AuthProvider = ({ children }) => {
       const storedUser = localStorage.getItem("user");
 
       if (storedUser && storedUser !== "undefined") {
-        setUser(JSON.parse(storedUser));
+        let parsedUser = JSON.parse(storedUser);
+        
+        // Restore avatar from local extra profile data if missing
+        if (!parsedUser.avatarUrl) {
+          try {
+            const extra = JSON.parse(localStorage.getItem("volleyreel_profile_extra") || "{}");
+            if (extra && extra.avatarUrl) {
+              parsedUser.avatarUrl = extra.avatarUrl;
+              // Save it back to the user object so it persists
+              localStorage.setItem("user", JSON.stringify(parsedUser));
+            }
+          } catch (e) {
+            console.error("Failed to parse extra profile data during init", e);
+          }
+        }
+        
+        setUser(parsedUser);
       }
     } catch (err) {
       console.error("Error reading user from localStorage:", err);
@@ -22,8 +38,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
+    let finalUserData = { ...userData };
+    
+    // Try to restore avatar from local extra profile data if backend didn't provide one
+    if (!finalUserData.avatarUrl) {
+      try {
+        const extra = JSON.parse(localStorage.getItem("volleyreel_profile_extra") || "{}");
+        if (extra && extra.avatarUrl) {
+          finalUserData.avatarUrl = extra.avatarUrl;
+        }
+      } catch (e) {
+        console.error("Failed to parse extra profile data during login", e);
+      }
+    }
+
+    localStorage.setItem("user", JSON.stringify(finalUserData));
+    setUser(finalUserData);
   };
 
   const logout = () => {
