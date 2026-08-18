@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import API from "../../services/apiClient";
 import "../../styles/matches.css";
@@ -88,6 +89,9 @@ function VideoBadge({ status }) {
 
 export default function MatchesPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const rawRole = (user?.role || "coach").toLowerCase();
+  const isPlayer = rawRole === "player" || rawRole === "viewer" || rawRole === "public_user";
 
   // Remote data
   const [matches, setMatches] = useState([]);
@@ -251,17 +255,29 @@ export default function MatchesPage() {
     if (!videoUrl.trim() || !activeMatch) return;
     try {
       setUploadLoading(true);
+      // Auto-strip leading/trailing double or single quotes (e.g., "F:\path\file.mp4" -> F:\path\file.mp4)
+      const cleanUrl = videoUrl.trim().replace(/^["']|["']$/g, "").trim();
+
       const res = await API.put(`/matches/${activeMatch.match_id}`, {
-        video_url: videoUrl.trim(),
+        video_url: cleanUrl,
       });
       const upd = formatMatch(res.data, teamsMap, tournamentsMap);
       setMatches((prev) =>
         prev.map((m) => (m.match_id === activeMatch.match_id ? upd : m))
       );
-      setIsUploadOpen(false); setVideoUrl("");
+      setIsUploadOpen(false);
+      setVideoUrl("");
       triggerToast(`Video URL saved for match #${activeMatch.match_id}!`);
     } catch (err) {
-      triggerToast(err?.response?.data?.detail || "Failed to save video URL.", "error");
+      console.error("Error saving video URL:", err);
+      const detail = err?.response?.data?.detail;
+      const errorMsg =
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((d) => d.msg || JSON.stringify(d)).join(", ")
+          : "Failed to save video URL.";
+      triggerToast(errorMsg, "error");
     } finally {
       setUploadLoading(false);
     }
@@ -417,16 +433,18 @@ export default function MatchesPage() {
       <header className="matches-header">
         <div className="matches-header-text">
           <h1>Match List</h1>
-          <p>Manage matches, video uploads, AI analysis pipeline &amp; highlights</p>
+          <p>{isPlayer ? "Browse match results, video footage, and highlight compilations" : "Manage matches, video uploads, AI analysis pipeline & highlights"}</p>
         </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={loadAll} className="matches-btn-outline" title="Refresh" style={{padding:"10px 14px"}}>↺</button>
-          <button onClick={() => navigate("/matches/create")} className="matches-btn-orange" id="btn-create-match">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-            Create Match
-          </button>
+          {!isPlayer && (
+            <button onClick={() => navigate("/matches/create")} className="matches-btn-orange" id="btn-create-match">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              Create Match
+            </button>
+          )}
         </div>
       </header>
 
@@ -484,7 +502,7 @@ export default function MatchesPage() {
                     <tr key={match.match_id}>
                       <td>
                         <Link to={`/matches/${match.match_id}`} className="matches-link-id">
-                          #{match.match_id}
+                          TN{match.tournament_id}-M{match.match_id}
                         </Link>
                       </td>
                       <td>{match.tournament}</td>
@@ -517,36 +535,42 @@ export default function MatchesPage() {
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                             </svg>
                           </button>
-                          {/* Upload */}
-                          <button onClick={() => openUploadModal(match)} className="matches-action-btn" title="Set video URL" id={`btn-upload-${match.match_id}`}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                          </button>
-                          {/* Analyze */}
-                          <button
-                            onClick={() => handleAnalyze(match)} className="matches-action-btn"
-                            title="Analyze video (AI pipeline)" id={`btn-analyze-${match.match_id}`}
-                            disabled={!match.video_url||match.pipelineStatus==="processing"||analyzeLoading[match.match_id]}
-                            style={{opacity:(!match.video_url||match.pipelineStatus==="processing")?0.35:1,cursor:(!match.video_url||match.pipelineStatus==="processing")?"not-allowed":"pointer"}}
-                          >
-                            {analyzeLoading[match.match_id]
-                              ? <span style={{fontSize:".75rem"}}>…</span>
-                              : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            }
-                          </button>
-                          {/* Edit */}
-                          <button onClick={() => openEditModal(match)} className="matches-action-btn" title="Edit match" id={`btn-edit-${match.match_id}`}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </button>
+
+                          {!isPlayer && (
+                            <>
+                              {/* Upload */}
+                              <button onClick={() => openUploadModal(match)} className="matches-action-btn" title="Set video URL" id={`btn-upload-${match.match_id}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                              </button>
+                              {/* Analyze */}
+                              <button
+                                onClick={() => handleAnalyze(match)} className="matches-action-btn"
+                                title="Analyze video (AI pipeline)" id={`btn-analyze-${match.match_id}`}
+                                disabled={!match.video_url||match.pipelineStatus==="processing"||analyzeLoading[match.match_id]}
+                                style={{opacity:(!match.video_url||match.pipelineStatus==="processing")?0.35:1,cursor:(!match.video_url||match.pipelineStatus==="processing")?"not-allowed":"pointer"}}
+                              >
+                                {analyzeLoading[match.match_id]
+                                  ? <span style={{fontSize:".75rem"}}>…</span>
+                                  : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                }
+                              </button>
+                              {/* Edit */}
+                              <button onClick={() => openEditModal(match)} className="matches-action-btn" title="Edit match" id={`btn-edit-${match.match_id}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                  <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                              </button>
+                            </>
+                          )}
+
                           {/* Dashboard */}
                           <button
-                            onClick={() => navigate(`/matches/${match.match_id}/dashboard`)}
-                            className="matches-action-btn" title="Open analytics dashboard" id={`btn-dashboard-${match.match_id}`}
-                            style={{opacity:match.pipelineStatus==="complete"?1:0.35}}
+                            onClick={() => navigate(`/matches/${match.match_id}`)}
+                            className="matches-action-btn" title="Open analytics dashboard & videos" id={`btn-dashboard-${match.match_id}`}
+                            style={{opacity:match.pipelineStatus==="complete"||isPlayer?1:0.35}}
                           >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -560,7 +584,7 @@ export default function MatchesPage() {
                     <tr>
                       <td colSpan="8" style={{textAlign:"center",padding:"40px",color:"var(--text-muted)"}}>
                         {matches.length===0
-                          ? "No matches yet. Click 'Create Match' to get started."
+                          ? (isPlayer ? "No matches available yet." : "No matches yet. Click 'Create Match' to get started.")
                           : "No matches match your current filters."}
                       </td>
                     </tr>
@@ -687,7 +711,7 @@ export default function MatchesPage() {
               )}
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button className="matches-btn-orange" style={{flex:1}}
-                  onClick={()=>{setIsPlayerOpen(false);navigate(`/matches/${activeMatch.match_id}/dashboard`);}}>
+                  onClick={()=>{setIsPlayerOpen(false);navigate(`/matches/${activeMatch.match_id}`);}}>
                   📊 Open Dashboard
                 </button>
                 {!activeMatch.video_url && (

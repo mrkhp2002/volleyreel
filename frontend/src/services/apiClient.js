@@ -32,8 +32,15 @@ API.interceptors.request.use((config) => {
   // FastAPI redirects /api/foo → /api/foo/ (307). Axios drops the Authorization
   // header on redirect, causing 401. Appending the slash here avoids the redirect
   // so the token is sent on the first (and only) request.
-  if (config.url && !config.url.endsWith("/") && !config.url.includes("?")) {
-    config.url = config.url + "/";
+  if (config.url) {
+    if (config.url.includes("?")) {
+      const [path, query] = config.url.split("?");
+      if (!path.endsWith("/")) {
+        config.url = `${path}/?${query}`;
+      }
+    } else if (!config.url.endsWith("/")) {
+      config.url = `${config.url}/`;
+    }
   }
 
   return config;

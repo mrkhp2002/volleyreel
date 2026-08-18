@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import CustomSelect from "../../components/common/CustomSelect";
 import DeleteConfirmModal from "../../components/common/DeleteConfirmModal";
 import { EditIcon, PlusIcon, TrashIcon, ViewIcon } from "../../components/common/TableActionIcons";
-import { teamSummaryStats } from "./teamsData"; // teamsList එක අයින් කළා
-import API from "../../services/apiClient"; // API එක import කළා
+import { teamSummaryStats } from "./teamsData";
+import API from "../../services/apiClient";
 import "../../styles/management.css";
 
 const statusClass = {
@@ -14,44 +15,78 @@ const statusClass = {
 };
 
 export default function TeamsPage() {
-  const [teams, setTeams] = useState([]); // අලුත් Teams state එක
+  const { user } = useAuth();
+  const rawRole = (user?.role || "coach").toLowerCase();
+  const isPlayer = rawRole === "player" || rawRole === "viewer" || rawRole === "public_user";
+
+  const [teams, setTeams] = useState([]);
+  const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
+  const [tournamentFilter, setTournamentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [divisionFilter, setDivisionFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeSubtab, setActiveSubtab] = useState("list");
 
-  // 1. Database eken data Load kireema
+  // 1. Load Data from API
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchTeamsAndTournaments = async () => {
       try {
-        const response = await API.get("/teams/");
+        const [teamsRes, playersRes, tournamentsRes] = await Promise.all([
+          API.get("/teams/"),
+          API.get("/players/").catch(() => ({ data: [] })),
+          API.get("/tournaments/").catch(() => ({ data: [] }))
+        ]);
 
-        // Backend data Frontend galapena widihata map karanawa
-        const formattedTeams = response.data.map(t => ({
+        const allPlayers = playersRes.data || [];
+        const playersCountMap = {};
+        allPlayers.forEach(p => {
+          if (p.team_id) {
+            playersCountMap[p.team_id] = (playersCountMap[p.team_id] || 0) + 1;
+          }
+        });
+
+        const formattedTeams = (teamsRes.data || []).map(t => ({
           id: String(t.team_id),
           name: t.name,
           coach: t.coach || "-",
           city: t.club_name || "-",
-          players: 0,
+          players: playersCountMap[t.team_id] || 0,
           division: t.division || "Premier",
           status: t.status || "Active",
           tournament_id: t.tournament_id
         }));
 
         setTeams(formattedTeams);
+        setTournaments(tournamentsRes.data || []);
       } catch (error) {
-        console.error("Error fetching teams:", error);
+        console.error("Error fetching teams & tournaments:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTeams();
+    fetchTeamsAndTournaments();
   }, []);
+
+  const tournamentsMap = useMemo(() => {
+    const map = {};
+    tournaments.forEach((t) => {
+      map[t.tournament_id] = t;
+    });
+    return map;
+  }, [tournaments]);
+
+  const tournamentOptions = useMemo(() => [
+    { value: "", label: "All Tournaments" },
+    ...tournaments.map((t) => ({
+      value: String(t.tournament_id),
+      label: t.name || `Tournament #${t.tournament_id}`,
+    })),
+  ], [tournaments]);
 
   // 2. Search & Filters 
   const filtered = useMemo(() => {
@@ -65,9 +100,10 @@ export default function TeamsPage() {
         team.coach.toLowerCase().includes(q);
       const matchesStatus = !statusFilter || team.status === statusFilter;
       const matchesDivision = !divisionFilter || team.division === divisionFilter;
-      return matchesSearch && matchesStatus && matchesDivision;
+      const matchesTournament = !tournamentFilter || String(team.tournament_id) === String(tournamentFilter);
+      return matchesSearch && matchesStatus && matchesDivision && matchesTournament;
     });
-  }, [teams, search, statusFilter, divisionFilter]);
+  }, [teams, search, statusFilter, divisionFilter, tournamentFilter]);
 
   const pageSize = 5;
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -114,24 +150,28 @@ export default function TeamsPage() {
       {/* Main Header */}
       <header className="mgmt-header">
         <div>
-          <h1>Team Management</h1>
-          <p>Manage and track all volleyball teams in one place</p>
+          <h1>{isPlayer ? "Team Directory" : "Team Management"}</h1>
+          <p>{isPlayer ? "Browse and explore volleyball teams and rosters" : "Manage and track all volleyball teams in one place"}</p>
         </div>
-        <Link to="/teams/create" className="mgmt-btn mgmt-btn--primary">
-          <PlusIcon />
-          Create Team
-        </Link>
+        {!isPlayer && (
+          <Link to="/teams/create" className="mgmt-btn mgmt-btn--primary">
+            <PlusIcon />
+            Create Team
+          </Link>
+        )}
       </header>
 
       {/* Shared Page Navigation Tabs */}
-      <div className="mgmt-tabs-nav">
-        <Link to="/teams" className="mgmt-tab-btn active">
-          Team Directory
-        </Link>
-        <Link to="/teams/create" className="mgmt-tab-btn">
-          Create Team
-        </Link>
-      </div>
+      {!isPlayer && (
+        <div className="mgmt-tabs-nav">
+          <Link to="/teams" className="mgmt-tab-btn active">
+            Team Directory
+          </Link>
+          <Link to="/teams/create" className="mgmt-tab-btn">
+            Create Team
+          </Link>
+        </div>
+      )}
 
       {/* Page Subtabs (List vs Stats) */}
       <div className="mgmt-subtabs-nav">
@@ -164,6 +204,16 @@ export default function TeamsPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
+            />
+            <CustomSelect
+              value={tournamentFilter}
+              onChange={(e) => {
+                setTournamentFilter(e.target.value);
+                setPage(1);
+              }}
+              options={tournamentOptions}
+              className="mgmt-filter-select"
+              placeholder="All Tournaments"
             />
             <CustomSelect
               value={statusFilter}
@@ -204,7 +254,7 @@ export default function TeamsPage() {
                   <th>Team Name</th>
                   <th>Coach</th>
                   <th>Club</th>
-                  <th>Tournament ID</th>
+                  <th>Tournament</th>
                   <th>Division</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -216,7 +266,7 @@ export default function TeamsPage() {
                     <tr key={team.id}>
                       <td>
                         <Link to={`/teams/${team.id}`} className="mgmt-table-link">
-                          TM-{team.id}
+                          TM-{team.tournament_id}-{team.id}
                         </Link>
                       </td>
                       <td>
@@ -227,8 +277,12 @@ export default function TeamsPage() {
                       <td>{team.coach}</td>
                       <td>{team.city}</td>
                       <td>
-                        <Link to={`/tournaments/${team.tournament_id}`} className="mgmt-table-link" style={{ color: "var(--secondary, #3b82f6)" }}>
-                          TN-{team.tournament_id}
+                        <Link to={`/tournaments/${team.tournament_id}`} className="mgmt-table-link" style={{ color: "var(--secondary, #3b82f6)", fontWeight: 600 }}>
+                          {tournamentsMap[team.tournament_id]?.name ? (
+                            <span>{tournamentsMap[team.tournament_id].name} <span style={{ opacity: 0.65, fontSize: "0.75rem" }}>(TN-{team.tournament_id})</span></span>
+                          ) : (
+                            `TN-${team.tournament_id}`
+                          )}
                         </Link>
                       </td>
                       <td>{team.division}</td>
@@ -244,21 +298,25 @@ export default function TeamsPage() {
                           >
                             <ViewIcon />
                           </Link>
-                          <Link
-                            to={`/teams/${team.id}/edit`}
-                            className="mgmt-icon-btn"
-                            title="Edit"
-                          >
-                            <EditIcon />
-                          </Link>
-                          <button
-                            type="button"
-                            className="mgmt-icon-btn mgmt-icon-btn--danger"
-                            title="Delete"
-                            onClick={() => setDeleteTarget(team)}
-                          >
-                            <TrashIcon />
-                          </button>
+                          {!isPlayer && (
+                            <>
+                              <Link
+                                to={`/teams/${team.id}/edit`}
+                                className="mgmt-icon-btn"
+                                title="Edit"
+                              >
+                                <EditIcon />
+                              </Link>
+                              <button
+                                type="button"
+                                className="mgmt-icon-btn mgmt-icon-btn--danger"
+                                title="Delete"
+                                onClick={() => setDeleteTarget(team)}
+                              >
+                                <TrashIcon />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -319,7 +377,12 @@ export default function TeamsPage() {
         <div className="mgmt-tab-panel">
           {/* Summary Cards */}
           <div className="mgmt-stats-row">
-            {teamSummaryStats.map((stat) => (
+            {[
+              { label: "Total Teams", value: teams.length },
+              { label: "Active", value: teams.filter((t) => t.status === "Active").length },
+              { label: "Inactive", value: teams.filter((t) => t.status === "Inactive").length },
+              { label: "Draft", value: teams.filter((t) => t.status === "Draft").length },
+            ].map((stat) => (
               <div key={stat.label} className="mgmt-stat-card">
                 <span>{stat.label}</span>
                 <strong>{stat.value}</strong>

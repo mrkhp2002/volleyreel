@@ -1114,3 +1114,24 @@ All 4 listed pages already use `import API from "../../services/apiClient"` corr
 - `frontend/src/services/apiClient.js`
 - `AI_CHANGELOG.md`
 
+## [2026-08-17T22:14:00+05:30] - Update Authentication Token Schema and Login Routing for Admin Users
+
+### Changed
+- Updated backend user schema (`Token` model in `backend/app/schemas/user.py`) and auth routes (`backend/app/routes/auth.py`) to return the user's `role` in login responses.
+- Updated frontend login handler (`LoginForm.jsx`) to store the returned user role in context and automatically redirect admin users (`admin@volleyreel.com` or `role === "admin"`) to `/admin/dashboard`.
+
+### Files Changed
+- `backend/app/schemas/user.py`
+- `backend/app/routes/auth.py`
+- `frontend/src/components/layout/auth/LoginForm.jsx`
+## [2026-08-17T22:17:00+05:30] - Fix Admin Role Database Record and Topbar Admin Navigation Link
+
+### Fixed
+- Updated `backend/create_admin_credentials.py` and executed the script against SQLite `volleyreel.db` to set `role = "admin"` and `full_name = "System Admin"` for `admin@volleyreel.com` (which was previously set to `"coach"`).
+- Added a direct **Admin Dashboard** navigation link to `Topbar.jsx` user dropdown when logged in as an administrator.
+
+### Files Changed
+- `backend/create_admin_credentials.py`
+- `frontend/src/components/layout/Topbar.jsx`
+- `AI_CHANGELOG.md`
+

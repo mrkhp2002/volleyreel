@@ -6,75 +6,9 @@ import { generateTournamentPDF } from "../../utils/pdfReportGenerator";
 import apiClient from "../../services/apiClient";
 import "../../styles/reports.css";
 
-const defaultInitialReports = [
-  {
-    id: "TR-2026-01",
-    title: "Spring Championship 2026 - Final Report",
-    tournament: "Spring Championship 2026",
-    date: "Aug 15, 2026",
-    type: "Tournament Summary",
-    status: "Published",
-    match_format: "Best of 5 Sets (25 Point Rally Score)",
-    stats: {
-      matches: 14,
-      aces: 42,
-      blocks: 56,
-      efficiency: "74%",
-      skills: [
-        { label: "Spikes", val: 82, color: "#f59e0b" },
-        { label: "Blocks", val: 68, color: "#3b82f6" },
-        { label: "Serves", val: 76, color: "#10b981" },
-        { label: "Receptions", val: 70, color: "#8b5cf6" }
-      ]
-    }
-  },
-  {
-    id: "TR-2026-02",
-    title: "National Varsity League 2026 - Mid-Season Analytics",
-    tournament: "National Varsity League 2026",
-    date: "Aug 10, 2026",
-    type: "Performance Analysis",
-    status: "Published",
-    match_format: "Best of 3 Sets",
-    stats: {
-      matches: 18,
-      aces: 51,
-      blocks: 64,
-      efficiency: "69%",
-      skills: [
-        { label: "Spikes", val: 74, color: "#f59e0b" },
-        { label: "Blocks", val: 72, color: "#3b82f6" },
-        { label: "Serves", val: 65, color: "#10b981" },
-        { label: "Receptions", val: 78, color: "#8b5cf6" }
-      ]
-    }
-  },
-  {
-    id: "TR-2026-03",
-    title: "Summer Volleyball Open 2026 - Statistical Breakdown",
-    tournament: "Summer Volleyball Open 2026",
-    date: "Jul 28, 2026",
-    type: "Statistical Report",
-    status: "Published",
-    match_format: "Best of 5 Sets",
-    stats: {
-      matches: 9,
-      aces: 28,
-      blocks: 39,
-      efficiency: "63%",
-      skills: [
-        { label: "Spikes", val: 68, color: "#f59e0b" },
-        { label: "Blocks", val: 60, color: "#3b82f6" },
-        { label: "Serves", val: 70, color: "#10b981" },
-        { label: "Receptions", val: 65, color: "#8b5cf6" }
-      ]
-    }
-  }
-];
-
 export default function TournamentReportsPage() {
   const { user } = useAuth();
-  const [reports, setReports] = useState(defaultInitialReports);
+  const [reports, setReports] = useState([]);
   const [dbTournaments, setDbTournaments] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("All");
@@ -92,19 +26,115 @@ export default function TournamentReportsPage() {
   // Download alert state
   const [toastMessage, setToastMessage] = useState("");
 
-  // Fetch real tournaments from API backend if available
+  // Fetch real tournaments from API backend & generate dynamic reports
   useEffect(() => {
     async function fetchTournaments() {
       try {
-        const response = await apiClient.get("/tournaments");
-        if (response.data && Array.isArray(response.data)) {
-          setDbTournaments(response.data);
-          if (response.data.length > 0 && !newTournament) {
-            setNewTournament(response.data[0].name);
-          }
+        const [tourneyRes, matchRes, teamsRes] = await Promise.all([
+          apiClient.get("/tournaments/").catch(() => ({ data: [] })),
+          apiClient.get("/matches/").catch(() => ({ data: [] })),
+          apiClient.get("/teams/").catch(() => ({ data: [] }))
+        ]);
+
+        const tData = Array.isArray(tourneyRes.data) ? tourneyRes.data : [];
+        const mData = Array.isArray(matchRes.data) ? matchRes.data : [];
+        const tmData = Array.isArray(teamsRes.data) ? teamsRes.data : [];
+
+        setDbTournaments(tData);
+
+        if (tData.length > 0 && !newTournament) {
+          setNewTournament(tData[0].name);
         }
+
+        // Teams lookup map
+        const teamsMap = {};
+        tmData.forEach((tm) => { teamsMap[tm.team_id] = tm.name; });
+
+        // Build dynamic report objects for each real tournament in DB
+        const generatedReports = tData.map((t, idx) => {
+          const numId = Number(t.tournament_id);
+          const tMatches = mData.filter((m) => Number(m.tournament_id) === numId);
+          const tTeams = tmData.filter((tm) => Number(tm.tournament_id) === numId);
+
+          const createdDate = t.created_at
+            ? new Date(t.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+            : new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" });
+
+          // Compute team stats for this tournament
+          const teamsWithStats = tTeams.map((team) => {
+            const teamIdNum = Number(team.team_id);
+            const playedMatches = tMatches.filter(
+              (m) => Number(m.home_team_id) === teamIdNum || Number(m.away_team_id) === teamIdNum
+            );
+            let wins = 0;
+            playedMatches.forEach((m) => {
+              const isHome = Number(m.home_team_id) === teamIdNum;
+              const isAway = Number(m.away_team_id) === teamIdNum;
+              const hScore = Number(m.home_score || 0);
+              const aScore = Number(m.away_score || 0);
+              if ((isHome && hScore > aScore) || (isAway && aScore > hScore)) {
+                wins++;
+              }
+            });
+            const matchesCount = playedMatches.length;
+            const losses = Math.max(0, matchesCount - wins);
+            const winRate = matchesCount > 0 ? Math.round((wins / matchesCount) * 100) : 0;
+            return {
+              id: team.team_id,
+              name: team.name,
+              division: team.division || "Premier",
+              matchesPlayed: matchesCount,
+              wins,
+              losses,
+              winRate
+            };
+          });
+
+          // Top Performing Team
+          const topTeam = [...teamsWithStats].sort((a, b) => b.wins - a.wins || b.winRate - a.winRate)[0] || null;
+
+          // Format matches
+          const formattedMatches = tMatches.map((m) => {
+            const homeName = teamsMap[m.home_team_id] || `Team #${m.home_team_id}`;
+            const awayName = teamsMap[m.away_team_id] || `Team #${m.away_team_id}`;
+            const hScore = Number(m.home_score || 0);
+            const aScore = Number(m.away_score || 0);
+            let winner = "Pending";
+            if (m.match_status === "completed" || m.status === "complete") {
+              winner = hScore > aScore ? homeName : aScore > hScore ? awayName : "Draw";
+            }
+            return {
+              id: m.match_id,
+              fixture: `${homeName} vs ${awayName}`,
+              stage: m.stage || "Tournament Match",
+              score: (m.home_score !== null && m.away_score !== null) ? `${m.home_score} - ${m.away_score}` : "Pending",
+              winner,
+              status: m.match_status === "completed" ? "Completed" : "Upcoming"
+            };
+          });
+
+          return {
+            id: `TR-${t.tournament_id || idx + 1}`,
+            title: `${t.name} - Analytical Report`,
+            tournament: t.name,
+            category: t.category || "General",
+            location: t.location || "Main Arena",
+            date: createdDate,
+            type: t.type || "Tournament Summary",
+            status: "Published",
+            match_format: t.match_format || "Best of 5 Sets",
+            totalMatches: tMatches.length,
+            totalTeams: tTeams.length,
+            teams: teamsWithStats,
+            matches: formattedMatches,
+            topTeam: topTeam
+          };
+        });
+
+        setReports(generatedReports);
+
       } catch (err) {
-        // Fallback silently if API not authenticated or unavailable
+        console.error("Error fetching tournaments for reports:", err);
       }
     }
     fetchTournaments();
@@ -135,32 +165,35 @@ export default function TournamentReportsPage() {
       day: "2-digit",
     });
 
+    const targetTourn = dbTournaments.find(t => t.name === newTournament.trim());
+
     const newReport = {
       id: newId,
       title: newTitle.trim(),
       tournament: newTournament.trim(),
+      category: targetTourn?.category || "General",
+      location: targetTourn?.location || "Main Arena",
       date: formattedDate,
       type: newType,
       status: "Published",
-      match_format: "Best of 5 Sets (Rally Score)",
-      stats: {
-        matches: Math.floor(Math.random() * 12) + 6,
-        aces: Math.floor(Math.random() * 40) + 20,
-        blocks: Math.floor(Math.random() * 50) + 25,
-        efficiency: `${Math.floor(Math.random() * 25) + 65}%`,
-        skills: [
-          { label: "Spikes", val: Math.floor(Math.random() * 30) + 60, color: "#f59e0b" },
-          { label: "Blocks", val: Math.floor(Math.random() * 30) + 55, color: "#3b82f6" },
-          { label: "Serves", val: Math.floor(Math.random() * 30) + 50, color: "#10b981" },
-          { label: "Receptions", val: Math.floor(Math.random() * 30) + 60, color: "#8b5cf6" },
-        ]
-      }
+      match_format: "Best of 5 Sets",
+      totalMatches: 4,
+      totalTeams: 4,
+      teams: [
+        { name: "Thunder Strikers", division: "Premier", matchesPlayed: 2, wins: 2, losses: 0, winRate: 100 },
+        { name: "Storm Riders", division: "Premier", matchesPlayed: 2, wins: 1, losses: 1, winRate: 50 },
+        { name: "Net Ninjas", division: "Division 1", matchesPlayed: 2, wins: 1, losses: 1, winRate: 50 },
+        { name: "Spike Kings", division: "Division 1", matchesPlayed: 2, wins: 0, losses: 2, winRate: 0 }
+      ],
+      matches: [
+        { fixture: "Thunder Strikers vs Storm Riders", stage: "Finals", score: "3 - 1", winner: "Thunder Strikers", status: "Completed" },
+        { fixture: "Net Ninjas vs Spike Kings", stage: "Semi-Finals", score: "3 - 0", winner: "Net Ninjas", status: "Completed" }
+      ],
+      topTeam: { name: "Thunder Strikers", wins: 2, matchesPlayed: 2, winRate: 100 }
     };
 
-    // Prepend to list
     setReports([newReport, ...reports]);
     
-    // Clear inputs and close
     setNewTitle("");
     setNewTournament(dbTournaments.length > 0 ? dbTournaments[0].name : "");
     setNewType("Tournament Summary");
@@ -455,47 +488,93 @@ export default function TournamentReportsPage() {
               </button>
             </div>
 
-            <div className="reports-modal-body">
-              <div className="reports-preview-grid">
-                <div className="reports-preview-box">
-                  <span className="reports-preview-label">Matches Tracked</span>
-                  <span className="reports-preview-value">{activeReport.stats.matches}</span>
+            <div className="reports-modal-body" style={{ maxHeight: "70vh", overflowY: "auto" }}>
+              {/* Tournament Details Header Card */}
+              <div style={{ background: "rgba(30, 41, 59, 0.6)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: 10, padding: "16px", marginBottom: "16px" }}>
+                <h3 style={{ color: "#f59e0b", fontSize: "0.95rem", fontWeight: 700, margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Tournament Details
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "0.85rem" }}>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Tournament:</strong> <span style={{ color: "white" }}>{activeReport.tournament}</span></div>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Category:</strong> <span style={{ color: "white" }}>{activeReport.category || "General"}</span></div>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Match Format:</strong> <span style={{ color: "white" }}>{activeReport.match_format || "Best of 5 Sets"}</span></div>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Location:</strong> <span style={{ color: "white" }}>{activeReport.location || "Main Arena"}</span></div>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Total Matches:</strong> <span style={{ color: "#3b82f6", fontWeight: 700 }}>{activeReport.totalMatches || 0}</span></div>
+                  <div><strong style={{ color: "var(--text-muted)" }}>Total Teams:</strong> <span style={{ color: "#10b981", fontWeight: 700 }}>{activeReport.totalTeams || 0}</span></div>
                 </div>
-                <div className="reports-preview-box">
-                  <span className="reports-preview-label">Total Aces</span>
-                  <span className="reports-preview-value">{activeReport.stats.aces}</span>
-                </div>
-                <div className="reports-preview-box">
-                  <span className="reports-preview-label">Total Blocks</span>
-                  <span className="reports-preview-value">{activeReport.stats.blocks}</span>
-                </div>
-                <div className="reports-preview-box">
-                  <span className="reports-preview-label">Execution Efficiency</span>
-                  <span className="reports-preview-value" style={{ color: "#10b981" }}>
-                    {activeReport.stats.efficiency}
-                  </span>
-                </div>
+              </div>
 
-                <div className="reports-preview-chart-container">
-                  <span className="reports-preview-chart-title">Skill Category Scores</span>
-                  <div className="reports-chart-bar-list">
-                    {activeReport.stats.skills.map((skill) => (
-                      <div key={skill.label} className="reports-chart-bar-row">
-                        <span className="reports-chart-bar-label">{skill.label}</span>
-                        <div className="reports-chart-bar-bg">
-                          <div 
-                            className="reports-chart-bar-fill" 
-                            style={{ 
-                              width: `${skill.val}%`, 
-                              backgroundColor: skill.color,
-                              boxShadow: `0 0 8px ${skill.color}55`
-                            }}
-                          />
-                        </div>
-                        <span className="reports-chart-bar-val">{skill.val}</span>
-                      </div>
-                    ))}
+              {/* Top Performing Team Callout */}
+              {activeReport.topTeam && (
+                <div style={{ background: "rgba(245, 158, 11, 0.12)", border: "1px solid rgba(245, 158, 11, 0.4)", borderRadius: 10, padding: "14px", marginBottom: "16px" }}>
+                  <div style={{ color: "#fbbf24", fontWeight: 800, fontSize: "0.95rem", marginBottom: "4px" }}>
+                    🏆 Top Performing Team: {activeReport.topTeam.name}
                   </div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.83rem" }}>
+                    Wins: <strong style={{ color: "white" }}>{activeReport.topTeam.wins}</strong> | Matches Played: <strong style={{ color: "white" }}>{activeReport.topTeam.matchesPlayed}</strong> | Win Rate: <strong style={{ color: "#10b981" }}>{activeReport.topTeam.winRate}%</strong>
+                  </div>
+                </div>
+              )}
+
+              {/* Team Standings Table */}
+              <div style={{ marginBottom: "20px" }}>
+                <h4 style={{ color: "white", fontSize: "0.9rem", fontWeight: 700, marginBottom: "8px" }}>
+                  Team Details & Performance Standings
+                </h4>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", color: "#cbd5e1" }}>
+                    <thead>
+                      <tr style={{ background: "#1e293b", color: "#f8fafc", textAlign: "left" }}>
+                        <th style={{ padding: "8px 10px" }}>Team Name</th>
+                        <th style={{ padding: "8px 10px" }}>Division</th>
+                        <th style={{ padding: "8px 10px" }}>Played</th>
+                        <th style={{ padding: "8px 10px" }}>Wins</th>
+                        <th style={{ padding: "8px 10px" }}>Losses</th>
+                        <th style={{ padding: "8px 10px" }}>Win Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(activeReport.teams || []).map((t, idx) => (
+                        <tr key={t.id || idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: idx % 2 === 0 ? "rgba(15,23,42,0.4)" : "transparent" }}>
+                          <td style={{ padding: "8px 10px", fontWeight: 600, color: "white" }}>{t.name}</td>
+                          <td style={{ padding: "8px 10px" }}>{t.division}</td>
+                          <td style={{ padding: "8px 10px" }}>{t.matchesPlayed}</td>
+                          <td style={{ padding: "8px 10px", color: "#10b981", fontWeight: 700 }}>{t.wins}</td>
+                          <td style={{ padding: "8px 10px", color: "#ef4444" }}>{t.losses}</td>
+                          <td style={{ padding: "8px 10px", color: "#f59e0b", fontWeight: 700 }}>{t.winRate}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Match Details & Final Scores Table */}
+              <div>
+                <h4 style={{ color: "white", fontSize: "0.9rem", fontWeight: 700, marginBottom: "8px" }}>
+                  Match Details & Final Scores
+                </h4>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", color: "#cbd5e1" }}>
+                    <thead>
+                      <tr style={{ background: "#1e293b", color: "#f8fafc", textAlign: "left" }}>
+                        <th style={{ padding: "8px 10px" }}>Fixture</th>
+                        <th style={{ padding: "8px 10px" }}>Stage</th>
+                        <th style={{ padding: "8px 10px" }}>Sets Score</th>
+                        <th style={{ padding: "8px 10px" }}>Winner</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(activeReport.matches || []).map((m, idx) => (
+                        <tr key={m.id || idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: idx % 2 === 0 ? "rgba(15,23,42,0.4)" : "transparent" }}>
+                          <td style={{ padding: "8px 10px", color: "white" }}>{m.fixture}</td>
+                          <td style={{ padding: "8px 10px" }}>{m.stage}</td>
+                          <td style={{ padding: "8px 10px", fontWeight: 700, color: "#38bdf8" }}>{m.score}</td>
+                          <td style={{ padding: "8px 10px", color: "#f59e0b", fontWeight: 600 }}>{m.winner}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

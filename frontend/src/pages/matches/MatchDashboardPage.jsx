@@ -5,6 +5,24 @@ import "../../styles/matches.css";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+function toVideoUrl(path, matchId = null) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  const clean = path.replace(/\\/g, "/").replace(/^\//, "");
+  const base =
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+    "http://localhost:8000/api";
+  const serverRoot = base.replace(/\/api\/?$/, "");
+
+  if (clean.startsWith("media/")) {
+    return `${serverRoot}/${clean}`;
+  }
+  if (matchId) {
+    return `${base}/matches/${matchId}/video`;
+  }
+  return `${serverRoot}/${clean}`;
+}
+
 function fmtTime(sec) {
   if (sec == null || isNaN(sec)) return "—";
   const m = Math.floor(sec / 60);
@@ -356,17 +374,21 @@ export default function MatchDashboardPage() {
   // ── 4. HIGHLIGHT GENERATION ──────────────────────────────────────────────────
 
   const handleGenerateHighlight = async () => {
-    if (selectedEventIds.size === 0) return;
+    if (selectedEventIds.size === 0) {
+      triggerToast("Select at least one event first.", "error");
+      return;
+    }
     try {
       setHlGenerating(true);
       setHlError("");
-      const res = await API.post(`/pipeline/${matchId}/generate-highlight`, {
+      const res = await API.post(`/pipeline/${matchId}/generate-highlight/`, {
         event_ids: [...selectedEventIds],
       });
       const hlUrl = res.data?.highlight_url;
       setCustomHighlightUrl(hlUrl);
       setMatch((prev) => ({ ...prev, highlight_url: hlUrl }));
-      triggerToast(`Highlight reel generated with ${res.data.clips_used} clips!`);
+      const clipCount = res.data?.clips_generated || res.data?.clips_used || selectedEventIds.size;
+      triggerToast(`Highlight reel generated successfully with ${clipCount} clips!`);
     } catch (err) {
       const msg = err?.response?.data?.detail || "Failed to generate highlight reel.";
       setHlError(msg);
@@ -529,7 +551,7 @@ export default function MatchDashboardPage() {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <span style={{ background: "rgba(2,6,17,.5)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 8, padding: "5px 12px", fontSize: ".8rem", color: "var(--text-muted)" }}>
-                📍 Match #{match.match_id}
+                📍 Match TN{match.tournament_id}-M{match.match_id}
               </span>
               <span style={{ background: "rgba(2,6,17,.5)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 8, padding: "5px 12px", fontSize: ".8rem", color: "var(--text-muted)" }}>
                 🎯 {eventsDetected} events
@@ -917,27 +939,82 @@ export default function MatchDashboardPage() {
                 </button>
               </div>
 
-              {/* Generated highlight player */}
-              {(customHighlightUrl || match.highlight_url) && (
-                <div style={{ animation: "vr-fadein .4s ease-out" }}>
+              {/* Generated highlight player OR Not generated notice */}
+              {(customHighlightUrl || match.highlight_url) ? (
+                <div style={{ animation: "vr-fadein .4s ease-out", marginTop: "14px" }}>
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.2)",
-                    borderRadius: 8, padding: "8px 14px", marginBottom: 10, fontSize: ".82rem",
+                    display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+                    background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)",
+                    borderRadius: 8, padding: "10px 14px", marginBottom: 10, fontSize: ".82rem",
                   }}>
-                    <span style={{ color: "#10b981", fontWeight: 700 }}>✓</span>
-                    <span style={{ color: "#10b981", fontWeight: 600 }}>Highlight reel ready!</span>
-                    <span style={{ color: "var(--text-muted)", marginLeft: "auto", fontSize: ".78rem" }}>
-                      {(customHighlightUrl || match.highlight_url).split(/[\\/]/).pop()}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ color: "#10b981", fontWeight: 700 }}>✓</span>
+                      <span style={{ color: "#10b981", fontWeight: 700 }}>Highlight reel ready!</span>
+                      <span style={{ color: "var(--text-muted)", fontSize: ".78rem" }}>
+                        ({(customHighlightUrl || match.highlight_url).split(/[\\/]/).pop()})
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <a
+                        href={toVideoUrl(customHighlightUrl || match.highlight_url, match.match_id)}
+                        download={`match_${match.match_id}_highlights.mp4`}
+                        style={{
+                          textDecoration: "none",
+                          background: "rgba(16, 185, 129, 0.2)",
+                          border: "1px solid rgba(16, 185, 129, 0.4)",
+                          color: "#34d399",
+                          fontSize: "0.78rem",
+                          fontWeight: 700,
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4
+                        }}
+                      >
+                        ⬇ Download MP4
+                      </a>
+                    </div>
                   </div>
-                  <video
-                    ref={highlightVideoRef}
-                    controls
-                    src={customHighlightUrl || match.highlight_url}
-                    style={{ width: "100%", borderRadius: 10, background: "#000", display: "block" }}
-                    onError={() => triggerToast("Highlight video could not be loaded.", "error")}
-                  />
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      borderRadius: "10px",
+                      overflow: "hidden",
+                      background: "#000000",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    <video
+                      ref={highlightVideoRef}
+                      controls
+                      preload="metadata"
+                      src={toVideoUrl(customHighlightUrl || match.highlight_url, match.match_id)}
+                      style={{ width: "100%", maxHeight: "380px", aspectRatio: "16/9", display: "block", objectFit: "contain", background: "#000" }}
+                      onError={() => triggerToast("Highlight video could not be loaded.", "error")}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "24px 16px",
+                    textAlign: "center",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px dashed rgba(255,255,255,0.12)",
+                    borderRadius: "10px",
+                    marginTop: "12px",
+                  }}
+                >
+                  <span style={{ fontSize: "2rem", display: "block", marginBottom: "8px" }}>🎬</span>
+                  <p style={{ color: "#ffffff", fontSize: "0.9rem", fontWeight: 700, margin: "0 0 4px" }}>
+                    Highlight Video Not Generated Yet
+                  </p>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", margin: 0, lineHeight: 1.5 }}>
+                    Select the tagged events above and click <strong>Generate Highlight Reel</strong> to compile your custom highlight reel video.
+                  </p>
                 </div>
               )}
             </SectionCard>
@@ -948,46 +1025,143 @@ export default function MatchDashboardPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* ── Video Player ── */}
-          <SectionCard title="⑤ Match Video" style={{ padding: 0, overflow: "hidden" }}>
+          <SectionCard title="⑤ Match Video" subtitle="Live video footage and playback" style={{ padding: "20px 20px 16px", overflow: "hidden" }}>
             {match.video_url ? (
-              <>
-                <video
-                  ref={videoRef}
-                  controls
-                  src={match.video_url}
-                  style={{ width: "100%", display: "block", background: "#000", maxHeight: 360, borderRadius: "12px 12px 0 0" }}
-                  onError={() => triggerToast("Video could not be loaded.", "error")}
-                />
-                <div style={{ padding: "10px 16px 14px" }}>
-                  <p style={{ fontSize: ".78rem", color: "var(--text-muted)", margin: 0 }}>
-                    Click <strong style={{ color: "#f59e0b" }}>▶</strong> on any event to seek here.
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    background: "#000000",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  <video
+                    ref={videoRef}
+                    controls
+                    preload="metadata"
+                    src={toVideoUrl(match.video_url, match.match_id)}
+                    style={{
+                      width: "100%",
+                      maxHeight: "340px",
+                      aspectRatio: "16/9",
+                      display: "block",
+                      objectFit: "contain",
+                      background: "#000",
+                    }}
+                    onError={() => triggerToast("Match video could not be loaded from server.", "error")}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: "0.8rem",
+                    color: "var(--text-muted)",
+                    background: "rgba(255,255,255,0.03)",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    flexWrap: "wrap",
+                    gap: 6
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <strong style={{ color: "#10b981" }}>✓ Video Online</strong>
+                    <span>• Click <strong style={{ color: "#f59e0b" }}>▶</strong> on any event to seek</span>
+                  </span>
+                  <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>
+                    {match.video_url.split(/[\\/]/).pop()}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: "36px 20px",
+                  textAlign: "center",
+                  background: "rgba(2,6,17,0.5)",
+                  border: "1px dashed rgba(255,255,255,0.15)",
+                  borderRadius: "12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <span style={{ fontSize: "2.8rem" }}>📹</span>
+                <div>
+                  <h4 style={{ color: "#ffffff", fontWeight: 700, margin: "0 0 6px", fontSize: "1.05rem" }}>
+                    No Match Video Uploaded Yet
+                  </h4>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.84rem", margin: "0 0 16px", maxWidth: "290px", lineHeight: 1.5 }}>
+                    Upload full match video footage to play back rallies and detect play events automatically.
                   </p>
                 </div>
-              </>
-            ) : (
-              <div style={{ height: 220, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 20 }}>
-                <span style={{ fontSize: "2.5rem" }}>🎬</span>
-                <p style={{ color: "var(--text-muted)", fontSize: ".88rem", fontWeight: 600, textAlign: "center", margin: 0 }}>No video yet — upload one above.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const uploadInput = document.getElementById("video-file-input");
+                    if (uploadInput) {
+                      uploadInput.click();
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  className="matches-btn-orange"
+                  style={{ padding: "9px 20px", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
+                >
+                  <span>↑</span> Upload Match Video
+                </button>
               </div>
             )}
           </SectionCard>
 
-          {/* ── Match Details ── */}
+          {/* ── Match Details (Clean non-overlapping layout) ── */}
           <SectionCard title="Match Details">
-            <div className="matches-info-grid">
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
-                ["Match ID",    `#${match.match_id}`],
-                ["Tournament",  tournamentName],
-                ["Home Team",   homeTeamName],
-                ["Away Team",   awayTeamName],
-                ["Score",       `${match.home_score ?? 0} – ${match.away_score ?? 0}`],
-                ["Date",        matchDate],
-                ["Status",      pipelineStatus.toUpperCase()],
-                ["Events",      eventsDetected],
+                ["Match ID", `#${match.match_id}`],
+                ["Tournament", tournamentName],
+                ["Home Team", homeTeamName],
+                ["Away Team", awayTeamName],
+                ["Score", `${match.home_score ?? 0} – ${match.away_score ?? 0}`],
+                ["Date", matchDate],
+                ["Status", pipelineStatus.toUpperCase()],
+                ["Events Tagged", eventsDetected],
               ].map(([label, val]) => (
-                <div key={label} className="matches-info-item">
-                  <span className="matches-info-label">{label}</span>
-                  <span className="matches-info-val">{val}</span>
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid rgba(255,255,255,0.06)",
+                    gap: "12px",
+                  }}
+                >
+                  <span style={{ fontSize: "0.82rem", color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>
+                    {label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "0.86rem",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      textAlign: "right",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={String(val)}
+                  >
+                    {val}
+                  </span>
                 </div>
               ))}
             </div>

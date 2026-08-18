@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.tournament import Tournament
+from app.models.match import Match
+from app.models.team import Team
 from app.schemas.tournament import TournamentCreate, TournamentRead, TournamentUpdate
 from app.routes.dependencies import get_current_user
 
@@ -11,9 +13,12 @@ router = APIRouter()
 @router.get("/", response_model=list[TournamentRead])
 def list_tournaments(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)  # ලොග් වෙලා ඉන්න කෙනාව ගන්නවා
+    current_user=Depends(get_current_user)
 ):
-    # වෙනස් කළා: .all() වෙනුවට .filter(...) දැම්මා
+    user_role = getattr(current_user, "role", "coach").lower()
+    # Players, admins, and viewers can view all tournaments across the platform
+    if user_role in ["player", "admin", "viewer", "public_user"]:
+        return db.query(Tournament).all()
     return db.query(Tournament).filter(Tournament.user_id == current_user.id).all()
 
 
@@ -21,11 +26,13 @@ def list_tournaments(
 def create_tournament(
     payload: TournamentCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)  # ලොග් වෙලා ඉන්න කෙනාව ගන්නවා
+    current_user=Depends(get_current_user)
 ):
-    # වෙනස් කළා: user_id=1 වෙනුවට user_id=current_user.id දැම්මා!
-    tournament = Tournament(**payload.model_dump(), user_id=current_user.id)
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot create tournaments. Only coaches and admins can create tournaments.")
 
+    tournament = Tournament(**payload.model_dump(), user_id=current_user.id)
     db.add(tournament)
     db.commit()
     db.refresh(tournament)
@@ -34,10 +41,14 @@ def create_tournament(
 
 @router.get("/{tournament_id}", response_model=TournamentRead)
 def get_tournament(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    tournament = db.query(Tournament).filter(
-        Tournament.tournament_id == tournament_id,
-        Tournament.user_id == current_user.id
-    ).first()
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role in ["player", "admin", "viewer", "public_user"]:
+        tournament = db.query(Tournament).filter(Tournament.tournament_id == tournament_id).first()
+    else:
+        tournament = db.query(Tournament).filter(
+            Tournament.tournament_id == tournament_id,
+            Tournament.user_id == current_user.id
+        ).first()
 
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
@@ -51,6 +62,10 @@ def update_tournament(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot modify tournaments.")
+
     tournament = db.query(Tournament).filter(
         Tournament.tournament_id == tournament_id,
         Tournament.user_id == current_user.id
@@ -70,6 +85,10 @@ def update_tournament(
 
 @router.delete("/{tournament_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_role = getattr(current_user, "role", "coach").lower()
+    if user_role == "player":
+        raise HTTPException(status_code=403, detail="Players cannot delete tournaments.")
+
     tournament = db.query(Tournament).filter(
         Tournament.tournament_id == tournament_id,
         Tournament.user_id == current_user.id
@@ -77,5 +96,15 @@ def delete_tournament(tournament_id: int, db: Session = Depends(get_db), current
 
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
+
+    # Explicitly delete all matches in this tournament
+    db.query(Match).filter(Match.tournament_id == tournament_id).delete(synchronize_session=False)
+
+    # Explicitly delete all teams in this tournament
+    db.query(Team).filter(Team.tournament_id == tournament_id).delete(synchronize_session=False)
+
+    # Delete the tournament object
     db.delete(tournament)
     db.commit()
+
+

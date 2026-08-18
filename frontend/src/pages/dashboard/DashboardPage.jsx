@@ -5,7 +5,6 @@ import RecentMatchesPanel from "../../components/dashboard/RecentMatchesPanel";
 import ActiveTournamentsPanel from "../../components/dashboard/ActiveTournamentsPanel";
 import MetricPanel from "../../components/dashboard/MetricPanel";
 import useAuth from "../../hooks/useAuth";
-// import API from "../../apiClient"; // 
 import API from "../../services/apiClient";
 
 import {
@@ -20,13 +19,6 @@ import {
   FileIcon,
 } from "../../components/dashboard/icons";
 
-// කලින් තිබුණු Static data ටික අපි ඒ විදිහටම ගන්නවා
-import {
-  statCards as initialStatCards,
-  recentMatches,
-  activeTournaments,
-  bottomMetrics,
-} from "./dashboardData";
 import "../../styles/dashboard.css";
 
 const statIcons = [
@@ -41,43 +33,51 @@ const statIcons = [
 export default function DashboardPage() {
   const { user } = useAuth();
   
- 
   const [stats, setStats] = useState({
     total_tournaments: 0,
     total_teams: 0,
     total_players: 0,
     total_matches: 0,
+    under_review: 0,
+    videos_generated: 0
   });
 
-  // අලුත්: Active Tournaments ටික තියාගන්න State එක
   const [activeTournamentsList, setActiveTournamentsList] = useState([]);
+  const [recentMatchesList, setRecentMatchesList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
         const statsResponse = await API.get("/dashboard/stats");
         const tournamentsResponse = await API.get("/tournaments/");
-        const teamsResponse = await API.get("/teams/"); // 1. අලුතින් Teams ටිකත් ගන්නවා
+        const teamsResponse = await API.get("/teams/");
         
-        const tournamentsData = tournamentsResponse.data;
-        const teamsData = teamsResponse.data; // ඔක්කොම Teams ටික මෙතන තියෙනවා
+        const tournamentsData = Array.isArray(tournamentsResponse.data) ? tournamentsResponse.data : [];
+        const teamsData = Array.isArray(teamsResponse.data) ? teamsResponse.data : [];
+        const statsData = statsResponse.data || {};
 
         setStats({
-          ...statsResponse.data,
           total_tournaments: tournamentsData.length,
-          // (අවශ්‍ය නම් total_teams එකත් මෙතනින්ම update කරන්න පුළුවන්)
-          total_teams: teamsData.length > 0 ? teamsData.length : statsResponse.data.total_teams, 
+          total_teams: teamsData.length,
+          total_players: statsData.total_players || 0,
+          total_matches: statsData.total_matches || 0,
+          under_review: statsData.under_review || 0,
+          videos_generated: statsData.videos_generated || 0
         });
 
-        const formattedTournaments = tournamentsData.slice(0, 3).map(t => {
-          // 2. මේ ටූනමන්ට් එකට අයිති Teams ගාණ ෆිල්ටර් කරලා හොයාගන්නවා
+        if (statsData.recent_matches && Array.isArray(statsData.recent_matches)) {
+          setRecentMatchesList(statsData.recent_matches);
+        }
+
+        const formattedTournaments = tournamentsData.slice(0, 5).map(t => {
           const matchTeamsCount = teamsData.filter(team => team.tournament_id === t.tournament_id).length;
 
           return {
             name: t.name,
             status: t.status || "Upcoming",
             dateRange: (t.start_date && t.end_date) ? `${t.start_date} to ${t.end_date}` : "TBD",
-            teams: `${matchTeamsCount} teams`, // 3. 0 වෙනුවට අපි හොයාගත්ත ගාණ මෙතනට දානවා
+            teams: `${matchTeamsCount} teams`,
           };
         });
         
@@ -85,36 +85,51 @@ useEffect(() => {
         
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchDashboardStats();
   }, []);
 
-  // උඩ තියෙන කොටු 4 ට අංක දැමීම
-  const dynamicStatCards = [...initialStatCards];
-  if (dynamicStatCards.length >= 4) {
-    dynamicStatCards[0] = { ...dynamicStatCards[0], value: stats.total_tournaments }; 
-    dynamicStatCards[1] = { ...dynamicStatCards[1], value: stats.total_teams || 0 }; 
-    dynamicStatCards[2] = { ...dynamicStatCards[2], value: stats.total_players || 0 }; 
-    dynamicStatCards[3] = { ...dynamicStatCards[3], value: stats.total_matches || 0 }; 
-  }
+  const dynamicStatCards = [
+    { label: "Total Tournaments", value: stats.total_tournaments, trend: "Live Data", iconTone: "blue" },
+    { label: "Total Teams", value: stats.total_teams, trend: "Live Data", iconTone: "teal" },
+    { label: "Total Players", value: stats.total_players, trend: "Live Data", iconTone: "purple" },
+    { label: "Total Matches", value: stats.total_matches, trend: "Live Data", iconTone: "blue" },
+    { label: "Under Review", value: stats.under_review, trend: "Live Data", iconTone: "orange" },
+    { label: "Videos Generated", value: stats.videos_generated, trend: "Live Data", iconTone: "teal" },
+  ];
 
-  // අලුත්: යට තියෙන Metric Panels වල "Team Overview" එක සජීවී කිරීම
-  const dynamicBottomMetrics = [...bottomMetrics];
-  if (dynamicBottomMetrics.length > 0) {
-    // Players ලා ගාණ ටීම් ගාණෙන් බෙදලා Average එක ගන්නවා
-    const avgPlayers = stats.total_teams > 0 ? Math.round(stats.total_players / stats.total_teams) : 0;
+  const avgPlayers = stats.total_teams > 0 ? Math.round(stats.total_players / stats.total_teams) : 0;
 
-    dynamicBottomMetrics[0] = {
+  const dynamicBottomMetrics = [
+    {
       title: "Team Overview",
       rows: [
-        { label: "Active Teams", value: stats.total_teams?.toString() || "0" },
-        { label: "Registered Players", value: stats.total_players?.toString() || "0" },
+        { label: "Active Teams", value: stats.total_teams.toString() },
+        { label: "Registered Players", value: stats.total_players.toString() },
         { label: "Avg Players/Team", value: avgPlayers.toString() },
       ],
-    };
-  }
+    },
+    {
+      title: "Tournament Scope",
+      rows: [
+        { label: "Active Tournaments", value: stats.total_tournaments.toString(), tone: "success" },
+        { label: "Matches Scheduled", value: stats.total_matches.toString(), tone: "info" },
+        { label: "Reviews Pending", value: stats.under_review.toString() },
+      ],
+    },
+    {
+      title: "Video Generation",
+      rows: [
+        { label: "Videos Ready", value: stats.videos_generated.toString(), tone: "success" },
+        { label: "Processing Now", value: stats.under_review.toString(), tone: "info" },
+        { label: "Total Match Videos", value: stats.total_matches.toString() },
+      ],
+    },
+  ];
 
   return (
     <div className="dashboard-page">
@@ -125,10 +140,9 @@ useEffect(() => {
 
       <header className="dashboard-header">
         <h1>Dashboard</h1>
-        <p>Welcome back! Here&apos;s your volleyball analytics overview</p>
+        <p>Welcome back! Here&apos;s your live volleyball analytics overview</p>
       </header>
 
-      {/* මෙතන අපි දැන් පාවිච්චි කරන්නේ dynamicStatCards (Live Data) */}
       <section className="dashboard-stats-grid" aria-label="Key metrics">
         {dynamicStatCards.map((stat, index) => (
           <StatCard key={stat.label} {...stat} icon={statIcons[index]} />
@@ -160,8 +174,8 @@ useEffect(() => {
       </section>
 
       <section className="dashboard-row dashboard-row--split">
-        <RecentMatchesPanel matches={recentMatches} />
-        <ActiveTournamentsPanel tournaments={activeTournamentsList.length > 0 ? activeTournamentsList : activeTournaments} />
+        <RecentMatchesPanel matches={recentMatchesList} />
+        <ActiveTournamentsPanel tournaments={activeTournamentsList} />
       </section>
 
       <section className="dashboard-row dashboard-row--metrics">
@@ -171,4 +185,4 @@ useEffect(() => {
       </section>
     </div>
   );
-}
+}

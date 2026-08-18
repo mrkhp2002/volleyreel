@@ -5,6 +5,26 @@ import CustomSelect from "../../components/common/CustomSelect";
 import { PlusIcon } from "../../components/common/TableActionIcons";
 import "../../styles/management.css";
 
+const DIVISION_OPTIONS = [
+  { value: "Premier", label: "Premier Division" },
+  { value: "Super League", label: "Super League" },
+  { value: "Division 1", label: "Division 1" },
+  { value: "Division 2", label: "Division 2" },
+  { value: "University Division", label: "University Division" },
+  { value: "National Championship", label: "National Championship" },
+  { value: "Open Division", label: "Open Division" }
+];
+
+const CATEGORY_OPTIONS = [
+  { value: "Men's Senior", label: "Men's Senior" },
+  { value: "Women's Senior", label: "Women's Senior" },
+  { value: "Men's U23", label: "Men's Under-23 (U23)" },
+  { value: "Women's U23", label: "Women's Under-23 (U23)" },
+  { value: "Boys U19", label: "Boys Under-19 (U19)" },
+  { value: "Girls U19", label: "Girls Under-19 (U19)" },
+  { value: "Mixed / Open", label: "Mixed / Open Category" }
+];
+
 const initialForm = {
   teamId: "TM-2026-006",
   name: "",
@@ -140,6 +160,21 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
         </div>
       </header>
 
+      {tournaments.length === 0 && (
+        <div style={{ padding: "20px 24px", marginBottom: 20, background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.25)", borderRadius: 12, display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: "1.4rem" }}>🏆</span>
+            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fbbf24", margin: 0 }}>No Active Tournaments Found</h3>
+          </div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: 0 }}>
+            You need to create a tournament before assigning teams.
+          </p>
+          <Link to="/tournaments/create" className="mgmt-btn mgmt-btn--primary" style={{ textDecoration: "none", marginTop: 4 }}>
+            + Create a Tournament
+          </Link>
+        </div>
+      )}
+
       {error && (
         <div className="mgmt-card" style={{ color: "#ef4444", marginBottom: 16, border: "1px solid #ef4444" }}>
           {error}
@@ -156,30 +191,26 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
               <label htmlFor="tournament_id">
                 Assign to Tournament <span className="required">*</span>
               </label>
-              <select
+              <CustomSelect
                 id="tournament_id"
-                value={form.tournament_id}
+                value={String(form.tournament_id)}
                 onChange={(e) => setField("tournament_id", e.target.value)}
-                required
-                className="mgmt-filter-select"
-                style={{ width: "100%", padding: "10px", backgroundColor: "var(--surface)", color: "white", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px" }}
-              >
-                <option value="">-- Choose a Tournament --</option>
-                {tournaments.map((t) => (
-                  <option key={t.tournament_id} value={t.tournament_id}>
-                    TN-{t.tournament_id} : {t.name}
-                  </option>
-                ))}
-              </select>
+                options={tournaments.map((t) => ({
+                  value: String(t.tournament_id),
+                  label: `TN-${t.tournament_id} : ${t.name}`
+                }))}
+                placeholder="-- Choose a Tournament --"
+                className="mgmt-field-select"
+              />
             </div>
 
             <div className="mgmt-field">
               <label htmlFor="teamId">Team ID</label>
               <input
                 id="teamId"
-                value={form.teamId}
-                onChange={(e) => setField("teamId", e.target.value)}
-                disabled={isEdit} // Edit කරද්දී ID එක වෙනස් කරන්න බැරි වෙන්න දාලා තියෙන්නේ
+                value={isEdit ? form.teamId : `TM-${form.tournament_id || '[Tournament]'}-[Auto-generated]`}
+                disabled
+                style={{ opacity: 0.7, cursor: "not-allowed" }}
               />
             </div>
 
@@ -198,21 +229,25 @@ export default function CreateTeamPage({ mode = "create", initialTeam = null }) 
 
             <div className="mgmt-field">
               <label htmlFor="division">Division</label>
-              <input
+              <CustomSelect
                 id="division"
-                placeholder="e.g., Premier"
                 value={form.division}
                 onChange={(e) => setField("division", e.target.value)}
+                options={DIVISION_OPTIONS}
+                placeholder="-- Select Division --"
+                className="mgmt-field-select"
               />
             </div>
 
             <div className="mgmt-field">
               <label htmlFor="category">Category</label>
-              <input
+              <CustomSelect
                 id="category"
-                placeholder="e.g., Men's Senior"
                 value={form.category}
                 onChange={(e) => setField("category", e.target.value)}
+                options={CATEGORY_OPTIONS}
+                placeholder="-- Select Category --"
+                className="mgmt-field-select"
               />
             </div>
 
